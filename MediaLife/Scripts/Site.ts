@@ -1,6 +1,6 @@
 ﻿import { $ } from './BRLibraries/DOM'
 
-export class Template {
+export class MediaLife {
 
     constructor() {
     }

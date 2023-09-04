@@ -44,7 +44,7 @@
 
     <title>
         @titlePrefix
-        Template
+        MediaLife
     </title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
@@ -58,7 +58,7 @@
     @Html.Raw(embededJs)
     <script>
         function init() {
-            let site = new Template.Template();
+            let site = new MediaLife.MediaLife();
             @Html.Raw(localJsExists ? $"page = new {controller}{view}.{controller}{view}(site, {jsData});" : "")
         }
         let page = null;
@@ -69,7 +69,7 @@
 <body onload="init();">
 
     <div id="header">
-        @Html.Raw(string.Join(" &#8211; ", (titlePrefix + "Template").Split(" - ").Reverse()))
+        @Html.Raw(string.Join(" &#8211; ", (titlePrefix + "MediaLife").Split(" - ").Reverse()))
     </div>
 
     <ul id="nav">

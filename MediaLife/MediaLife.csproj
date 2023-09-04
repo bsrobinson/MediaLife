@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
-        <RootNamespace>Template</RootNamespace>
+        <RootNamespace>MediaLife</RootNamespace>
         <nullable>enable</nullable>
     </PropertyGroup>
 
@@ -39,7 +39,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Template.Library\Template.Library.csproj">
+        <ProjectReference Include="..\MediaLife.Library\MediaLife.Library.csproj">
         <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
         </ProjectReference>
     </ItemGroup>

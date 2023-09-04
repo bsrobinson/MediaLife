@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <RootNamespace>Template.Library</RootNamespace>
+    <RootNamespace>MediaLife.Library</RootNamespace>
     <nullable>enable</nullable>
     <RunGaspar>False</RunGaspar>
   </PropertyGroup>

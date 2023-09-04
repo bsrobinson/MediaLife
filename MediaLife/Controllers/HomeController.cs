@@ -4,10 +4,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using Template.Library.DAL;
-using Template.Models;
+using MediaLife.Library.DAL;
+using MediaLife.Models;
 
-namespace Template.Controllers
+namespace MediaLife.Controllers
 {
     public class HomeController : Controller
     {

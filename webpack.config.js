@@ -9,7 +9,7 @@ const { ModifySourcePlugin, ConcatOperation, ReplaceOperation } = require('modif
 var embededJsMapOffset = 16;
 
 
-var project = process.argv.find(a => a.slice(0, 8) == 'project=')?.slice(8) || 'Template';
+var project = process.argv.find(a => a.slice(0, 8) == 'project=')?.slice(8) || 'MediaLife';
 console.log(`Running Webpack for '${project}'`);
 
 if (!fs.existsSync(`./${project}/`)) {
@@ -23,7 +23,7 @@ if (!fs.existsSync(`./${project}/`)) {
 		mode: 'development',
 		entry: () => {
 			let obj = {
-				scripts: { import: `./${project}/Scripts/Site.ts`, library: { name: 'Template', type: 'window' }, filename: 'Site.js' },
+				scripts: { import: `./${project}/Scripts/Site.ts`, library: { name: 'MediaLife', type: 'window' }, filename: 'Site.js' },
 			};
 			glob.sync(`./${project}/Views/**/*.ts`).forEach(path => {
 				let file = path.slice(project.length + 7);

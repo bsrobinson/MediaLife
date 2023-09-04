@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Template.Library.DAL;
+using MediaLife.Library.DAL;
 
-namespace Template
+namespace MediaLife
 {
     public class Startup
     {

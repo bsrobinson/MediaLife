@@ -1,7 +1,7 @@
 ﻿const fs = require('fs');
 var spawn = require('child_process').spawn;
 
-var project = process.argv[2] || 'Template';
+var project = process.argv[2] || 'MediaLife';
 console.log(`Watching Project '${project}'`);
 
 if (!fs.existsSync(`./${project}/`)) {

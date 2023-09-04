@@ -1,6 +1,6 @@
 using System;
 
-namespace Template.Models
+namespace MediaLife.Models
 {
     public class ErrorViewModel
     {

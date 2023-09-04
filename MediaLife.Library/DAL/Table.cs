@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using WCKDRZR.Gaspar;
 
-namespace Template.Library.DAL
+namespace MediaLife.Library.DAL
 {
     [ExportFor(GasparType.FrontEnd)]
     public class Table

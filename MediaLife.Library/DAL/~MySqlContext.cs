@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 
-namespace Template.Library.DAL
+namespace MediaLife.Library.DAL
 {
     public class MySqlContext : DbContext
     {
