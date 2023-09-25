@@ -3,7 +3,11 @@
     string titlePrefix = "";
     if (ViewData.ContainsKey("Title") && !String.IsNullOrEmpty(ViewData["Title"]?.ToString()))
     {
-        titlePrefix = ViewData["Title"]?.ToString() + " - ";
+        titlePrefix += ViewData["Title"]?.ToString() + " - ";
+    }
+    if (ViewData.ContainsKey("Section") && !String.IsNullOrEmpty(ViewData["Section"]?.ToString()))
+    {
+        titlePrefix += ViewData["Section"]?.ToString() + " - ";
     }
 
     string controller = Context.Request.RouteValues["controller"]?.ToString() ?? "";
@@ -38,6 +42,13 @@
         settings.ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver();
         jsData = Newtonsoft.Json.JsonConvert.SerializeObject(ViewData["jsData"], settings);
     }
+    
+    string siteSection = ViewData["Section"]?.ToString() ?? "Media Life";
+    string sectionUrl = ViewData["Section"]?.ToString() != null ? siteSection.ToLower() : "";
+    string icon = "🎭";
+    if (sectionUrl == "tv") { icon = "📺"; }
+    if (sectionUrl == "movies") { icon = "🎥"; }
+    if (sectionUrl == "books") { icon = "📚"; }
 }
 <html>
 <head>
@@ -52,16 +63,22 @@
     <link rel="apple-touch-icon" href="/_images/admin/icons/.png">
 
     <link rel="stylesheet" href="~/dist/css/Site.css" asp-append-version="true" />
-    @Html.Raw(embededCss)
-
     <script src="~/dist/js/Site.js" asp-append-version="true"></script>
+
     @Html.Raw(embededJs)
+    @Html.Raw(embededCss)
+    
     <script>
         function init() {
-            let site = new MediaLife.MediaLife();
+            site = new MediaLife.MediaLife();
             @Html.Raw(localJsExists ? $"page = new {controller}{view}.{controller}{view}(site, {jsData});" : "")
+            if (site.windowResize) {
+                window.onresize = site.windowResize;
+                site.windowResize();
+            }
         }
-        let page = null;
+        window.site = null;
+        window.page = null;
     </script>
 
 </head>
@@ -69,17 +86,89 @@
 <body onload="init();">
 
     <div id="header">
-        @Html.Raw(string.Join(" &#8211; ", (titlePrefix + "MediaLife").Split(" - ").Reverse()))
+        <div class="header-left">
+            <div id="burger_menu" onclick="site.toggleSiteMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <a href="/@sectionUrl">@icon&nbsp;&nbsp;@siteSection</a>
+        </div>
+        <form action="/@sectionUrl/search">
+            <input type="search" name="q" value="@ViewBag.q" placeholder="search" />
+        </form>
+        <a href="JavaScript:;" class="search-link" onclick="$('search_row').removeClass('hide'); $('search_input').focus()">🔍</a>
+    </div>
+    <div id="search_row" class="hide">
+        <form action="/@sectionUrl/search">
+            <input type="search" name="q" id="search_input" onblur="$('search_row').addClass('hide');" value="@ViewBag.q" placeholder="search" />
+        </form>
     </div>
 
-    <ul id="nav">
-        <li><a href="/">Home</a></li>
-    </ul>
+    <div id="site_menu" onclick="site.toggleSiteMenu();">
+        <div class="section-buttons">
+            <a href="/tv" class="section-button"><span class="icon">📺</span><span class="label">TV</span></a>
+            <a href="/movies" class="section-button"><span class="icon">🎥</span><span class="label">Movies</span></a>
+            <a href="/books" class="section-button"><span class="icon">📚</span><span class="label">Books</span></a>
+        </div>
+        <a class="menu-item" href="JavaScript:;" onclick="site.createCustomList();">📝 Create Custom List</a>
+        <a class="menu-item" href="/PirateBay">🏴‍☠️ Pirate Bay</a>
+        <a class="menu-item" href="/Log">🪵 Log</a>
+    </div>
 
     <div id="content" class="@(controller)@(view)">
+
+        <div id="snack_bar" class="snack-bar hide">
+            <span id="snack_bar_message"></span>
+        </div>
         
         @RenderBody()
 
+    </div>
+
+    <div id="footer">
+
+    </div>
+
+    <div id="vlc_player" class="hide info-only">
+        <a id="vlc_poster"></a>
+        <div class="vlc-content">
+            <div class="vlc-title">
+                <div class="vlc-title-text">
+                    <img src="/images/vlc.svg" />
+                    <div id="vlc_playing_title"></div>
+                </div>
+                <div class="vlc-buttons">
+                    <a href="JavaScript:;" class="fullscreen" onclick="vlc.fullscreen();"></a>
+                    <a href="JavaScript:;" class="fullscreen-exit" onclick="vlc.fullscreen();"></a>
+                </div>
+            </div>
+            <div class="vlc-detail-row">
+                <div class="vlc-scrubber">
+                    <div id="vlc-scrubber-time" class="time" style="text-align:right;"></div>
+                    <div class="vlc-scrubber-bar" onclick="vlc.scrubberClick()">
+                        <div id="vlc-scrubber-mark"></div>
+                    </div>
+                    <div id="vlc-scrubber-time-remaining" class="time"></div>
+                </div>
+                <div class="vlc-buttons">
+                    <div class="vlc-side-controls"></div>
+                    <div class="vlc-central-controls">
+                        <a href="JavaScript:;" class="restart" style="margin:0;" onclick="vlc.previous();"></a>
+                        <a href="JavaScript:;" class="skip-back" onclick="vlc.skipBack();"></a>
+                        <a href="JavaScript:;" class="play" onclick="vlc.play();"></a>
+                        <a href="JavaScript:;" class="pause" onclick="vlc.pause();"></a>
+                        <a href="JavaScript:;" class="skip" onclick="vlc.skip();"></a>
+                        <a href="JavaScript:;" id="vlc_next_episode_button" class="next" onclick="vlc.next();"></a>
+                    </div>
+                    <div class="vlc-side-controls">
+                        <a href="JavaScript:;" class="fullscreen" onclick="vlc.fullscreen();"></a>
+                        <a href="JavaScript:;" class="fullscreen-exit" onclick="vlc.fullscreen();"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 </body>

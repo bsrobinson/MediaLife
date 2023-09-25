@@ -1,0 +1,146 @@
+﻿
+.episode-watch-icon {
+    position: relative;
+
+    .watched-button {
+        position: relative;
+        mask: url('/images/eye.svg');
+        mask-repeat: no-repeat;
+        mask-position: center;
+        background-color: #bbb;
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: auto 100%;
+        height: 20px;
+        width: 40px;
+        cursor: pointer;
+    }
+
+    &.search-page .watched-button {
+        background-position-x: left;
+        width: 23px;
+        min-width: 23px;
+        margin-right: 0.5em;
+    }
+
+    &.watched .watched-button {
+        background-color: #0b0;
+    }
+    &.started-watching .watched-button {
+        background-color: #f90;
+    }
+
+    &.skip .watched-button {
+        mask-image: url('/images/ban.svg');
+        background-color: black;
+        mask-size: 18px;
+    }
+
+    &.saving .watched-button {
+        mask-image: url('/images/ellipsis.svg');
+        background-color: black;
+        cursor: default;
+    }
+
+    .watched-menu {
+        position: absolute;
+        top: -3px;
+        right: 36px;
+        background: #f3f3f3;
+        border: 1px solid #999;
+        border-radius: 5px;
+        display: flex;
+        visibility: hidden;
+        opacity: 0;
+        transition: right 0.25s, opacity 0.25s;
+        z-index: 999;
+
+        .active-mark {
+            position: absolute;
+            height: 2px;
+            width: 0;
+            background: #33f;
+            bottom: 0px;
+            transition: 0.25s;
+        }
+    }
+    
+    &.search-page .watched-menu {
+        transition: top 0.25s, opacity 0.25s;
+        top: 16px;
+    }
+
+    .watched-menu > .menu-item {
+        height: 20px;
+        padding: 2px 10px 2px 32px;
+        font-size: initial;
+        background-repeat: no-repeat;
+        background-position: 9px center;
+        background-size: 16px;
+        opacity: .6;
+        cursor: pointer;
+    
+        &:hover {
+            background-color: #ccc;
+        }
+
+        &.skip {
+            background-image: url('/images/ban.svg');
+        }
+        &.started {
+            background-image: url('/images/stopwatch.svg');
+        }
+        &.watched {
+            background-image: url('/images/eye.svg');
+        }
+    }
+
+    &.watched .watched-menu > div.watched, &.started-watching .watched-menu > div.started, &.skip .watched-menu > div.skip {
+        background-color: #00dd00;
+        opacity: 1;
+    }
+
+    &.started-watching .watched-menu > div.skip, &.watched .watched-menu > div.skip,
+    &.skip .watched-menu > div.started, &.watched .watched-menu > div.started,
+    &.skip .watched-menu > div.watched {
+        display: none;
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .episode-watch-icon.hover .watched-menu,
+    .all-watch-menus-open .episode-watch-icon:not(.search-page) .watched-menu {
+        visibility: visible;
+        right: 40px;
+        opacity: 1;
+    }
+
+    .episode-watch-icon.search-page.hover .watched-menu {
+        top: 20px;
+    }
+}
+
+.episode-watch-icon.touch-menu-open .watched-menu {
+    flex-direction: column-reverse;
+    visibility: visible;
+    opacity: 1;
+
+    .active-mark {
+        display: none;
+    }
+}
+
+.episode-watch-icon.search-page.touch-menu-open .watched-menu {
+    top: initial;
+    right: initial;
+    bottom: 21px;
+}
+.episode-watch-icon.touch-menu-open .watched-menu > div {
+    height: 30px;
+    line-height: 30px;
+    border-bottom: 1px solid #999;
+    
+    &:first-child {
+        border-bottom: 0;
+    }
+}

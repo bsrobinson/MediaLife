@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MediaLife.Library.DAL;
+using Newtonsoft.Json.Serialization;
 
 namespace MediaLife
 {
@@ -56,7 +57,11 @@ namespace MediaLife
                 );
             }
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews()
+                //this is here to support [EnumMember(Value)] attributes that don't work in System.Text.Json
+                .AddNewtonsoftJson(options =>
+                    options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver()
+                );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

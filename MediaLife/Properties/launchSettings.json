@@ -12,15 +12,17 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "AUTH_KEY": "6A2E1381-9B2B-4886-B53D-65457DD66DAF"
       }
     },
     "MediaLife": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:63664",
+      "applicationUrl": "https://localhost:6501;http://localhost:6500;https://*:6501;http://*:6500",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "AUTH_KEY": "6A2E1381-9B2B-4886-B53D-65457DD66DAF"
       }
     }
   }

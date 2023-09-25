@@ -1,0 +1,93 @@
+﻿@model ShowPageModel
+@{
+    ViewData["Title"] = Model.Show.PosterName;
+    ViewData["Section"] = Model.SiteSection;
+}
+
+<div class="title">
+    <h1 id="showName" class="edit-list-hide">@Model.Show.Name</h1>
+    <input type="text" id="editListTitle" class="edit-list-show" value="@Model.Show.Name" onchange="page.editedListChanged();" />
+    @if (Model.SiteSection == SiteSection.Books)
+    {
+        <div id="author">@Model.Show.ShowAuthor</div>
+    }
+    <div class="buttons add-to-list-hide">
+        @if (!Model.ShowListOptions)
+        {
+            string buttonName = "";
+            if (Model.SiteSection == SiteSection.TV) { buttonName = "Show"; }
+            if (Model.SiteSection == SiteSection.Movies) { buttonName = "Movie" + (Model.Show.EpisodeCount > 1 ? "s" : ""); }
+            if (Model.SiteSection == SiteSection.Books) { buttonName = "Book" + (Model.Show.EpisodeCount > 1 ? "s" : ""); }
+            <input type="button" value="Add @buttonName" id="addShowButton" class="button add @(Model.Show.Added == null ? "" : "hide")" onclick="page.addShow()" />
+            <input type="button" value="Remove @buttonName" id="removeShowButton" class="button remove @(Model.Show.Added != null && Model.Show.Episodes.Count(e => e.Watched != null || e.StartedWatching != null) == 0 ? "" : "hide")" onclick="page.removeShow()" />
+            <input type="button" value="" id="showSettingsButton" class="button settings @(Model.Show.Added != null ? "" : "hide")" onclick="page.toggleSettingsMenu()" />
+        }
+        else
+        {
+            <input type="button" value="Edit List" class="button edit edit-list-hide" onclick="page.editList()" />
+            <input type="button" value="Save List" class="button add save edit-list-show" onclick="page.editListSave()" />
+            <input type="button" value="Cancel" class="button remove edit-list-show" onclick="page.editListCancel()" />
+            <input type="button" value="" class="button delete edit-list-show" onclick="page.deleteList()" />
+        }
+    </div>
+</div>
+
+<div id="blackout" class="hide" onclick="page.toggleSettingsMenu()"></div>
+<form id="settings_menu" class="@(Model.ShowListOptions ? "for_list" : "") hide" onsubmit="page.saveSettings(); return false;">
+    <label>
+        Recommended by
+        <input list="recommenders" name="recommendedBy" value="@Model.Show.RecommendedBy" data-nullonempty="true" />
+        <datalist id="recommenders">
+            @foreach (string recommender in Model.Recommenders)
+            {
+                <option value="@recommender"></option>
+            }
+        </datalist>
+    </label>
+    <label>
+        Download Limit
+        <input name="downloadLimit" type="number" value="@(Model.Show.DownloadLimit)" style="width:50px;" />
+    </label>
+    <label>
+        Delete files when watched
+        <input name="deleteWatched" type="checkbox" @(Model.Show.Added == null || Model.Show.DeleteWatched ? "checked" : "") />
+    </label>
+    <label>
+        Watch from next available
+        <input name="watchFromNextPlayable" type="checkbox" @(Model.Show.Added == null || Model.Show.WatchFromNextPlayable ? "checked" : "") />
+    </label>
+    <label>
+        Download all together
+        <input name="downloadAllTogether" type="checkbox" @(Model.Show.Added == null || Model.Show.DownloadAllTogether ? "checked" : "") />
+    </label>
+    @if (Model.SiteSection == SiteSection.TV)
+    {
+        <label>
+            Skip until series
+            <select name="skipUntilSeries" data-type="int" data-nullonempty="true">
+                @{ int? prevSeries = Model.Show.Episodes.FirstOrDefault()?.SeriesNumber; }
+                <option value="@prevSeries">-</option>
+                @foreach (EpisodeModel episode in Model.Show.Episodes)
+                {
+                    if (prevSeries != episode.SeriesNumber)
+                    {
+                        <!option value="@episode.SeriesNumber" @(Model.Show.SkipUntilSeries == episode.SeriesNumber ? "selected" : "")>@episode.SeriesNumber</!option>
+                    }
+                    prevSeries = episode.SeriesNumber;
+                }
+            </select>
+        </label>
+    }
+    <label>
+        <input type="submit" value="Save" />
+    </label>
+</form>
+
+<div id="page-content">
+    @if (Model.SiteSection == SiteSection.TV)
+    {
+        <div id="series_list_wrapper"><ul id="series_list"></ul></div>
+    }
+    <div id="episode_list"></div>
+    <div id="poster"></div>
+</div>

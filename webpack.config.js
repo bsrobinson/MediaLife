@@ -6,7 +6,7 @@ const { ModifySourcePlugin, ConcatOperation, ReplaceOperation } = require('modif
 
 
 
-var embededJsMapOffset = 16;
+var embededJsMapOffset = 22;
 
 
 var project = process.argv.find(a => a.slice(0, 8) == 'project=')?.slice(8) || 'MediaLife';

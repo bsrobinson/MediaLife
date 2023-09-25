@@ -1,7 +1,87 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model ListPageModel
+@{
+    ViewData["Title"] = "";
+    ViewData["Section"] = Model.Context.SiteSection;
+
+    string allLabel = "";
+    if (Model.Context.SiteSection == SiteSection.TV) { allLabel = "Shows"; }
+    if (Model.Context.SiteSection == SiteSection.Movies) { allLabel = "Movies"; }
 }
 
-<p>
-    Page content here
-</p>
+@if (ViewBag.ShowUpdateIssue != null)
+{
+    <script>site.showSnackBar('@ViewBag.ShowUpdateIssue <a href="/Log">View Log</a>', true);</script>
+}
+else if (ViewBag.PirateBayIssue != null)
+{
+    <script>site.showSnackBar('@ViewBag.PirateBayIssue <br /><a href="/PirateBay">Click Here to Fix</a>', true);</script>
+}
+
+<div id="default_sections" class="hide">
+    <div id="watching_header" class="section-header">
+        <h2>@(Model.Context.SiteSection == SiteSection.Books ? "Reading" : "Watching")</h2>
+        <div class="sort-button">
+            <span id="watching_sort_button_label"></span>
+            <select id="watching_sort_select" onchange="page.sortWatching()">
+                <option value="lastWatched" data-direction="desc">Last Watched</option>
+                <option value="nextEpisodePlayableSort">Playable</option>
+                <option value="sortableName">Alphabetal</option>
+            </select>
+        </div>
+    </div>
+    <div id="watching_posters" class="posters"></div>
+
+    <div id="notWatchedRecently_header" class="section-header">
+        <h2>Not @(Model.Context.SiteSection == SiteSection.Books ? "Read" : "Watched") Recently</h2>
+        <div class="sort-button">
+            <span id="notWatchedRecently_sort_button_label"></span>
+            <select id="notWatchedRecently_sort_select" onchange="page.sortNotWatchedRecently()">
+                <option value="sortableName">Alphabetal</option>
+                <option value="nextEpisodePlayableSort">Playable</option>
+                <option value="lastWatched" data-direction="desc">Last Watched</option>
+            </select>
+        </div>
+    </div>
+    <div id="notWatchedRecently_posters" class="posters"></div>
+
+    <div id="notStarted_header" class="section-header">
+        <h2>Not Started</h2>
+        <div class="sort-button">
+            <span id="notStarted_sort_button_label"></span>
+            <select id="notStarted_sort_select" onchange="page.sortNotStarted()">
+                <option value="added" data-direction="desc">Added</option>
+                <option value="sortableName">Alphabetal</option>
+                <option value="nextEpisodePlayableSort">Playable</option>
+                <option value="recommendedBy" data-group-headers="true">Recommended By</option>
+            </select>
+        </div>
+    </div>
+    <div id="notStarted_posters" class="posters"></div>
+
+    <a href="JavaScript:;" onclick="page.showAllShows()" id="showAllShowsLink">Show All @allLabel</a>
+
+</div>
+
+
+<div id="all_shows" class="hide">
+    <div class="section-header">
+        <h2>@(Model.Context.PageType == PageType.Search ? "Search Results" : "All " + allLabel)</h2>
+        <div class="sort-button">
+            <span id="allShows_sort_button_label"></span>
+            <select id="allShows_sort_select" onchange="page.sortAllShows()">
+                @if (Model.Context.PageType == PageType.Search)
+                {
+                    <option value="searchScore" data-direction="desc">Relevance</option>
+                }
+                <option value="sortableName">Alphabetal</option>
+                @if (Model.Context.PageType == PageType.Shows)
+                {
+                    <option value="recommendedBy" data-group-headers="true">Recommended By</option>
+                    <option value="added" data-direction="desc">Added</option>
+                    <option value="lastWatched" data-direction="desc">Last Watched</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div id="allShows_posters" class="posters"></div>
+</div>

@@ -1,0 +1,49 @@
+﻿.episode-file-icon {
+
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: auto 100%;
+    height: 20px;
+    width: 40px;
+
+    &.search-page {
+        background-position-x: left;
+        width: 27px;
+        min-width: 27px;
+    }
+
+    &.clickable {
+        cursor: pointer;
+    }
+
+    &.no-file {
+        background-image: url('/images/video-slash-solid.svg');
+        opacity: 0.3;
+    }
+
+    &.downloading {
+        background-image: url('/images/transmission.svg');
+    }
+
+    &.playable {
+        background-image: url('/images/play-tube.svg');
+    }
+
+    &.in-cloud {
+        background-image: url('/images/icloud.svg');
+        background-size: 23px;
+
+        &.request-download {
+            background-image: url('/images/icloud-download.svg');
+        }
+    }
+
+    &.saving {
+        background-image: url('/images/ellipsis.svg') !important;
+        opacity: 1 !important;
+    }
+
+    &.playing {
+        background-image: url('/images/vlc.svg') !important;
+    }
+}
