@@ -185,51 +185,68 @@ function applyChanges(date, solutionName, folderName, cb) {
 			let filesToIgnore = [ 'update.js', 'README.md' ]
 			diff.files.filter(f => !filesToIgnore.includes(f.path)).forEach(file => {
 
-				let templatePath = file.path;
-				let solutionPath = path.join(__dirname, templatePath.replace(/Template/g, `${solutionName}`));
+				let templatePath = file.path || file.pathAfter;
+				let solutionPath = path.join(__dirname, (file.path || file.pathBefore).replace(/Template/g, `${solutionName}`));
 				let extension = path.extname(templatePath);
 
-				let shouldReplaceInFile = ['.cs', '.ts', '.cshtml', '.json', '.csproj', '.js', '.sln'].indexOf(extension) >= 0
-				let templateFileContents = fs.readFileSync(path.join(__dirname, `./${folderName}/${templatePath}`), utf8);
+				if (file.type == 'DeletedFile') {
 
-				let unchangedLinesRemainUnchanged = true;
-				if (fs.existsSync(solutionPath)) {
-					
-					let solutionFileContents = fs.readFileSync(solutionPath, utf8);
-					let solutionFileLines = solutionFileContents.split('\n');
-	
-					file.chunks.forEach(chunk => {
-						chunk.changes.filter(c => c.type == 'UnchangedLine').forEach(change => {
-							if (change.content != solutionFileLines[change.lineBefore -1]) {
-								unchangedLinesRemainUnchanged = false;
-							}
-						});
-					});
-				}
-
-				unchangedLinesRemainUnchanged = false; //delete this line when code written below
-				if (unchangedLinesRemainUnchanged) {
-					
-					file.chunks.forEach(chunk => {
-						chunk.changes.filter(c => c.type != 'UnchangedLine').forEach(change => {
-
-							//TODO
-							//apply line change to file in solution
-								//!! rename Template refs
-
-						});
-					});
-					
-				} else {
-
-					// copy whole contents of file (to allow for manual merge)
-					if (shouldReplaceInFile){
-						templateFileContents = templateFileContents.replace(/Template/g, solutionName);
+					if (fs.existsSync(solutionPath)) {
+						fs.unlinkSync(solutionPath);
 					}
 
-					fs.mkdirSync(path.dirname(solutionPath), { recursive: true });
-					fs.writeFileSync(solutionPath, templateFileContents, utf8);
-				
+				} 
+				else {
+
+					let unchangedLinesRemainUnchanged = true;
+					if (fs.existsSync(solutionPath)) {
+						
+						let solutionFileContents = fs.readFileSync(solutionPath, utf8);
+						let solutionFileLines = solutionFileContents.split('\n');
+		
+						file.chunks.forEach(chunk => {
+							chunk.changes.filter(c => c.type == 'UnchangedLine').forEach(change => {
+								if (change.content != solutionFileLines[change.lineBefore -1]) {
+									unchangedLinesRemainUnchanged = false;
+								}
+							});
+						});
+					}
+
+					let shouldReplaceInFile = ['.cs', '.ts', '.cshtml', '.json', '.csproj', '.js', '.sln'].indexOf(extension) >= 0
+					let templateFileContents = fs.readFileSync(path.join(__dirname, `./${folderName}/${templatePath}`), utf8);
+					
+					unchangedLinesRemainUnchanged = false; //delete this line when code written below
+					if (unchangedLinesRemainUnchanged) {
+						
+						file.chunks.forEach(chunk => {
+							chunk.changes.filter(c => c.type != 'UnchangedLine').forEach(change => {
+
+								//TODO
+								//apply line change to file in solution
+									//!! rename Template refs
+
+							});
+						});
+						
+					} else {
+
+						// copy whole contents of file (to allow for manual merge)
+						if (shouldReplaceInFile){
+							templateFileContents = templateFileContents.replace(/Template/g, solutionName);
+						}
+
+						fs.mkdirSync(path.dirname(solutionPath), { recursive: true });
+						fs.writeFileSync(solutionPath, templateFileContents, utf8);
+
+					}
+
+					if (file.type == 'RenamedFile') {
+						let oldPath = path.join(__dirname, file.pathBefore.replace(/Template/g, `${solutionName}`));
+						let newPath = path.join(__dirname, file.pathAfter.replace(/Template/g, `${solutionName}`));
+						fs.renameSync(oldPath, newPath);
+					}
+
 				}
 			});
 			cb();
