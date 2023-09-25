@@ -22,7 +22,7 @@ git(`diff HEAD`, r => {
 	console.log(``);
 	console.log(`    ***************************************************************`);
 	console.log(`    *                                                             *`);
-	console.log(`    *           Updating from AspNetMvcWebpack-MediaLife           *`);
+	console.log(`    *           Updating from AspNetMvcWebpack-Template           *`);
 	console.log(`    *                                                             *`);
 	console.log(`    ***************************************************************`);
 	console.log(`    |                                                             |`);
@@ -41,20 +41,20 @@ git(`diff HEAD`, r => {
 
 		solutionName = solutionName.trim();
 		
-		getJson(`https://api.github.com/repos/bsrobinson/AspNetMvcWebpack-MediaLife`, response => {
+		getJson(`https://api.github.com/repos/bsrobinson/AspNetMvcWebpack-Template`, response => {
 
 			let templateUpdated = new Date(response.pushed_at);
-			console.log(`MediaLife last updated ${templateUpdated}\n`);
+			console.log(`Template last updated ${templateUpdated}\n`);
 
 			getStartDate(date => {
 				if (date >= templateUpdated) {
 					console.log(`\nThere have been no changes in the template the last update ${date}`);
-					console.log(`Delete the ./updateMediaLifeDate file to force an alternative date\n`)
+					console.log(`Delete the ./updateTemplateDate file to force an alternative date\n`)
 					updateSolutionUpdateDate(templateUpdated)
 					process.exit(0);
 				}
 
-				cloneMediaLife(folderName => {
+				cloneTemplate(folderName => {
 
 					applyChanges(date, solutionName, folderName, _ => {
 
@@ -76,11 +76,11 @@ git(`diff HEAD`, r => {
 
 function getStartDate(cb) {
 
-	let updateMediaLifeDateFile = path.join(__dirname, `./updateMediaLifeDate`);
-	if (fs.existsSync(updateMediaLifeDateFile)) {
+	let updateTemplateDateFile = path.join(__dirname, `./updateTemplateDate`);
+	if (fs.existsSync(updateTemplateDateFile)) {
 		
-		let date = new Date(fs.readFileSync(updateMediaLifeDateFile, utf8))
-		console.log(`Last updated from MediaLife ${date}\n`);
+		let date = new Date(fs.readFileSync(updateTemplateDateFile, utf8))
+		console.log(`Last updated from Template ${date}\n`);
 
 		new Confirm({
 			message: 'Continue updating?'
@@ -96,7 +96,7 @@ function getStartDate(cb) {
 
 		git(` log --pretty=format:'%cd' --reverse | head -1`, intialCommitDateStr => {
 
-			console.log(`Last update from MediaLife unknown`);
+			console.log(`Last update from Template unknown`);
 
 			new Select({
 				message: 'What would you like to do?',
@@ -113,7 +113,7 @@ function getStartDate(cb) {
 				}
 				if (answer == 1) {
 					new Input({
-						message: `Enter commit hash from this repo that marks the last MediaLife update`,
+						message: `Enter commit hash from this repo that marks the last Template update`,
 					}).run().then(answer => {
 						git(`show '${answer}' --no-patch --no-notes --pretty='%ad'`, response => {
 							if (response) {
@@ -129,7 +129,7 @@ function getStartDate(cb) {
 					console.log('Coming soon...');
 					process.exit();
 					// new InputDate({
-					// 	message: `Enter date after last commit that marks the last MediaLife update`,
+					// 	message: `Enter date after last commit that marks the last Template update`,
 					// }).run().then(answer => {
 					// 	cb(answer)
 					// })
@@ -142,14 +142,14 @@ function getStartDate(cb) {
 	}
 }
 
-function cloneMediaLife(cb) {
+function cloneTemplate(cb) {
 
 	console.log('\nDownloading lastest template');
 
 	let folderName = `tmp-template-update-${new Date().valueOf()}`;
 	fs.mkdirSync(path.join(__dirname, `./${folderName}`), { recursive: true });
 	
-	git(`clone https://github.com/bsrobinson/AspNetMvcWebpack-MediaLife ./${folderName}`, () => {
+	git(`clone https://github.com/bsrobinson/AspNetMvcWebpack-Template ./${folderName}`, () => {
 		
 		cb(folderName);
 
@@ -159,7 +159,7 @@ function cloneMediaLife(cb) {
 
 function applyChanges(date, solutionName, folderName, cb) {
 
-	console.log(`Applying changes in MediaLife`);
+	console.log(`Applying changes in Template`);
 
 	git(`-C ./${folderName} log --pretty='%H' --since='${date.toISOString()}' --reverse | head -1`, firstCommitAfterDate => {
 		git(`-C ./${folderName} diff ${firstCommitAfterDate.trim()}^..`, response => {
@@ -173,7 +173,7 @@ function applyChanges(date, solutionName, folderName, cb) {
 
 				if (templateFileContents != solutionFileContents) {
 					fs.writeFileSync('./update.js', templateFileContents, utf8);	
-					console.log(`\nUpdate MediaLife script has been updated.`);
+					console.log(`\nUpdate Template script has been updated.`);
 					console.log(`Commit that change and run again.\n`);
 
 					deleteTempFolder(folderName);
@@ -186,7 +186,7 @@ function applyChanges(date, solutionName, folderName, cb) {
 			diff.files.filter(f => !filesToIgnore.includes(f.path)).forEach(file => {
 
 				let templatePath = file.path;
-				let solutionPath = path.join(__dirname, templatePath.replace(/MediaLife/g, `${solutionName}`));
+				let solutionPath = path.join(__dirname, templatePath.replace(/Template/g, `${solutionName}`));
 				let extension = path.extname(templatePath);
 
 				let shouldReplaceInFile = ['.cs', '.ts', '.cshtml', '.json', '.csproj', '.js', '.sln'].indexOf(extension) >= 0
@@ -215,7 +215,7 @@ function applyChanges(date, solutionName, folderName, cb) {
 
 							//TODO
 							//apply line change to file in solution
-								//!! rename MediaLife refs
+								//!! rename Template refs
 
 						});
 					});
@@ -224,7 +224,7 @@ function applyChanges(date, solutionName, folderName, cb) {
 
 					// copy whole contents of file (to allow for manual merge)
 					if (shouldReplaceInFile){
-						templateFileContents = templateFileContents.replace(/MediaLife/g, solutionName);
+						templateFileContents = templateFileContents.replace(/Template/g, solutionName);
 					}
 
 					fs.mkdirSync(path.dirname(solutionPath), { recursive: true });
@@ -245,7 +245,7 @@ function deleteTempFolder(folderName) {
 
 function updateSolutionUpdateDate(date) {
 
-	fs.writeFileSync(`./updateMediaLifeDate`, date.toISOString(), utf8);
+	fs.writeFileSync(`./updateTemplateDate`, date.toISOString(), utf8);
 
 }
 
@@ -276,7 +276,7 @@ function executeCommand(command, cb, throwError = true) {
 
 function getJson(url, cb) {
 	let options = {
-		headers: { 'User-Agent': 'bsrobinson-Update-MediaLife-Script' }
+		headers: { 'User-Agent': 'bsrobinson-Update-Template-Script' }
 	};	  
 	https.get(url, options, r => {
 		let data = '';
