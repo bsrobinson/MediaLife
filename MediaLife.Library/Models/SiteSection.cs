@@ -38,7 +38,9 @@ namespace MediaLife.Library.Models
     [JsonConverter(typeof(StringEnumConverter), typeof(CamelCaseNamingStrategy))]
     public enum PageType
     {
+        [EnumMember(Value = "shows")]
         Shows,
+        [EnumMember(Value = "search")]
         Search
     }
 }

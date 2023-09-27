@@ -145,8 +145,8 @@ export enum SiteSection {
 }
 
 export enum PageType {
-    Shows = 0,
-    Search = 1,
+    Shows = 'shows',
+    Search = 'search',
 }
 
 //File: ../../../MediaLife.Library/DAL/TVNetworks.cs

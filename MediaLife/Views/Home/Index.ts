@@ -263,7 +263,12 @@ export class HomeIndex {
         $('default_sections').innerHTML = '';
         $('all_shows').removeClass('hide');
         this.sortAllShows();
-        document.body.scrollTop = 0
+        document.body.scrollTop = 0;
+
+        if (this.data.shows.length == 0) {
+            $('allShows_posters').addClass('empty');
+            $('allShows_posters').html(this.data.context.pageType == PageType.Search ? 'No results found.' : 'You have no shows added.')
+        }
     }
     
 }
