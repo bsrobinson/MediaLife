@@ -18,10 +18,7 @@ MediaLife is based on the [AspNetMvcWebpack-Template](https://github.com/bsrobin
 
 The basic steps are:
 
-1. **Create a MySql Database**
-   I'm going to work on making this easier, but for now you just need a database with a table for each class in `/MediaLife/MediaLife.Library/DAL/`.
-
-2. **Create the secrets file**
+1. **Create the secrets file**
    Create a file called `MediaLife/MediaLife/secrets.json` with the following content:
    
    ```json
@@ -31,8 +28,10 @@ The basic steps are:
      }
    }
    ```
+   
+   *The database and tables will be created on the first run.*
 
-3. **Launch the website**
+2. **Launch the website**
    From the root of the application, run:
    
    ```bash
@@ -41,7 +40,7 @@ The basic steps are:
    
    *requires dotnet, node and npm.*
 
-4. **Add some shows**
+3. **Add some shows**
    Use the search to find shows and add them to your list.
 
 ## Authentication

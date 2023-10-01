@@ -7,7 +7,7 @@ namespace MediaLife.Library.DAL
     {
 		public MySqlContext(DbContextOptions<MySqlContext> options) : base(options)
         {
-			//this.Database.EnsureCreated();
+			this.Database.EnsureCreated();
 		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
