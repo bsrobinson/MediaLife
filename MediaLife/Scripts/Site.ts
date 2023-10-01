@@ -35,6 +35,14 @@ export class MediaLife {
         $('site_menu').toggleClass('open');
     }
 
+    openSearch() {
+        $('search_row').removeClass('hide');
+        $('search_input').focus();
+    }
+    searchBlur() {
+        $('search_row').addClass('hide');
+    }
+
     createCustomList() {
         let name = prompt('List Name:')
         if (name) {

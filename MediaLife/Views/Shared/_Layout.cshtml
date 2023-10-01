@@ -98,11 +98,11 @@
         <form action="/@sectionUrl/search">
             <input type="search" name="q" value="@ViewBag.q" placeholder="search" />
         </form>
-        <a href="JavaScript:;" class="search-link" onclick="$('search_row').removeClass('hide'); $('search_input').focus()">🔍</a>
+        <a href="JavaScript:;" class="search-link" onclick="site.openSearch()">🔍</a>
     </div>
     <div id="search_row" class="hide">
         <form action="/@sectionUrl/search">
-            <input type="search" name="q" id="search_input" onblur="$('search_row').addClass('hide');" value="@ViewBag.q" placeholder="search" />
+            <input type="search" name="q" id="search_input" onblur="site.searchBlur()" value="@ViewBag.q" placeholder="search" />
         </form>
     </div>
 
