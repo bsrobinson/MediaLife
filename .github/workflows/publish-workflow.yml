@@ -1,11 +1,11 @@
-name: Publish Template Workflow
+name: Publish MediaLife Workflow
 on:
   push:
     branches:
       - main
     paths:
-      - "Template/**"
-      - "Template.Library/**"
+      - "MediaLife/**"
+      - "MediaLife.Library/**"
       - ".github/workflows/publish-workflow.yml"
 jobs:
   deploy:
@@ -26,16 +26,15 @@ jobs:
         run: npm install
 
       - name: Publish to Folder
-        run: dotnet publish Template -c Release
+        run: dotnet publish MediaLife -c Release
 
       - name: Copy Secrets
-        run: 'echo "$SITE_SECRETS" > Template/bin/Release/net7.0/publish/secrets.json'
+        run: 'echo "$SITE_SECRETS" > MediaLife/bin/Release/net7.0/publish/secrets.json'
         env:
           SITE_SECRETS: ${{ secrets.SITE_SECRETS }}
     
       - name: 'Deploy to Azure WebApp'
         uses: azure/webapps-deploy@v2
         with: 
-          app-name: 'com-wckdrzr'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE  }}
-          package: 'Template/bin/Release/net7.0/publish/'
+          package: 'MediaLife/bin/Release/net7.0/publish/'
