@@ -131,7 +131,7 @@ export namespace MediaLifeService {
         allShows(section: SiteSection, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<ShowModel[]>> {
             return new GasparServiceHelper().fetch(`/${section}/all`, { method: 'GET' }, showError);
         }
-        addShow(section: SiteSection, showId: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<boolean>> {
+        addShow(section: SiteSection, showId: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<ShowModel>> {
             return new GasparServiceHelper().fetch(`/${section}/add/${showId}`, { method: 'POST' }, showError);
         }
         removeShow(section: SiteSection, showId: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<boolean>> {

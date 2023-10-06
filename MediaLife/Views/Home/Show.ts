@@ -206,6 +206,7 @@ export class HomeShow {
         $<HTMLInputElement>('addShowButton').disabled = true;
         this.service.addShow(this.data.show.siteSection, this.data.show.id).then(response => {
             if (response.data) {
+                $('showName').html(response.data.name);
                 $('addShowButton').addClass('hide');
                 $('removeShowButton').removeClass('hide');
                 $('showSettingsButton').removeClass('hide');

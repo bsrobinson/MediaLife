@@ -229,7 +229,7 @@ namespace MediaLife.Services
             return db.ListEntries.Where(l => show.Episodes.Select(e => e.Id).Contains(l.EpisodeId)).Count() > 0;
         }
 
-        public bool AddShow(SiteSection section, uint showId)
+        public ShowModel? AddShow(SiteSection section, uint showId)
         {
             Show? dbShow = db.Shows.SingleOrDefault(s => s.ShowId == showId);
             if (dbShow == null)
@@ -242,6 +242,16 @@ namespace MediaLife.Services
                     ConfigService configSrv = new(db);
                     if (section == SiteSection.TV) { deleteWatched = configSrv.GetBool("DefaultDeleteTV"); }
                     if (section == SiteSection.Movies) { deleteWatched = configSrv.GetBool("DefaultDeleteMovies"); }
+                    
+                    string showName = showModel.Name;
+                    int inc = 2;
+                    while (db.Shows.SingleOrDefault(s => s.Name.ToLower() == showName.ToLower() && s.SiteSection == section) != null)
+                    {
+                        int? firstEpisodeYear = showModel.Episodes.FirstOrDefault()?.AirDate?.Year;
+                        showName = $"{showModel.Name}{(firstEpisodeYear != null ? $" {firstEpisodeYear}" : $"_{inc}")}";
+                        inc++;
+                    }
+                    showModel.Name = showName;
 
                     dbShow = new Show
                     {
@@ -265,10 +275,10 @@ namespace MediaLife.Services
                     }
                     db.SaveChanges();
 
-                    return true;
+                    return showModel;
                 }
             }
-            return false;
+            return null;
         }
 
         public bool RemoveShow(SiteSection section, uint showId)
@@ -341,8 +351,16 @@ namespace MediaLife.Services
                     }
                     db.Episodes.RemoveRange(episodesToDelete);
 
+                    //Update show name
+                    if (showModel.Name != null && dbShow.Name != showModel.Name)
+                    {
+                        if (db.Shows.SingleOrDefault(s => s.ShowId != showModel.Id && s.Name.ToLower() == showModel.Name.ToLower() && s.SiteSection == section) == null)
+                        {
+                            dbShow.Name = showModel.Name;
+                        }
+                    }
+
                     //Update show from feed
-                    if (showModel.Name != null && dbShow.Name != showModel.Name) { dbShow.Name = showModel.Name; }
                     if (showModel.Poster != null && dbShow.Poster != showModel.Poster) { dbShow.Poster = showModel.Poster; }
                     if (showModel.Network != null && dbShow.NetworkId != showModel.Network?.NetworkId) { dbShow.NetworkId = showModel.Network?.NetworkId; }
 
@@ -434,7 +452,7 @@ namespace MediaLife.Services
             Episode? episode = db.Episodes.SingleOrDefault(e => e.EpisodeId == episodeModel.Id && e.SiteSection == episodeModel.SiteSection);
             if (episode == null)
             {
-                if (AddShow(section, showId))
+                if (AddShow(section, showId) != null)
                 {
                     episode = db.Episodes.SingleOrDefault(e => e.EpisodeId == episodeModel.Id && e.SiteSection == episodeModel.SiteSection);
                 }

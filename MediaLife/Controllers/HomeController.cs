@@ -82,11 +82,12 @@ namespace MediaLife.Controllers
 
         [ExportFor(GasparType.TypeScript)]
         [HttpPost("{section}/add/{showId}")]
-        public ActionResult<bool> AddShow(SiteSection section, uint showId)
+        public ActionResult<ShowModel> AddShow(SiteSection section, uint showId)
         {
-            if (service.AddShow(section, showId))
+            ShowModel? show = service.AddShow(section, showId);
+            if (show != null)
             {
-                return true;
+                return show;
             }
             return Problem();
         }
