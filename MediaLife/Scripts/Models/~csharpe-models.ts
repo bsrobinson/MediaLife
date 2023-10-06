@@ -75,7 +75,7 @@ export interface EpisodeModel {
 //File: ../../Models/ShowModel.cs
 
 export interface ShowModel {
-    episodeIndex: number | null;
+    episodeIndex: number;
     id: number;
     siteSection: SiteSection;
     name: string;

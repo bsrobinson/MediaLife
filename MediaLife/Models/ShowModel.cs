@@ -85,7 +85,7 @@ namespace MediaLife.Models
         public DateTime? LatestEpisode => Episodes.Max(e => e.AirDate);
         public bool WatchedRecently => LastWatched > DateTime.Now.AddMonths(-1) || LatestEpisode > DateTime.Now.AddMonths(-1);
 
-        public int? EpisodeIndex;
+        public int EpisodeIndex;
 
         public ShowModel()
         {

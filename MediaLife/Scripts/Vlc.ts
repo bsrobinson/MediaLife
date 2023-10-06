@@ -47,7 +47,7 @@ export class VLCClient {
     }
 
     play() {
-        if (this.status && this.status.state == 'stopped' && this.status.show && this.status.show.episodeIndex) {
+        if (this.status && this.status.state == 'stopped' && this.status.show) {
             this.callServer(this.service.open(this.status.show.episodes[this.status.show.episodeIndex].filePath || ''));
         } else {
             this.callServer(this.service.play());
@@ -71,16 +71,16 @@ export class VLCClient {
     }
 
     previous() {
-        if (this.status && this.status.time < 2 && this.status.show && (this.status.show.episodeIndex || -1) > 0) {
+        if (this.status && this.status.time < 2 && this.status.show && this.status.show.episodeIndex > 0) {
             if (this.status.show.watchFromNextPlayable) {
                 let files = this.status.show.episodes.filter(e => e.filePath);
-                let fileIndex = files.findIndex(f => f.id == this.status?.show?.episodes[this.status.show.episodeIndex || -1].id);
+                let fileIndex = files.findIndex(f => f.id == this.status?.show?.episodes[this.status.show.episodeIndex].id);
                 if (fileIndex > 0) {
                     this.open(new EpisodeObject(this.status.show as tsShowModel, files[fileIndex - 1] as tsEpisodeModel));
                     return;
                 }
             } else {
-                this.open(new EpisodeObject(this.status.show as tsShowModel, this.status.show.episodes[(this.status.show.episodeIndex || -1) - 1] as tsEpisodeModel));
+                this.open(new EpisodeObject(this.status.show as tsShowModel, this.status.show.episodes[this.status.show.episodeIndex - 1] as tsEpisodeModel));
                 return;
             }
         }
@@ -90,7 +90,7 @@ export class VLCClient {
         if (this.status?.show?.episodeIndex && this.status.show.episodeIndex < this.status.show.episodes.length - 1) {
             if (this.status.show.watchFromNextPlayable) {
                 let files = this.status.show.episodes.filter(e => e.filePath);
-                let fileIndex = files.findIndex(f => f.id == this.status?.show?.episodes[this.status.show.episodeIndex || -1].id);
+                let fileIndex = files.findIndex(f => f.id == this.status?.show?.episodes[this.status.show.episodeIndex].id);
                 if (fileIndex >= 0 && fileIndex < files.length - 1) {
                     this.open(new EpisodeObject(this.status.show as tsShowModel, files[fileIndex + 1] as tsEpisodeModel));
                     return;
@@ -184,18 +184,18 @@ export class VLCClient {
 
                     $('vlc_player').toggleClassIfTrue('with-poster', this.status.show != null);
                     if (this.status.show) {
-                        $<HTMLAnchorElement>('vlc_poster').style.backgroundImage = "url('" + (this.status.show.episodes[this.status.show.episodeIndex || -1].poster || this.status.show.poster) + "')";
+                        $<HTMLAnchorElement>('vlc_poster').style.backgroundImage = "url('" + (this.status.show.episodes[this.status.show.episodeIndex].poster || this.status.show.poster) + "')";
                         $<HTMLAnchorElement>('vlc_poster').href = `/${this.status.show.siteSection}/${this.status.show.id}`;
 
                         let lastEpisode = this.status.show.episodeIndex == this.status.show.episodes.length - 1;
-                        let episodeId = this.status.show.episodes[this.status.show.episodeIndex || -1].id;
+                        let episodeId = this.status.show.episodes[this.status.show.episodeIndex].id;
                         let iconShowId = `${this.status.show.siteSection}_${this.status.show.id}_`;
 
                         let nextFileIcon = null;
                         if (window.episodeFileIcons && !lastEpisode) {
-                            nextFileIcon = window.episodeFileIcons[iconShowId + this.status.show.episodes[(this.status.show.episodeIndex || -2) + 1].id];
+                            nextFileIcon = window.episodeFileIcons[iconShowId + this.status.show.episodes[this.status.show.episodeIndex + 1].id];
                             if (!nextFileIcon && this.status.show.watchFromNextPlayable) {
-                                for (let i = (this.status.show.episodeIndex || -3) + 2; i < this.status.show.episodes.length; i++) {
+                                for (let i = this.status.show.episodeIndex + 2; i < this.status.show.episodes.length; i++) {
                                     nextFileIcon = window.episodeFileIcons[iconShowId + this.status.show.episodes[i].id];
                                     if (nextFileIcon && nextFileIcon.episodeObj.episode.filePath) { break; }
                                 }
