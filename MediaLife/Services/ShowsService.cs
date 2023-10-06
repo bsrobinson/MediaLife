@@ -637,8 +637,8 @@ namespace MediaLife.Services
                 where e.SiteSection == section
                 where e.AirDate != null && e.AirDate < DateTime.Now && !e.Skip
                 group e by e.ShowId into grp
-                where grp.Count() > grp.Count(g => g.Watched != null)
-                where grp.Count(g => g.Watched != null) > 0
+                where grp.Count() > grp.Count(g => g.StartedWatching != null || g.Watched != null)
+                where grp.Count(g => g.StartedWatching != null || g.Watched != null) > 0
                 select grp.Key
             ).ToList());
         }
