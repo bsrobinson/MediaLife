@@ -1,11 +1,11 @@
 import { MediaLife } from '../../Scripts/Site'
 import { $, $OrNull } from '../../Scripts/BRLibraries/DOM'
 import { PirateBay } from '../../Scripts/Models/~csharpe-models';
-import { MedialifeService, ServiceErrorMessage } from '../../Scripts/Services/~csharpe-services';
+import { MediaLifeService, ServiceErrorMessage } from '../../Scripts/Services/~csharpe-services';
 
 export class PirateBayIndex {
 
-    service = new MedialifeService.PirateBayController();
+    service = new MediaLifeService.PirateBayController();
 
     constructor(private site: MediaLife, private data: PirateBay[]) {
 

@@ -2,11 +2,11 @@
 import { $ } from "./BRLibraries/DOM";
 import { tsEpisodeId } from "./Models/extendedModels";
 import { EpisodeId, EpisodeModel, ListEntry, ShowModel, SiteSection } from "./Models/~csharpe-models";
-import { MedialifeService } from "./Services/~csharpe-services";
+import { MediaLifeService } from "./Services/~csharpe-services";
 
 export class AddToList {
 
-	service = new MedialifeService.HomeController();
+	service = new MediaLifeService.HomeController();
 
 	addToList: { id: number, name: string, episodes: ListEntry[] } | null;
 	queuedEpisodes: tsEpisodeId[] = [];

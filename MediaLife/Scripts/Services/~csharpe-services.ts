@@ -71,7 +71,7 @@ export class GasparServiceHelper {
     }
 }
 
-export namespace MedialifeService {
+export namespace MediaLifeService {
 
     //File: ../../Controllers/PirateBayController.cs
 

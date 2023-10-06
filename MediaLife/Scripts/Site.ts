@@ -60,7 +60,7 @@ export class MediaLife {
     }
 
     windowResize() {
-        if (window.page.windowResize) {
+        if (window.page?.windowResize) {
             window.page.windowResize();
         }
     }

@@ -2,11 +2,11 @@
 import { EpisodeObject } from "./EpisodeObject";
 import { tsEpisodeModel, tsShowModel } from "./Models/extendedModels";
 import { VLCStatus } from "./Models/~csharpe-models";
-import { MedialifeService, ServiceErrorMessage, ServiceResponse } from "./Services/~csharpe-services";
+import { MediaLifeService, ServiceErrorMessage, ServiceResponse } from "./Services/~csharpe-services";
 
 export class VLCClient {
 
-    service = new MedialifeService.VLCController();
+    service = new MediaLifeService.VLCController();
 
     initialising: boolean = false;
     queuedOpen: EpisodeObject | null = null;

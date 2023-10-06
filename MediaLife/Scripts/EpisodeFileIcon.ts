@@ -2,11 +2,11 @@
 import { EpisodeObject } from "./EpisodeObject";
 import { tsEpisodeModel } from "./Models/extendedModels";
 import { EpisodeModel } from "./Models/~csharpe-models";
-import { MedialifeService } from "./Services/~csharpe-services";
+import { MediaLifeService } from "./Services/~csharpe-services";
 
 export class EpisodeFileIcon {
 
-    service = new MedialifeService.HomeController();
+    service = new MediaLifeService.HomeController();
 
     node: HTMLElement;
     checkForDownloadTimer: NodeJS.Timeout | null = null;

@@ -3,11 +3,11 @@ import { EpisodeFileIcon } from "./EpisodeFileIcon";
 import { EpisodeObject } from "./EpisodeObject";
 import { IconMenu } from "./IconMenu";
 import { SiteSection } from "./Models/~csharpe-models";
-import { MedialifeService } from "./Services/~csharpe-services";
+import { MediaLifeService } from "./Services/~csharpe-services";
 
 export class EpisodeWatchIcon {
 
-    service = new MedialifeService.HomeController();
+    service = new MediaLifeService.HomeController();
 
     node: HTMLElement;
     watchButtonNode: HTMLElement;

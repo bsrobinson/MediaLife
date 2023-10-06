@@ -1,7 +1,7 @@
 ﻿import { MediaLife } from '../../Scripts/Site'
 import { $, makeElement } from '../../Scripts/BRLibraries/DOM'
 import { PageType, SiteSection } from '../../Scripts/Models/~csharpe-models';
-import { MedialifeService } from '../../Scripts/Services/~csharpe-services';
+import { MediaLifeService } from '../../Scripts/Services/~csharpe-services';
 import { tsEpisodeId, tsEpisodeModel, tsListPageModel, tsShowModel } from '../../Scripts/Models/extendedModels';
 import { EpisodeObject } from '../../Scripts/EpisodeObject';
 import { EpisodeFileIcon } from '../../Scripts/EpisodeFileIcon';
@@ -9,7 +9,7 @@ import { EpisodeWatchIcon } from '../../Scripts/EpisodeWatchIcon';
 
 export class HomeIndex {
 
-    service = new MedialifeService.HomeController();
+    service = new MediaLifeService.HomeController();
 
     showLists: {
         watching: tsShowModel[],

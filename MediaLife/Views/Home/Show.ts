@@ -5,12 +5,12 @@ import { EpisodeObject } from "../../Scripts/EpisodeObject";
 import { EpisodeWatchIcon } from "../../Scripts/EpisodeWatchIcon";
 import { tsEpisodeId, tsEpisodeModel, tsShowModel, tsShowModelForList } from "../../Scripts/Models/extendedModels";
 import { EpisodeId, EpisodeModel, ShowModel, ShowPageModel, ShowSettings, SiteSection } from "../../Scripts/Models/~csharpe-models";
-import { MedialifeService } from "../../Scripts/Services/~csharpe-services";
+import { MediaLifeService } from "../../Scripts/Services/~csharpe-services";
 import { MediaLife } from "../../Scripts/Site";
 
 export class HomeShow {
 
-    service = new MedialifeService.HomeController();
+    service = new MediaLifeService.HomeController();
 
     activeSeries: number | null = null;
     editedList: tsShowModelForList | null = null;

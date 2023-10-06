@@ -1,9 +1,9 @@
 ﻿import { tsEpisodeModel, tsShowModel } from "./Models/extendedModels";
-import { MedialifeService } from "./Services/~csharpe-services";
+import { MediaLifeService } from "./Services/~csharpe-services";
 
 export class EpisodeObject {
 
-    service = new MedialifeService.HomeController();
+    service = new MediaLifeService.HomeController();
 
     constructor(public show: tsShowModel, public episode: tsEpisodeModel) {
     }
