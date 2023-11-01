@@ -146,15 +146,16 @@ namespace MediaLife.Models
                 {
                     if (fileName.IsVideoFile())
                     {
-                        Match seriesEpisodeNumber = new Regex(@"S\d{2,4}E\d{2}").Match(fileName);
+                        Match seriesEpisodeNumber = new Regex(@"S\d{2,4}E\d{2}", RegexOptions.IgnoreCase).Match(fileName);
                         if (seriesEpisodeNumber.Success)
                         {
-                            string showName = fileName.Substring(0, seriesEpisodeNumber.Index).Trim();
+                            string showName = fileName.Substring(0, seriesEpisodeNumber.Index);
+                            showName = showName.Replace("-", "").Replace(".", "").Trim();
                             Show = shows.FirstOrDefault(s => string.Compare(showName, s.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase) == 0 && s.SiteSection == SiteSection.TV).DeepClone();
 
                             if (Show != null)
                             {
-                                int episodeIndex = seriesEpisodeNumber.Value.IndexOf("E");
+                                int episodeIndex = seriesEpisodeNumber.Value.IndexOf("E", StringComparison.OrdinalIgnoreCase);
                                 if (short.TryParse(seriesEpisodeNumber.Value.Substring(1, episodeIndex - 1), out short seriesNumber)
                                     && short.TryParse(seriesEpisodeNumber.Value.Substring(episodeIndex + 1, 2), out short episodeNumber))
                                 {
