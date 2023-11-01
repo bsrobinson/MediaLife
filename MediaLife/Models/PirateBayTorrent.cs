@@ -18,6 +18,7 @@ namespace MediaLife.Models
                 Name = name,
                 Added = DateTime.Now,
                 LastPercentage = 0,
+                ManuallyAdded = false,
             };
         }
     }

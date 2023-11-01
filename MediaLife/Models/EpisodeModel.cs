@@ -77,7 +77,9 @@ namespace MediaLife.Models
                 AirDate = AirDate,
                 Poster = Poster,
                 Certificate = Certificate,
-                Author = Author
+                Author = Author,
+                Skip = Skip,
+                RequestDownload = RequestDownload,
             };
         }
     }

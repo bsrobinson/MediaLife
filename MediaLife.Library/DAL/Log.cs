@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace MediaLife.Library.DAL
@@ -12,7 +12,7 @@ namespace MediaLife.Library.DAL
         public required string SessionId { get; set; }
         public required DateTime Timestamp { get; set; }
         public required string Message { get; set; }
-        public bool Error { get; set; }
-        public bool Emailed { get; set; }
+        public required bool Error { get; set; }
+        public required bool Emailed { get; set; }
     }
 }

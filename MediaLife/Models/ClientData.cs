@@ -285,6 +285,7 @@ namespace MediaLife.Models
                 Name = TorrentName,
                 Added = DateTime.Now,
                 LastPercentage = 0,
+                ManuallyAdded = false,
             };
         }
 

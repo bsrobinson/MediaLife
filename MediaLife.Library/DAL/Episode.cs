@@ -1,22 +1,23 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using MediaLife.Library.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MediaLife.Library.DAL
 {
+    [PrimaryKey(nameof(EpisodeId), nameof(SiteSection))]
     public class Episode
     {
-        [Key]
         public required uint EpisodeId { get; set; }
-        [Key]
+        [DataType("uint")]
         public required SiteSection SiteSection { get; set; }
         public required uint ShowId { get; set; }
-        public short SeriesNumber { get; set; }
-        public short Number { get; set; }
+        public required short SeriesNumber { get; set; }
+        public required short Number { get; set; }
         [MaxLength(255)]
         public required string Name { get; set; }
         public DateTime? AirDate { get; set; }
-        [MaxLength(1024)]
+        [MaxLength(2014)]
         public string? Poster { get; set; }
         [MaxLength(10)]
         public string? Certificate { get; set; }
@@ -24,9 +25,9 @@ namespace MediaLife.Library.DAL
         public string? Author { get; set; }
         public DateTime? StartedWatching { get; set; }
         public DateTime? Watched { get; set; }
-        public bool Skip { get; set; }
+        public required bool Skip { get; set; }
         [MaxLength(1024)]
         public string? FilePath { get; set; }
-        public bool RequestDownload { get; set; }
+        public required bool RequestDownload { get; set; }
     }
 }

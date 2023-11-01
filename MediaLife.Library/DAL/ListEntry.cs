@@ -1,18 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using MediaLife.Library.Models;
+using Microsoft.EntityFrameworkCore;
 using WCKDRZR.Gaspar;
 
 namespace MediaLife.Library.DAL
 {
     [ExportFor(GasparType.TypeScript)]
+    [PrimaryKey(nameof(ListId), nameof(EpisodeId), nameof(SiteSection))]
     public class ListEntry
     {
-        [Key]
         public required uint ListId { get; set; }
-        [Key]
         public required uint EpisodeId { get; set; }
-        [Key]
+        [DataType("uint")]
         public required SiteSection SiteSection { get; set; }
-        public required short Rank { get; set; }
+        public required ushort Rank { get; set; }
     }
 }

@@ -84,14 +84,14 @@ namespace MediaLife.Services
                 List? list = db.Lists.SingleOrDefault(l => l.ListId == showId);
                 if (list != null)
                 {
-                    show = new() { ShowId = showId, Name = list.Name, Added = list.Created };
+                    show = new() { ShowId = showId, Name = list.Name, Added = list.Created, Updated = list.Created, DeleteWatched = false, WatchFromNextPlayable = false, DownloadAllTogether = false };
                     episodes = (
                         from e in db.Episodes
                         join l in db.ListEntries on new { e.EpisodeId, e.SiteSection } equals new { l.EpisodeId, l.SiteSection }
                         where l.ListId == showId
                         select new EpisodeModel(e)
                         {
-                            Number = l.Rank,
+                            Number = (short)l.Rank,
                             Torrents = (
                                 from t in db.Torrents
                                 where t.EpisodeId == e.EpisodeId && t.SiteSection == e.SiteSection
@@ -530,7 +530,7 @@ namespace MediaLife.Services
                         ListId = listId,
                         EpisodeId = episode.Id,
                         SiteSection = episode.Section,
-                        Rank = rankCounter
+                        Rank = (ushort)rankCounter
                     });
                     rankCounter++;
                 }
@@ -558,7 +558,7 @@ namespace MediaLife.Services
                         ListId = id,
                         EpisodeId = episode.Id,
                         SiteSection = episode.Section,
-                        Rank = rankCounter
+                        Rank = (ushort)rankCounter
                     });
                     rankCounter++;
                 }

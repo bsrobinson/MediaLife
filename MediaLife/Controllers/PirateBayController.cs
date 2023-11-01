@@ -30,7 +30,7 @@ namespace MediaLife.Controllers
         [HttpPost("[controller]")]
         public ActionResult<PirateBay> Add([FromBody] string newUrl)
         {
-            PirateBay piratebay = new PirateBay { Url = newUrl };
+            PirateBay piratebay = new PirateBay { Url = newUrl, Active = true, ResultsInLastRun = 0 };
             db.Piratebay.Add(piratebay);
             db.SaveChanges();
 

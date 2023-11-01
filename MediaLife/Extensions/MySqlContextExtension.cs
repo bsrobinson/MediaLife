@@ -8,12 +8,13 @@ namespace MediaLife
     {
         public static void Log(this MySqlContext db, Guid sessionId, string message, bool isError = false)
         {
-            db.Log.Add(new Library.DAL.Log
+            db.Log.Add(new Log
             {
                 SessionId = sessionId.ToString(),
                 Timestamp = DateTime.Now,
                 Message = message,
-                Error = isError
+                Error = isError,
+                Emailed = false,
             });
             db.SaveChanges();
         }

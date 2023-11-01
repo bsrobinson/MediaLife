@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using MediaLife.Library.Models;
@@ -18,6 +18,7 @@ namespace MediaLife.Library.DAL
         [Required]
         public uint EpisodeId { get; set; }
         [Required]
+        [DataType("uint")]
         public SiteSection SiteSection { get; set; }
         [MaxLength(255)]
         public required string Hash { get; set; }
@@ -26,6 +27,6 @@ namespace MediaLife.Library.DAL
         public required DateTime Added { get; set; }
         [Required]
         public uint LastPercentage { get; set; }
-        public bool ManuallyAdded { get; set; }
+        public required bool ManuallyAdded { get; set; }
     }
 }
