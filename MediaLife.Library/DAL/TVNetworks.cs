@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using WCKDRZR.Gaspar;
 
 namespace MediaLife.Library.DAL
 {
+    [PrimaryKey(nameof(NetworkId))]
     [ExportFor(GasparType.TypeScript)]
     public class TVNetwork
     {
-        [Key]
-        [Required]
-        public uint NetworkId { get; set; }
+        public required uint NetworkId { get; set; }
         [MaxLength(255)]
         public string? Name { get; set; }
         [MaxLength(2)]

@@ -1,20 +1,19 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using MediaLife.Library.Models;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using WCKDRZR.Gaspar;
 
 namespace MediaLife.Library.DAL
 {
+    [PrimaryKey(nameof(Id))]
     [ExportFor(GasparType.TypeScript)]
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class Torrent
     {
-        [Key]
-        [Required]
-        public uint Id { get; set; }
+        public required uint Id { get; set; }
         [Required]
         public uint EpisodeId { get; set; }
         [Required]

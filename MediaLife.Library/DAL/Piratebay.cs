@@ -1,15 +1,15 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using WCKDRZR.Gaspar;
 
 namespace MediaLife.Library.DAL
 {
+    [PrimaryKey(nameof(Id))]
     [ExportFor(GasparType.TypeScript)]
     public class PirateBay
     {
-        [Key]
-        [Required]
-        public uint Id { get; set; }
+        public required uint Id { get; set; }
         [MaxLength(1024)]
         public required string Url { get; set; }
         public required bool Active { get; set; }

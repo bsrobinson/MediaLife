@@ -1,11 +1,11 @@
-using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace MediaLife.Library.DAL
 {
+    [PrimaryKey(nameof(Key))]
     public class Config
     {
-        [Key]
         [MaxLength(100)]
         public required string Key { get; set; }
 
