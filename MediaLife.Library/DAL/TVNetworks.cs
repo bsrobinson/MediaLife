@@ -10,7 +10,7 @@ namespace MediaLife.Library.DAL
     [ExportFor(GasparType.TypeScript)]
     public class TVNetwork
     {
-        public required uint NetworkId { get; set; }
+        public uint NetworkId { get; set; }
         [MaxLength(255)]
         public string? Name { get; set; }
         [MaxLength(2)]

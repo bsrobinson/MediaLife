@@ -7,7 +7,7 @@ namespace MediaLife.Library.DAL
     [PrimaryKey(nameof(Id))]
     public class LoggedPayload
     {
-        public required uint Id { get; set; }
+        public uint Id { get; set; }
 
         public string? Received { get; set; }
         

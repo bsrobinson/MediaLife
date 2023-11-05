@@ -9,7 +9,7 @@ namespace MediaLife.Library.DAL
     [ExportFor(GasparType.TypeScript)]
     public class List
     {
-        public required uint ListId { get; set; }
+        public uint ListId { get; set; }
         
         [MaxLength(255)]
         public required string Name { get; set; }

@@ -13,7 +13,7 @@ namespace MediaLife.Library.DAL
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class Torrent
     {
-        public required uint Id { get; set; }
+        public uint Id { get; set; }
         [Required]
         public uint EpisodeId { get; set; }
         [Required]
