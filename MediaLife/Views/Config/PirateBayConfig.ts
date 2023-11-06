@@ -3,17 +3,23 @@ import { $, $OrNull } from '../../Scripts/BRLibraries/DOM'
 import { PirateBay } from '../../Scripts/Models/~csharpe-models';
 import { MediaLifeService, ServiceErrorMessage } from '../../Scripts/Services/~csharpe-services';
 
-export class PirateBayIndex {
+export class PirateBayConfig {
 
-    service = new MediaLifeService.PirateBayController();
+    data: PirateBay[] = [];
+    service = new MediaLifeService.PirateBayApiController();
 
-    constructor(private site: MediaLife, private data: PirateBay[]) {
+    constructor() {
 
-        this.draw();
+        this.service.get().then(response => {
 
-        this.data.forEach(item => {
-            this.test(item.id);
+            this.data = response.data ?? [];
+            this.draw();
+    
+            this.data.forEach(item => {
+                this.test(item.id);
+            });
         });
+
 
     }
 
@@ -31,7 +37,7 @@ export class PirateBayIndex {
             let row = $OrNull('row_' + item.id);
             if (!row) {
 
-                row = $('table').appendElement('div', { id: 'row_' + item.id, class: 'row' });
+                row = $('piratebay_table').appendElement('div', { id: 'row_' + item.id, class: 'row' });
 
                 let div = row.appendElement('div');
                 div.appendElement('div', { class: 'icon test' });
@@ -58,8 +64,8 @@ export class PirateBayIndex {
             cumulativeTop += row.offsetHeight * 1.5;
         });
 
-        $('add_link').style.marginTop = (cumulativeTop + 40) + 'px'
-        $('add_link').removeClass('hide');
+        $('piratebay_add_link').style.marginTop = (cumulativeTop) + 'px'
+        $('piratebay_add_link').removeClass('hide');
     }
 
     relativeDate(dateStr: string) {
@@ -146,7 +152,7 @@ export class PirateBayIndex {
             let row = event.target.parentOfClass('row');
             if (row) {
                 let id = parseInt(row.id.slice(4));
-                $('table').addClass('saving');
+                $('piratebay_table').addClass('saving');
 
                 this.service.activate(id).then(response => {
                     if (response.data) {
@@ -163,7 +169,7 @@ export class PirateBayIndex {
                         this.draw();
                     }
 
-                    $('table').removeClass('saving');
+                    $('piratebay_table').removeClass('saving');
                 });
             }
         }

@@ -1,76 +1,127 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using MediaLife.Library.DAL;
+using MediaLife.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MediaLife.Services
 {
     public class ConfigService
     {
-        private MySqlContext db;
+        private MySqlContext _db;
 
-        private List<Config> config = new();
+        public Configuration Config { get; set; }
 
-        private bool loaded;
-
-        public ConfigService(MySqlContext context)
+        public ConfigService(MySqlContext dbContext)
         {
-            db = context;
-        }
+            _db = dbContext;
+            List<Config> dbConfig = _db.Config.ToList();
 
-        private void Load()
-        {
-            if (!loaded)
-            {
-                config = db.Config.ToList();
-                loaded = true;
-            }
-        }
-
-        public string? GetString(string key)
-        {
-            Load();
-            Config? entry = config.SingleOrDefault(k => k.Key == key);
-            if (entry != null)
-            {
-                return entry.Value;
-            }
-            return null;
-        }
-
-        public bool GetBool(string key)
-        {
-            return GetBoolOrNull(key) ?? false;
-        }
-
-        public bool? GetBoolOrNull(string key)
-        {
-            Load();
-            Config? entry = config.SingleOrDefault(k => k.Key == key);
-            if (entry != null)
-            {
-                string value = entry.Value.ToLower();
-                return value.StartsWith("t") || value.StartsWith("1");
-            }
-            return null;
-        }
-
-        public int GetInt(string key)
-        {
-            return GetIntOrNull(key) ?? 0;
-        }
-
-        public int? GetIntOrNull(string key)
-        {
-            Load();
-            Config? entry = config.SingleOrDefault(k => k.Key == key);
-            if (entry != null)
-            {
-                if (int.TryParse(entry.Value, out int parsed))
+            Config = new();
+            GetProperties(Config, (parentObject, property, configKey) => {
+                
+                Config? dbConfigEntry = dbConfig.FirstOrDefault(c => c.Key == configKey);
+                if (dbConfigEntry != null)
                 {
-                    return parsed;
+                    SetValueFromString(parentObject, property, dbConfigEntry.Value);
+                }
+                else
+                {
+                    DefaultValueAttribute? defaultValue = property.GetCustomAttribute(typeof(DefaultValueAttribute)) as DefaultValueAttribute;
+                    if (defaultValue != null)
+                    {
+                        property.SetValue(parentObject, defaultValue.Value);
+                    }
+                }
+            });
+        }
+
+        public void UpdateFromDictionary(Dictionary<string, string> keyValuePairs, bool save = false)
+        {
+            GetProperties(Config, (parentObject, property, configKey) => {
+
+                if (keyValuePairs.ContainsKey(configKey))
+                {
+                    SetValueFromString(parentObject, property, keyValuePairs[configKey]);
+                }
+            });
+
+            if (save)
+            {
+                SaveToDatabase();
+            }
+        }
+
+        public void SaveToDatabase()
+        {
+            DbSet<Config> dbConfig = _db.Config;
+            GetProperties(Config, (parentObject, property, configKey) => {
+
+                Config? dbConfigEntry = dbConfig.FirstOrDefault(c => c.Key == configKey);
+
+                DefaultValueAttribute? defaultAttribute = property.GetCustomAttribute(typeof(DefaultValueAttribute)) as DefaultValueAttribute;
+                if (defaultAttribute != null)
+                {
+                    string? defaultValue = defaultAttribute.Value?.ToString();
+                    string? currentValue = property.GetValue(parentObject)?.ToString();
+
+                    if (currentValue != null && currentValue != defaultValue)
+                    {
+                        if (dbConfigEntry == null)
+                        {
+                            dbConfig.Add(new() { Key = configKey, Value = currentValue});
+                        }
+                        else if (dbConfigEntry.Value != currentValue)
+                        {
+                            dbConfigEntry.Value = currentValue;
+                        }
+                    }
+
+                    if (dbConfigEntry != null && currentValue == defaultValue)
+                    {
+                        dbConfig.Remove(dbConfigEntry);
+                    }
+                }
+            });
+
+            _db.SaveChanges();
+        }
+
+        private void GetProperties(IConfiguration parentObject, Action<IConfiguration, PropertyInfo, string> action, string keyPrefix = "")
+        {
+            foreach (PropertyInfo prop in parentObject.GetType().GetProperties())
+            {
+                action(parentObject, prop, $"{keyPrefix}{prop.Name}");
+
+                IConfiguration? propValue = prop.GetValue(parentObject) as IConfiguration;
+                if (propValue != null)
+                {
+                    GetProperties(propValue, action, $"{keyPrefix}{prop.Name}.");
                 }
             }
-            return null;
+        }
+
+        private void SetValueFromString(IConfiguration parentObject, PropertyInfo property, string value)
+        {
+            if (ushort.TryParse(value, out ushort number))
+            {
+                property.SetValue(parentObject, number);
+            }
+            else if (bool.TryParse(value, out bool boolean))
+            {
+                property.SetValue(parentObject, boolean);
+            }
+            else if (string.IsNullOrEmpty(value))
+            {
+                property.SetValue(parentObject, null);
+            }
+            else
+            {
+                property.SetValue(parentObject, value);
+            }
         }
     }
 }

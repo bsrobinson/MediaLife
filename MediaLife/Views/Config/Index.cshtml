@@ -1,0 +1,79 @@
+﻿@model Configuration
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<div id="settings">
+
+    <ul class="menu">
+        <li><a href="JavaScript:;" onclick="page.switchPage(event, 'user');" class="menu-link active">👤 User Setting</a></li>
+        <li><a href="JavaScript:;" onclick="page.switchPage(event, 'client');" class="menu-link">🖥️ Client Updates</a></li>
+        <li><a href="JavaScript:;" onclick="page.switchPage(event, 'piratebay');" class="menu-link">🏴‍☠️ Pirate Bay</a></li>
+        <li><a href="JavaScript:;" onclick="page.switchPage(event, 'providers');" class="menu-link">📀 Data Providers</a></li>
+        <li><a href="JavaScript:;" onclick="page.switchPage(event, 'vlc');" class="menu-link"><img src="/images/vlc.svg">VLC</a></li>
+    </ul>
+
+    <div class="content">
+
+        <div class="content-header">
+            <div onclick="page.backToPageMenu()" style="cursor: pointer;">＜</div>
+            <div id="header_page_name"></div>
+            <div></div>
+        </div>
+
+        <form id="user" class="content-page active" onchange="page.formChanged(this);">
+            @Html.FormRowShortStringFor(m => Model.UserConfig.CountryCode)
+        </form>
+
+        <form id="client" class="content-page" onchange="page.formChanged(this);">
+            @Html.FormRowFor(m => Model.LogDays)
+            @Html.FormRowFor(m => Model.UserConfig.ClientUpdateEnabled)
+            @Html.FormRowFor(m => Model.UserConfig.ClientFileThresholdPercent)
+
+            <div class="field-set">
+                <div class="label">Delete Watched (default when added)</div>
+                @Html.FormRowFor(m => Model.UserConfig.TVConfig.DeleteWatched, "For TV Shows")
+                @Html.FormRowFor(m => Model.UserConfig.MovieConfig.DeleteWatched, "For Movies")
+                @Html.FormRowFor(m => Model.UserConfig.BookConfig.DeleteWatched, "For Books")
+            </div>
+            <div class="field-set">
+                <div class="label">Download Limit (default when added)</div>
+                @Html.FormRowFor(m => Model.UserConfig.TVConfig.DownloadLimit, "For TV Shows")
+                @Html.FormRowFor(m => Model.UserConfig.MovieConfig.DownloadLimit, "For Movies")
+                @Html.FormRowFor(m => Model.UserConfig.BookConfig.DownloadLimit, "For Books")
+            </div>
+
+            @Html.FormRowFor(m => Model.UserConfig.CloudFilePattern)
+            <div class="field-set">
+                <div class="label">Keep Next Episode Off Cloud</div>
+                @Html.FormRowFor(m => Model.UserConfig.TVConfig.KeepNextEpisodeOffCloud, "For TV Shows")
+                @Html.FormRowFor(m => Model.UserConfig.MovieConfig.KeepNextEpisodeOffCloud, "For Movies")
+                @Html.FormRowFor(m => Model.UserConfig.BookConfig.KeepNextEpisodeOffCloud, "For Books")
+            </div>
+        </form>
+
+        <div id="piratebay" class="content-page" onchange="page.formChanged(this);">
+            <div id="piratebay_table"></div>
+            <a href="JavaScript:;" id="piratebay_add_link" class="hide" onclick="page.pirateBayConfig.add()">Add Pirate Bay</a>
+        </div>
+
+        <form id="providers" class="content-page" onchange="page.formChanged(this);">
+            <div class="field-set">
+                <div class="label">Update from Data Provider</div>
+                @Html.FormRowFor(m => Model.UserConfig.TVConfig.UpdateFromDataProvider, "For TV Shows")
+                @Html.FormRowFor(m => Model.UserConfig.MovieConfig.UpdateFromDataProvider, "For Movies")
+                @Html.FormRowFor(m => Model.UserConfig.BookConfig.UpdateFromDataProvider, "For Books")
+            </div>
+            <div class="field">
+                @Html.FormRowFor(m => Model.UserConfig.MovieConfig.TheMovieDbApiKey)
+            </div>
+        </form>
+
+        <form id="vlc" class="content-page" onchange="page.formChanged(this);">
+            @Html.FormRowFor(m => Model.UserConfig.VLCConfig.Address)
+            @Html.FormRowFor(m => Model.UserConfig.VLCConfig.Password)
+        </form>
+
+    </div>
+
+</div>

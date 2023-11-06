@@ -27,7 +27,7 @@ namespace MediaLife.Controllers
         [HttpGet("[controller]")]
         public void UpdateLastUpdated()
         {
-            showSrv.HousekeepLogs(configSrv.GetIntOrNull("LogDays") ?? 7);
+            showSrv.HousekeepLogs(configSrv.Config.LogDays);
             _ = showSrv.UpdateLastUpdatedAsync().Result;
         }
 
@@ -64,9 +64,9 @@ namespace MediaLife.Controllers
 
             try
             {
-                if (!configSrv.GetBool("DisableClientUpdate"))
+                if (configSrv.Config.UserConfig.ClientUpdateEnabled)
                 {
-                    showSrv.HousekeepLogs(configSrv.GetIntOrNull("LogDays") ?? 7);
+                    showSrv.HousekeepLogs(configSrv.Config.LogDays);
 
                     StreamReader body = new(Request.Body);
                     string data = body.ReadToEndAsync().Result;
@@ -91,7 +91,7 @@ namespace MediaLife.Controllers
 
                     int dbFileCount = dbEpisodes.Count(e => e.FilePath != null);
                     int clientFilePercentage = (int)((clientData.Files.Count / (double)dbFileCount) * 100);
-                    int? fileThreshold = configSrv.GetIntOrNull("ClientFileThresholdPercent");
+                    int? fileThreshold = configSrv.Config.UserConfig.ClientFileThresholdPercent;
 
                     if (fileThreshold == null || fileThreshold < clientFilePercentage)
                     {

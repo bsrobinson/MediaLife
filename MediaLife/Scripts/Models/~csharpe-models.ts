@@ -24,6 +24,49 @@ export interface ShowPageModel {
     showListOptions: boolean;
 }
 
+//File: ../../Models/Configuration.cs
+
+export interface IConfiguration {
+}
+
+export interface Configuration extends IConfiguration {
+    logDays: number;
+    userConfig: UserConfig;
+}
+
+export interface UserConfig extends IConfiguration {
+    countryCode: string | null;
+    clientUpdateEnabled: boolean;
+    clientFileThresholdPercent: number;
+    cloudFilePattern: string | null;
+    tvConfig: TVConfig;
+    movieConfig: MovieConfig;
+    bookConfig: BookConfig;
+    vlcConfig: VLCConfig;
+}
+
+export interface SectionConfig extends IConfiguration {
+    updateFromDataProvider: boolean;
+    deleteWatched: boolean;
+    downloadLimit: number | null;
+    keepNextEpisodeOffCloud: boolean;
+}
+
+export interface TVConfig extends SectionConfig {
+}
+
+export interface MovieConfig extends SectionConfig {
+    theMovieDbApiKey: string | null;
+}
+
+export interface BookConfig extends SectionConfig {
+}
+
+export interface VLCConfig extends IConfiguration {
+    address: string | null;
+    password: string | null;
+}
+
 //File: ../../Models/VLCStatus.cs
 
 export interface VLCStatus {

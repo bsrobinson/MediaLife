@@ -111,8 +111,13 @@
             <a href="/books" class="section-button"><span class="icon">📚</span><span class="label">Books</span></a>
         </div>
         <a class="menu-item" href="JavaScript:;" onclick="site.createCustomList();">📝 Create Custom List</a>
-        <a class="menu-item" href="/PirateBay">🏴‍☠️ Pirate Bay</a>
+        <a class="menu-item" href="/Config">⚙️ Settings</a>
         <a class="menu-item" href="/Log">🪵 Log</a>
+    </div>
+
+    <div id="site_progress_bar" class="hide mat-mdc-progress-bar mdc-linear-progress mat-primary mdc-linear-progress--animation-ready mdc-linear-progress--indeterminate">
+        <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar" style="transform: scaleX(1);"><span class="mdc-linear-progress__bar-inner"></span></div>
+        <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar"><span class="mdc-linear-progress__bar-inner"></span></div>
     </div>
 
     <div id="content" class="@(controller)@(view)">

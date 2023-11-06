@@ -1,6 +1,7 @@
 @use './EpisodeFileIcon.scss';
 @use './EpisodeWatchIcon.scss';
 @use './Vlc.scss';
+@use './LoadingBar.scss';
 
 *, html {
     margin: 0;
@@ -133,7 +134,7 @@ body {
 }
 
 
-@media (max-width: 400px) {
+@media (max-width: 550px) {
 
     #header form {
         display: none;

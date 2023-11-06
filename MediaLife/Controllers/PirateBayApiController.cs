@@ -5,36 +5,37 @@ using MediaLife.Attributes;
 using MediaLife.Services;
 using MediaLife.Models;
 using System;
+using System.Collections.Generic;
 using WCKDRZR.Gaspar;
 
 namespace MediaLife.Controllers
 {
     [Authenticate]
-    public class PirateBayController : Controller
+    public class PirateBayApiController : Controller
     {
         private MySqlContext db;
 
-        public PirateBayController(MySqlContext context)
+        public PirateBayApiController(MySqlContext context)
         {
             db = context;
         }
 
+        [ExportFor(GasparType.TypeScript)]
         [HttpGet("[controller]")]
-        public IActionResult Index()
+        public ActionResult<List<PirateBay>> Get()
         {
-            ViewData["jsData"] = db.Piratebay.OrderByDescending(p => p.Active).ToList();
-            return View();
+            return db.Piratebay.OrderByDescending(p => p.Active).ToList();;
         }
 
         [ExportFor(GasparType.TypeScript)]
         [HttpPost("[controller]")]
         public ActionResult<PirateBay> Add([FromBody] string newUrl)
         {
-            PirateBay piratebay = new PirateBay { Url = newUrl, Active = true, ResultsInLastRun = 0 };
+            PirateBay piratebay = new PirateBay { Url = newUrl, Active = false, ResultsInLastRun = 0 };
             db.Piratebay.Add(piratebay);
             db.SaveChanges();
 
-            return Ok(piratebay);
+            return piratebay;
         }
 
         [ExportFor(GasparType.TypeScript)]
@@ -69,7 +70,7 @@ namespace MediaLife.Controllers
             db.Piratebay.Remove(piratebay);
             db.SaveChanges();
 
-            return Ok(piratebay);
+            return piratebay;
         }
 
         [ExportFor(GasparType.TypeScript)]

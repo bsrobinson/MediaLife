@@ -8,7 +8,7 @@
 //** full configuration in: ../../gaspar.config.json
 //**
 
-import { PirateBay, VLCStatus, SiteSection, ShowModel, EpisodeModel, ShowSettings, Show, EpisodeId } from "../Models/~csharpe-models";
+import { Configuration, VLCStatus, SiteSection, ShowModel, EpisodeModel, ShowSettings, Show, EpisodeId, PirateBay } from "../Models/~csharpe-models";
 import { ServiceErrorHandler } from "./service-error-handler";
 
 export class ServiceResponse<T> {
@@ -73,20 +73,11 @@ export class GasparServiceHelper {
 
 export namespace MediaLifeService {
 
-    //File: ../../Controllers/PirateBayController.cs
+    //File: ../../Controllers/ConfigController.cs
 
-    export class PirateBayController {
-        add(newUrl: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<PirateBay>> {
-            return new GasparServiceHelper().fetch(`/PirateBay`, { method: 'POST', body: JSON.stringify(newUrl), headers: { 'Content-Type': 'application/json' } }, showError);
-        }
-        activate(id: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<boolean>> {
-            return new GasparServiceHelper().fetch(`/PirateBay/${id}`, { method: 'PUT' }, showError);
-        }
-        delete(id: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<PirateBay>> {
-            return new GasparServiceHelper().fetch(`/PirateBay/${id}`, { method: 'DELETE' }, showError);
-        }
-        test(id: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<boolean>> {
-            return new GasparServiceHelper().fetch(`/PirateBay/Test/${id}`, { method: 'GET' }, showError);
+    export class ConfigController {
+        update(config: Record<string, string>, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<Configuration>> {
+            return new GasparServiceHelper().fetch(`/Config`, { method: 'POST', body: JSON.stringify(config), headers: { 'Content-Type': 'application/json' } }, showError);
         }
     }
     
@@ -163,6 +154,26 @@ export namespace MediaLifeService {
         }
         deleteList(id: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<boolean>> {
             return new GasparServiceHelper().fetch(`/DeleteList/${id}`, { method: 'DELETE' }, showError);
+        }
+    }
+    
+    //File: ../../Controllers/PirateBayApiController.cs
+
+    export class PirateBayApiController {
+        get(showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<PirateBay[]>> {
+            return new GasparServiceHelper().fetch(`/PirateBayApi`, { method: 'GET' }, showError);
+        }
+        add(newUrl: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<PirateBay>> {
+            return new GasparServiceHelper().fetch(`/PirateBayApi`, { method: 'POST', body: JSON.stringify(newUrl), headers: { 'Content-Type': 'application/json' } }, showError);
+        }
+        activate(id: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<boolean>> {
+            return new GasparServiceHelper().fetch(`/PirateBayApi/${id}`, { method: 'PUT' }, showError);
+        }
+        delete(id: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<PirateBay>> {
+            return new GasparServiceHelper().fetch(`/PirateBayApi/${id}`, { method: 'DELETE' }, showError);
+        }
+        test(id: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<boolean>> {
+            return new GasparServiceHelper().fetch(`/PirateBayApi/Test/${id}`, { method: 'GET' }, showError);
         }
     }
     

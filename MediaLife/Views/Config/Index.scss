@@ -1,0 +1,227 @@
+@use '../../Styles/Form.scss';
+
+#settings {
+    display: flex;
+    margin: 20px auto;
+    max-width: 700px;
+}
+
+.menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    min-width: 180px;
+
+    li {
+        margin: 0;
+        
+        a {
+            display: block;
+            padding: 1rem 10px;
+            text-decoration: none;
+            color: black;
+            border-width: 1px 0 1px 1px;
+            border-style: solid;
+            border-color: white;
+            border-radius: 10px 0 0 10px;
+            
+            img {
+                height: 19px;
+                width: 22px;
+                margin-right: 5px;
+            }
+
+            &.active {
+                border-color: #999;
+                position: relative;
+                left: 1px;
+                background-color: white;
+            }
+
+            &:hover {
+                background-color: whitesmoke;
+            }
+        }
+    }
+}
+
+.content {
+    flex-grow: 2;
+    border: 1px solid #999;
+    border-radius: 0 10px 10px 0;
+    padding: 20px;
+
+    .content-header {
+        display: none;
+    }
+
+    .content-page {
+        display: none;
+
+        &.active {
+            display: block;
+        }
+    }
+}
+
+@media (max-width: 600px) {
+
+    #settings {
+        overflow: hidden;
+    }
+
+    .menu {
+        min-width: calc(100vw - 32px);
+        max-width: calc(100vw - 32px);
+
+        li {
+            a {
+                border-radius: 10px;
+
+                &.active {
+                    border-color: white;
+                    left: 0;
+                }
+            }
+        }
+    }
+
+    .content {
+        border-radius: 10px;
+        min-width: calc(100vw - 80px);
+        max-width: calc(100vw - 80px);
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #999;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+
+            #header_page_name {
+                padding-bottom: 0.5rem;
+            }
+
+            > div {
+                min-width: 50px;
+                
+                img {
+                    height: 19px;
+                    width: 22px;
+                    margin-right: 5px;
+                    vertical-align: -3px;
+                }
+            }
+        }
+    }
+
+}
+
+
+#piratebay {
+    margin-top: 1.5rem;
+
+    #piratebay_table {
+        position: relative;
+
+        &.saving {
+            opacity: 0.4;
+        }
+
+        .row {
+            position: absolute;
+            display: flex;
+            justify-content: space-between;
+            align-items: top;
+            width: 100%;
+            transition: 0.25s;
+
+            .active {
+                display: none;
+            }
+
+            &.active {
+                .active {
+                    display: block;
+                }
+                .inactive {
+                    display: none;
+                }
+            }
+
+            &.deleting {
+                opacity: 0.4;
+            }
+
+            > div {
+                display: flex;
+            }
+
+            .url {
+                overflow-wrap: anywhere;
+                margin-right: 20px;
+
+                a {
+                    color: #006;
+                    text-decoration: none;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
+                }
+            }
+
+            .metrics {
+                font-size: 0.85em;
+            }
+
+            .icon {
+                background-repeat: no-repeat;
+                background-position: center;
+                mask-repeat: no-repeat;
+                mask-position: center;
+                height: 20px;
+                width: 20px;
+                margin-right: 10px;
+            
+                &.delete {
+                    background-image: url('/images/bin.svg');
+                }
+                &.active-icon {
+                    background-image: url('/images/active.svg');
+                }
+                &.inactive {
+                    opacity: 0.4;
+                }
+
+                .button {
+                    cursor: pointer;
+                }
+            }
+
+            &.testing .icon.test {
+                mask-image: url('/images/ellipsis.svg');
+                background-color: #999;
+            }
+            &.test-success .icon.test {
+                mask-image: url('/images/tick.svg');
+                background-color: green;
+            }
+            &.test-fail .icon.test {
+                mask-image: url('/images/cross.svg');
+                background-color: red;
+            }
+        }
+    }
+
+    #piratebay_add_link {
+        position: absolute;
+        max-width: 500px;
+        margin: 2em auto;
+        display: block;
+        transition: 0.25s;
+    }
+}
+
+
+

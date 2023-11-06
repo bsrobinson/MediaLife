@@ -79,10 +79,10 @@ namespace MediaLife.Controllers
 
         private VLCStatus? StatusPage(string? qs = null)
         {
-            string? address = configSrv.GetString("VLCAddress");
-            string? password = configSrv.GetString("VLCPassword");
+            string? address = configSrv.Config.UserConfig.VLCConfig.Address;
+            string? password = configSrv.Config.UserConfig.VLCConfig.Password;
 
-            if (!string.IsNullOrEmpty(address))
+            if (address != null)
             {
                 HttpClient httpClient = new HttpClient();
                 httpClient.DefaultRequestHeaders.Add("Authorization", "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(":" + password)));

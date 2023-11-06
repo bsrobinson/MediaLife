@@ -59,6 +59,13 @@ export class MediaLife {
         $('snack_bar').addClass('hide');
     }
 
+    showProgressBar() {
+        $('site_progress_bar').removeClass('hide');
+    }
+    hideProgressBar() {
+        $('site_progress_bar').addClass('hide');
+    }
+
     windowResize() {
         if (window.page?.windowResize) {
             window.page.windowResize();

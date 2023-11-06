@@ -17,20 +17,28 @@ namespace MediaLife.DataProviders
     {
         private MySqlContext db;
 
-        private TMDbClient client;
+        private TMDbClient? client;
         private string? country;
 
         public TheMovieDB(MySqlContext context)
         {
             db = context;
 
-            ConfigService config = new(db);
-            client = new(config.GetString("themoviedbAPIKey"));
-            country = config.GetString("MovieCountry");
+            ConfigService configSrv = new(db);
+            country = configSrv.Config.UserConfig.CountryCode;
+            if (configSrv.Config.UserConfig.MovieConfig.TheMovieDbApiKey != null)
+            {
+                client = new(configSrv.Config.UserConfig.MovieConfig.TheMovieDbApiKey);
+            }
         }
 
         public async Task<List<ShowModel>> SearchAsync(ShowsService showsService, string query)
         {
+            if (client == null)
+            {
+                return new List<ShowModel>();
+            }
+
             List<Task<Movie>> movieDetailTasks = new();
             List<Task<ShowModel?>> movieShowTasks = new();
 
@@ -115,6 +123,7 @@ namespace MediaLife.DataProviders
 
         public async Task<ShowModel?> GetMovieAsync(uint movieId)
         {
+            if (client == null) { return null; }
             return await GetMovieAsync(await client.GetMovieAsync((int)movieId));
         }
 
@@ -162,6 +171,8 @@ namespace MediaLife.DataProviders
 
         private async Task<ShowModel?> GetMovieFromCollectionAsync(int collectionId)
         {
+            if (client == null) { return null; }
+
             Collection movieCollection = await client.GetCollectionAsync(collectionId);
 
             ShowModel model = new()
@@ -198,7 +209,7 @@ namespace MediaLife.DataProviders
 
         private ReleaseDateItem? Release(int movieId)
         {
-            if (country != null)
+            if (client != null && country != null)
             {
                 List<ReleaseDatesContainer> releases = client.GetMovieReleaseDatesAsync(movieId).Result.Results;
                 if (releases != null)

@@ -238,10 +238,8 @@ namespace MediaLife.Services
                 
                 if (showModel != null)
                 {
-                    bool deleteWatched = false;
                     ConfigService configSrv = new(db);
-                    if (section == SiteSection.TV) { deleteWatched = configSrv.GetBool("DefaultDeleteTV"); }
-                    if (section == SiteSection.Movies) { deleteWatched = configSrv.GetBool("DefaultDeleteMovies"); }
+                    bool deleteWatched = configSrv.Config.UserConfig.SectionConfig(section).DeleteWatched;
                     
                     string showName = showModel.Name;
                     int inc = 2;
@@ -265,7 +263,7 @@ namespace MediaLife.Services
                         DeleteWatched = deleteWatched,
                         WatchFromNextPlayable = false,
                         DownloadAllTogether = false,
-                        DownloadLimit = section == SiteSection.TV ? configSrv.GetIntOrNull("DefaultTVDownloadLimit") : null,
+                        DownloadLimit = configSrv.Config.UserConfig.SectionConfig(section).DownloadLimit,
                     };
                     db.Shows.Add(dbShow);
 
@@ -307,7 +305,7 @@ namespace MediaLife.Services
             foreach (SiteSection section in Enum.GetValues(typeof(SiteSection)))
             {
                 ConfigService configSrv = new(db);
-                if (configSrv.GetBool("Update" + section.ToString()))
+                if (configSrv.Config.UserConfig.SectionConfig(section).UpdateFromDataProvider)
                 {
                     Show? show = db.Shows.OrderBy(s => s.Updated).FirstOrDefault(s => s.SiteSection == section);
                     if (show != null)
