@@ -45,11 +45,12 @@
     }
 }
 
-.content {
+#settings_content {
     flex-grow: 2;
     border: 1px solid #999;
     border-radius: 0 10px 10px 0;
     padding: 20px;
+    position: relative;
 
     .content-header {
         display: none;
@@ -57,7 +58,7 @@
 
     .content-page {
         display: none;
-
+        
         &.active {
             display: block;
         }
@@ -86,7 +87,7 @@
         }
     }
 
-    .content {
+    #settings_content {
         border-radius: 10px;
         min-width: calc(100vw - 80px);
         max-width: calc(100vw - 80px);

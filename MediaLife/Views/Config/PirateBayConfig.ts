@@ -66,6 +66,7 @@ export class PirateBayConfig {
 
         $('piratebay_add_link').style.marginTop = (cumulativeTop) + 'px'
         $('piratebay_add_link').removeClass('hide');
+        $('settings_content').style.minHeight = (cumulativeTop + 130) + 'px'
     }
 
     relativeDate(dateStr: string) {
