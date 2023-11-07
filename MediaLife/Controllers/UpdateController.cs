@@ -102,7 +102,7 @@ namespace MediaLife.Controllers
                         returnData += AddGroup("ADD_TORRENTS", clientSrv.TorrentsToAdd(dbData, ref clientData));
                         returnData += AddGroup("DELETE_FILES", clientSrv.FilesToDelete(ref clientData));
                         returnData += AddGroup("RETAG_FILES", clientSrv.FilesToReTag(clientData));
-                        returnData += AddGroup("DOWNLOAD_FILES_FROM_CLOUD", clientSrv.FilesToDownloadFromCloud(clientData));
+                        returnData += AddGroup("DOWNLOAD_FILES_FROM_CLOUD", clientSrv.FilesToDownloadFromCloud(dbData, clientData));
 
                         clientSrv.LogClientData(clientData, "Processed");
 

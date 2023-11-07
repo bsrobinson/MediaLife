@@ -42,8 +42,6 @@
                 @Html.FormRowFor(m => Model.UserConfig.MovieConfig.DownloadLimit, "For Movies")
                 @Html.FormRowFor(m => Model.UserConfig.BookConfig.DownloadLimit, "For Books")
             </div>
-
-            @Html.FormRowFor(m => Model.UserConfig.CloudFilePattern)
             <div class="field-set">
                 <div class="label">Keep Next Episode Off Cloud</div>
                 @Html.FormRowFor(m => Model.UserConfig.TVConfig.KeepNextEpisodeOffCloud, "For TV Shows")

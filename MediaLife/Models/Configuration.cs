@@ -34,10 +34,6 @@ namespace MediaLife.Models
         [DefaultValue((ushort)80), DisplayName("Client File Threshold (%)")]
         public ushort ClientFileThresholdPercent{ get; set; }
 
-        ///<summary>Regex to identify files offloaded to the cloud</summary>
-        [DefaultValue(null), DisplayName("Cloud File RegExp Pattern")]
-        public string? CloudFilePattern { get; set; }
-
         public TVConfig TVConfig { get; set; } = new();
         public MovieConfig MovieConfig { get; set; } = new();
         public BookConfig BookConfig { get; set; } = new();

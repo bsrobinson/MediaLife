@@ -272,17 +272,35 @@ namespace MediaLife.Services
             return returnFiles.ToStringList();
         }
 
-        public string FilesToDownloadFromCloud(ClientData clientData)
+        public string FilesToDownloadFromCloud(List<ShowModel> shows, ClientData clientData)
         {
             List<string> paths = new();
+
+            //Manually requested
             foreach (ClientFile file in clientData.Files.Where(f => f.Episode?.RequestDownload == true))
             {
                 if (file.Episode?.FilePath != null)
                 {
                     paths.Add(file.Episode.FilePath);
-                    db.Log(SessionId, $"Request Download from Cloud: {file.Episode.FilePath}");
+                    db.Log(SessionId, $"Request Download from Cloud (manually): {file.Episode.FilePath}");
                 }
             }
+
+            //Offline next episode
+            ConfigService configSrv = new(db);
+            foreach (ShowModel show in shows)
+            {
+                if (configSrv.Config.UserConfig.SectionConfig(show.SiteSection).KeepNextEpisodeOffCloud)
+                {
+                    EpisodeModel? nextEpisodeWithFile = show.Unwatched.FirstOrDefault(e => e.FilePath != null);
+                    if (nextEpisodeWithFile?.inCloud == true && nextEpisodeWithFile.FilePath != null)
+                    {
+                        paths.Add(nextEpisodeWithFile.FilePath);
+                        db.Log(SessionId, $"Request Download from Cloud (next episode): {nextEpisodeWithFile.FilePath}");
+                    }
+                }
+            }
+
             return string.Join("\n", paths);
         }
 

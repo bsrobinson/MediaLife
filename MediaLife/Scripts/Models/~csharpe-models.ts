@@ -38,7 +38,6 @@ export interface UserConfig extends IConfiguration {
     countryCode: string | null;
     clientUpdateEnabled: boolean;
     clientFileThresholdPercent: number;
-    cloudFilePattern: string | null;
     tvConfig: TVConfig;
     movieConfig: MovieConfig;
     bookConfig: BookConfig;
