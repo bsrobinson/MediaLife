@@ -70,13 +70,13 @@
     
     <script>
         function init() {
-            window.site = new MediaLife.MediaLife();
             @Html.Raw(localJsExists ? $"window.page = new {controller}{view}.{controller}{view}(site, {jsData});" : "")
             if (window.site.windowResize) {
                 window.onresize = site.windowResize;
                 window.site.windowResize();
             }
         }
+        window.site = new MediaLife.MediaLife();
     </script>
 
 </head>
