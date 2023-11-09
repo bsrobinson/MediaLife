@@ -22,16 +22,12 @@ namespace MediaLife.Models
     [ExportFor(GasparType.TypeScript)]
     public class UserConfig : IConfiguration
     {
-        ///<summary>Users country code</summary>
-        [DefaultValue("GB"), DisplayName("Country Code")]
-        public string? CountryCode { get; set; }
-
         ///<summary>Allow updates requests from client</summary>
         [DefaultValue(true), DisplayName("Client Update Enabled")]
         public bool ClientUpdateEnabled { get; set; }
 
         ///<summary>If the number of files provided by the client, compared to the number of files recorded in the database, drop below this % threshold; the files will not be processed, and an error thrown</summary>
-        [DefaultValue((ushort)80), DisplayName("Client File Threshold (%)")]
+        [DefaultValue((ushort)80), Range(0, 100), DisplayName("Client File Threshold (%)")]
         public ushort ClientFileThresholdPercent{ get; set; }
 
         public TVConfig TVConfig { get; set; } = new();
@@ -83,6 +79,10 @@ namespace MediaLife.Models
         ///<summary>API Key for TheMovieDB</summary>
         [DefaultValue(null), DisplayName("TheMovieDb Api Key")]
         public string? TheMovieDbApiKey { get; set; }
+        
+        ///<summary>Country code used for movie release date</summary>
+        [DefaultValue("GB"), DisplayName("Country Code")]
+        public string? MovieReleaseCountryCode { get; set; }        
     }
 
     [ExportFor(GasparType.TypeScript)]

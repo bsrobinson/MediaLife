@@ -1,5 +1,5 @@
 ﻿import { MediaLife } from '../../Scripts/Site'
-import { $, makeElement } from '../../Scripts/BRLibraries/DOM'
+import { element, makeElement } from '../../Scripts/BRLibraries/DOM'
 import { PageType, SiteSection } from '../../Scripts/Models/~csharpe-models';
 import { MediaLifeService } from '../../Scripts/Services/~csharpe-services';
 import { tsEpisodeId, tsEpisodeModel, tsListPageModel, tsShowModel } from '../../Scripts/Models/extendedModels';
@@ -90,10 +90,10 @@ export class HomeIndex {
         if (this.showLists.watching.length == 0 && this.showLists.notWatchedRecently.length == 0 && this.showLists.notStarted.length == 0) {
             this.showAllShows();
         } else {
-            $('watching_header').style.display = this.showLists.watching.length == 0 ? 'none' : 'flex';
-            $('notWatchedRecently_header').style.display = this.showLists.notWatchedRecently.length == 0 ? 'none' : 'flex';
-            $('notStarted_header').style.display = this.showLists.notStarted.length == 0 ? 'none' : 'flex';
-            $('default_sections').removeClass('hide');
+            element('watching_header').style.display = this.showLists.watching.length == 0 ? 'none' : 'flex';
+            element('notWatchedRecently_header').style.display = this.showLists.notWatchedRecently.length == 0 ? 'none' : 'flex';
+            element('notStarted_header').style.display = this.showLists.notStarted.length == 0 ? 'none' : 'flex';
+            element('default_sections').removeClass('hide');
         }
     }
 
@@ -104,7 +104,7 @@ export class HomeIndex {
 
     sortList(list: ('watching' | 'notWatchedRecently' | 'notStarted' | 'allShows')) {
 
-        let sortSelect = $<HTMLSelectElement>(list + '_sort_select');
+        let sortSelect = element<HTMLSelectElement>(list + '_sort_select');
         let option = sortSelect.options[sortSelect.selectedIndex];
         let order = option.value;
         let decending = option.getAttribute('data-direction') == 'desc';
@@ -118,17 +118,17 @@ export class HomeIndex {
             return decending ? (sortA < sortB ? 1 : -1) : (sortA > sortB ? 1 : -1);
         });
 
-        $(list + '_posters').innerHTML = '';
+        element(list + '_posters').innerHTML = '';
         let previousValue = '';
         for (let i = 0; i < this.showLists[list].length; i++) {
             if (headers && previousValue != this.showLists[list][i][order]) {
-                $(list + '_posters').appendElement('div', { class: 'sort-header', html: this.showLists[list][i][order] });
+                element(list + '_posters').appendElement('div', { class: 'sort-header', html: this.showLists[list][i][order] });
             }
             this.addPoster(list + '_posters', this.showLists[list][i]);
             previousValue = this.showLists[list][i][order];
         }
 
-        $(list + '_sort_button_label').innerHTML = option.text
+        element(list + '_sort_button_label').innerHTML = option.text
 
     }
 
@@ -136,14 +136,14 @@ export class HomeIndex {
 
         if (show.skellington) {
 
-            let poster = $(toElement).appendElement('div', { class: 'poster skellington' });
+            let poster = element(toElement).appendElement('div', { class: 'poster skellington' });
             poster.appendElement('a');
             poster.appendElement('div', { class: 'name', html: '&nbsp;' });
             poster.appendElement('div', { class: 'episode-row', html: '&nbsp;' });
 
         } else {
 
-            let poster = $(toElement).appendElement('div', { id: 'show_' + show.id, class: 'poster' });
+            let poster = element(toElement).appendElement('div', { id: 'show_' + show.id, class: 'poster' });
             let image = poster.appendElement('a', { href: `/${show.isList ? 'lists' : this.data.context.siteSection}/${show.id}` });
             poster.appendElement('div', { class: 'name', html: this.data.context.siteSection != SiteSection.TV ? show.posterName : show.name });
             poster.appendChild(this.episodeRow(show));
@@ -221,7 +221,7 @@ export class HomeIndex {
     updateEpisodeRow(show: tsShowModel | undefined, fadeChange: boolean = false) {
 
         if (show) {
-            let row = $('episode_row_for_show_' + show.id);
+            let row = element('episode_row_for_show_' + show.id);
             let episodeContent = row.children[0] as HTMLElement;
             episodeContent.style.opacity = fadeChange ? '0' : '1';
             
@@ -260,14 +260,14 @@ export class HomeIndex {
     }
 
     showAllShows() {
-        $('default_sections').innerHTML = '';
-        $('all_shows').removeClass('hide');
+        element('default_sections').innerHTML = '';
+        element('all_shows').removeClass('hide');
         this.sortAllShows();
         document.body.scrollTop = 0;
 
         if (this.data.shows.length == 0) {
-            $('allShows_posters').addClass('empty');
-            $('allShows_posters').html(this.data.context.pageType == PageType.Search ? 'No results found.' : 'You have no shows added.')
+            element('allShows_posters').addClass('empty');
+            element('allShows_posters').html(this.data.context.pageType == PageType.Search ? 'No results found.' : 'You have no shows added.')
         }
     }
     

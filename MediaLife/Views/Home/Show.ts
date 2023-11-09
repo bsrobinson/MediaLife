@@ -1,4 +1,4 @@
-import { $, $OrNull, makeElement } from "../../Scripts/BRLibraries/DOM";
+import { element, elementOrNull, makeElement } from "../../Scripts/BRLibraries/DOM";
 import { windowSize } from "../../Scripts/BRLibraries/WindowSize";
 import { EpisodeFileIcon } from "../../Scripts/EpisodeFileIcon";
 import { EpisodeObject } from "../../Scripts/EpisodeObject";
@@ -27,14 +27,14 @@ export class HomeShow {
         this.activeSeries = lastSeries;
         let activeSeriesButton = null;
 
-        if ($OrNull('series_list')) {
-            $('series_list').innerHTML = '';
-            if (maxSeries > 999) { $('series_list_wrapper').addClass('wide'); }
+        if (elementOrNull('series_list')) {
+            element('series_list').innerHTML = '';
+            if (maxSeries > 999) { element('series_list_wrapper').addClass('wide'); }
             let series = [...new Set(this.data.show.episodes.map(e => e.seriesNumber))].sort((a, b) => a - b);
 
-            $('series_list').appendElement('li').appendElement('a', { html: 'All', href: 'JavaScript:;', events: { click: (e: Event) => this.selectSeries(e) } });
+            element('series_list').appendElement('li').appendElement('a', { html: 'All', href: 'JavaScript:;', events: { click: (e: Event) => this.selectSeries(e) } });
             for (let i = 0; i < series.length; i++) {
-                let button = $('series_list')
+                let button = element('series_list')
                     .appendElement('li', { class: series[i] == this.activeSeries ? 'active' : '' })
                     .appendElement('a', { html: series[i].toString(), href: 'JavaScript:;', events: { click: (e: Event) => this.selectSeries(e) } });
                 if (series[i] == this.activeSeries) {
@@ -53,11 +53,11 @@ export class HomeShow {
         if (this.data.show.added) {
 
             this.service.updateShow(this.data.showListOptions ? SiteSection.Lists : this.data.siteSection, this.data.show.id).then(response => {
-                if (response.data && !$('content').containsClass('edit-list')) {
+                if (response.data && !element('content').containsClass('edit-list')) {
                     this.data.show = response.data;
-                    $('showName').innerHTML = this.data.show.name;
-                    if ($OrNull('author')) {
-                        $('author').innerHTML = this.data.show.showAuthor || '';
+                    element('showName').innerHTML = this.data.show.name;
+                    if (elementOrNull('author')) {
+                        element('author').innerHTML = this.data.show.showAuthor || '';
                     }
                     this.drawEpisodes();
                     this.drawPoster();
@@ -68,39 +68,39 @@ export class HomeShow {
 
     drawPoster() {
 
-        $('poster').innerHTML = '';
-        $('poster').style.backgroundImage = '';
+        element('poster').innerHTML = '';
+        element('poster').style.backgroundImage = '';
 
         if (this.data.show.episodePosters.length == 1) {
 
-            $('poster').style.backgroundImage = "url('" + this.data.show.episodePosters[0] + "')";
+            element('poster').style.backgroundImage = "url('" + this.data.show.episodePosters[0] + "')";
 
         } else if (this.data.show.episodePosters.length > 1) {
 
             for (let i = 0; i < this.data.show.episodePosters.length; i++) {
-                $('poster').appendElement('div', { class: 'mini-poster', style: `background-image:url('${this.data.show.episodePosters[i]}')` })
+                element('poster').appendElement('div', { class: 'mini-poster', style: `background-image:url('${this.data.show.episodePosters[i]}')` })
             }
 
         } else if (this.data.show.poster) {
 
-            $('poster').style.backgroundImage = "url('" + this.data.show.poster + "')";
+            element('poster').style.backgroundImage = "url('" + this.data.show.poster + "')";
 
         } else {
 
-            $('poster').innerHTML = this.data.show.name;
+            element('poster').innerHTML = this.data.show.name;
 
-            $('poster').style.fontSize = '';
+            element('poster').style.fontSize = '';
             let fontSize = 40;
-            while ($('poster').scrollHeight > $('poster').clientHeight || $('poster').scrollWidth > $('poster').clientWidth) {
+            while (element('poster').scrollHeight > element('poster').clientHeight || element('poster').scrollWidth > element('poster').clientWidth) {
                 fontSize--;
-                $('poster').style.fontSize = fontSize + 'px';
+                element('poster').style.fontSize = fontSize + 'px';
             }
         }
     }
 
     selectSeries(event: Event) {
 
-        let seriesButtons = $('series_list').children;
+        let seriesButtons = element('series_list').children;
         for (let i = 0; i < seriesButtons.length; i++) {
             (seriesButtons[i] as HTMLElement).removeClass('active')
         }
@@ -115,7 +115,7 @@ export class HomeShow {
 
     drawEpisodes() {
 
-        $('episode_list').innerHTML = '';
+        element('episode_list').innerHTML = '';
         let episodes = this.data.show.episodes;
 
         if (this.data.siteSection == SiteSection.TV && this.activeSeries !== null) {
@@ -123,9 +123,9 @@ export class HomeShow {
         }
 
         for (let i = 0; i < episodes.length; i++) {
-            $('episode_list').appendChild(this.episodeRow(episodes[i] as tsEpisodeModel));
+            element('episode_list').appendChild(this.episodeRow(episodes[i] as tsEpisodeModel));
         }
-        $('episode_list').appendElement('input', { type: 'button', value: 'Add to List', class: 'button add edit-list-show', style: 'margin:6px 0 10px 0', events: { click: () => this.startAddToListMode() } });
+        element('episode_list').appendElement('input', { type: 'button', value: 'Add to List', class: 'button add edit-list-show', style: 'margin:6px 0 10px 0', events: { click: () => this.startAddToListMode() } });
     }
 
     episodeRow(episode: tsEpisodeModel) {
@@ -134,7 +134,7 @@ export class HomeShow {
         let airDate = episode.airDate ? new Date(episode.airDate) : null;
         let available = episode.hasTorrests || episode.filePath;
 
-        let row = $OrNull('episode_row' + episode.id);
+        let row = elementOrNull('episode_row' + episode.id);
         if (row) {
             row.innerHTML = '';
         } else {
@@ -192,8 +192,8 @@ export class HomeShow {
             let id = parseInt(event.target.id.slice(11));
             let episode = this.data.show.episodes.find(e => e.id == id);
             if (episode && episode.poster) {
-                $('poster').innerHTML = '';
-                $('poster').style.backgroundImage = "url('" + episode.poster + "')";
+                element('poster').innerHTML = '';
+                element('poster').style.backgroundImage = "url('" + episode.poster + "')";
             }
         }
     }
@@ -203,17 +203,17 @@ export class HomeShow {
     }
 
     addShow() {
-        $<HTMLInputElement>('addShowButton').disabled = true;
+        element<HTMLInputElement>('addShowButton').disabled = true;
         this.service.addShow(this.data.show.siteSection, this.data.show.id).then(response => {
             if (response.data) {
-                $('showName').html(response.data.name);
-                $('addShowButton').addClass('hide');
-                $('removeShowButton').removeClass('hide');
-                $('showSettingsButton').removeClass('hide');
+                element('showName').html(response.data.name);
+                element('addShowButton').addClass('hide');
+                element('removeShowButton').removeClass('hide');
+                element('showSettingsButton').removeClass('hide');
             } else {
-                $('addShowButton').removeClass('hide');
+                element('addShowButton').removeClass('hide');
             }
-            $<HTMLInputElement>('addShowButton').disabled = false;
+            element<HTMLInputElement>('addShowButton').disabled = false;
         });
     }
 
@@ -221,39 +221,39 @@ export class HomeShow {
         if (this.data.someEpisodesInList) {
             alert('Cannot remove as some parts are in one or more custom lists');
         } else {
-            $<HTMLInputElement>('removeShowButton').disabled = true;
+            element<HTMLInputElement>('removeShowButton').disabled = true;
             this.service.removeShow(this.data.show.siteSection, this.data.show.id).then(response => {
                 if (response.data) {
-                    $('removeShowButton').addClass('hide');
-                    $('showSettingsButton').addClass('hide');
-                    $('addShowButton').removeClass('hide');
+                    element('removeShowButton').addClass('hide');
+                    element('showSettingsButton').addClass('hide');
+                    element('addShowButton').removeClass('hide');
                 } else {
-                    $('removeShowButton').removeClass('hide');
+                    element('removeShowButton').removeClass('hide');
                 }
-                $<HTMLInputElement>('removeShowButton').disabled = false;
+                element<HTMLInputElement>('removeShowButton').disabled = false;
             });
         }
     }
 
     toggleSettingsMenu() {
-        if (!$('showSettingsButton').containsClass('saving')) {
-            let hide = !$('settings_menu').containsClass('hide');
-            $('blackout').toggleClassIfTrue('hide', hide);
-            $('settings_menu').toggleClassIfTrue('hide', hide);
+        if (!element('showSettingsButton').containsClass('saving')) {
+            let hide = !element('settings_menu').containsClass('hide');
+            element('blackout').toggleClassIfTrue('hide', hide);
+            element('settings_menu').toggleClassIfTrue('hide', hide);
         }
     }
 
     saveSettings() {
 
         this.toggleSettingsMenu();
-        $('showSettingsButton').addClass('saving');
+        element('showSettingsButton').addClass('saving');
 
-        let form = $<HTMLFormElement>('settings_menu').toJson<ShowSettings>();
+        let form = element<HTMLFormElement>('settings_menu').toJson<ShowSettings>();
         this.service.saveSettings(this.data.show.siteSection, this.data.show.id, form).then(response => {
             if (form.skipUntilSeries != this.data.show.skipUntilSeries) {
                 location.reload();
             } else {
-                $('showSettingsButton').removeClass('saving')
+                element('showSettingsButton').removeClass('saving')
             }
         });
         
@@ -272,12 +272,12 @@ export class HomeShow {
             //update buttons
             if (!this.data.showListOptions) {
                 if (this.data.show.episodes.filter(e => e.watched != null || e.startedWatching != null).length == 0) {
-                    $('removeShowButton').removeClass('hide');
-                    $('showSettingsButton').removeClass('hide');
+                    element('removeShowButton').removeClass('hide');
+                    element('showSettingsButton').removeClass('hide');
                 } else {
-                    $('addShowButton').addClass('hide');
-                    $('removeShowButton').addClass('hide');
-                    $('showSettingsButton').removeClass('hide');
+                    element('addShowButton').addClass('hide');
+                    element('removeShowButton').addClass('hide');
+                    element('showSettingsButton').removeClass('hide');
                     this.data.show.added = new Date().formatForJson();
                 }
             }
@@ -287,7 +287,7 @@ export class HomeShow {
 
     editList() {
 
-        $('content').addClass('edit-list');
+        element('content').addClass('edit-list');
 
         this.editedList = { id: this.data.show.id, hasChanges: false } as tsShowModelForList;
         this.editedList.episodes = [];
@@ -315,7 +315,7 @@ export class HomeShow {
                 if (episode) {
                     let index = this.editedListIndex(episode);
                     if (index) {
-                        $('episode_row' + episode.id).removeElement();
+                        element('episode_row' + episode.id).removeElement();
                         this.editedList?.episodes.splice(index, 1);
                         
                         this.editedListChanged();
@@ -379,10 +379,10 @@ export class HomeShow {
     editListSave(addAfterSave: boolean) {
         if (this.editedList) {
             let episodes = this.editedList.episodes.map(e => ({ id: e.id, section: e.siteSection } as EpisodeId))
-            this.service.updateList(this.data.show.id, $<HTMLInputElement>('editListTitle').value, episodes).then(response => {
+            this.service.updateList(this.data.show.id, element<HTMLInputElement>('editListTitle').value, episodes).then(response => {
                 if (response.data) {
                     this.data.show = response.data;
-                    $('showName').html(this.data.show.name);
+                    element('showName').html(this.data.show.name);
                     this.editListCancel();
                     if (addAfterSave) {
                         this.startAddToListMode();
@@ -392,8 +392,8 @@ export class HomeShow {
         }
     }
     editListCancel() {
-        $('content').removeClass('edit-list');
-        $<HTMLInputElement>('editListTitle').value = this.data.show.name;
+        element('content').removeClass('edit-list');
+        element<HTMLInputElement>('editListTitle').value = this.data.show.name;
         this.drawEpisodes();
         this.editedList = null;
     }
@@ -408,7 +408,7 @@ export class HomeShow {
                     for (let i = 0; i < episodes.length; i++) {
                         let ep = this.data.show.episodes.find(e => e.id == episodes[i].id);
                         if (ep) {
-                            $('episode_row' + episodes[i].id).replaceWith(this.episodeRow(ep as tsEpisodeModel));
+                            element('episode_row' + episodes[i].id).replaceWith(this.episodeRow(ep as tsEpisodeModel));
                         }
                     }
                 });
@@ -419,16 +419,16 @@ export class HomeShow {
     windowResize() {
 
         let windowHeight = windowSize().h;
-        let contentTop = $('page-content').getPosition().top;
+        let contentTop = element('page-content').getPosition().top;
 
-        if ($OrNull('series_list_wrapper')) {
-            $('series_list_wrapper').style.height = (windowHeight - contentTop - 2) + 'px';
+        if (elementOrNull('series_list_wrapper')) {
+            element('series_list_wrapper').style.height = (windowHeight - contentTop - 2) + 'px';
         }
-        $('episode_list').style.height = (windowHeight - contentTop - 2) + 'px';
-        $('poster').style.maxHeight = (windowHeight - contentTop - 2) + 'px';
+        element('episode_list').style.height = (windowHeight - contentTop - 2) + 'px';
+        element('poster').style.maxHeight = (windowHeight - contentTop - 2) + 'px';
 
-        if ($OrNull('showSettingsButton')) {
-            $('settings_menu').style.top = ($('showSettingsButton').getPosition().top + $('showSettingsButton').offsetHeight + 2) + 'px';
+        if (elementOrNull('showSettingsButton')) {
+            element('settings_menu').style.top = (element('showSettingsButton').getPosition().top + element('showSettingsButton').offsetHeight + 2) + 'px';
         }
     }
 

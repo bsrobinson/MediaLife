@@ -35,7 +35,6 @@ export interface Configuration extends IConfiguration {
 }
 
 export interface UserConfig extends IConfiguration {
-    countryCode: string | null;
     clientUpdateEnabled: boolean;
     clientFileThresholdPercent: number;
     tvConfig: TVConfig;
@@ -56,6 +55,7 @@ export interface TVConfig extends SectionConfig {
 
 export interface MovieConfig extends SectionConfig {
     theMovieDbApiKey: string | null;
+    movieReleaseCountryCode: string | null;
 }
 
 export interface BookConfig extends SectionConfig {
@@ -243,12 +243,28 @@ export interface Show {
     downloadLimit: number | null;
 }
 
+//File: ../../../MediaLife.Library/DAL/User.cs
+
+export interface User {
+    userId: number;
+    accountId: number;
+    name: string;
+    password: string;
+}
+
 //File: ../../../MediaLife.Library/DAL/List.cs
 
 export interface List {
     listId: number;
     name: string;
     created: string;
+}
+
+//File: ../../../MediaLife.Library/DAL/Account.cs
+
+export interface Account {
+    accountId: number;
+    name: string;
 }
 
 //File: ../../../MediaLife.Library/DAL/ListEntry.cs

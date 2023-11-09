@@ -1,9 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq;
+using MediaLife.Library.DAL;
+using Microsoft.AspNetCore.Mvc;
+using WCKDRZR.Gaspar;
 
 namespace MediaLife.Controllers
 {
     public class LoginController : Controller
     {
+        private MySqlContext db;
+
+        public LoginController(MySqlContext context)
+        {
+            db = context;
+        }
+
         [HttpGet("[controller]")]
         public IActionResult Index(string authKey)
         {
@@ -11,6 +21,8 @@ namespace MediaLife.Controllers
             {
                 return new RedirectResult("/");
             }
+
+            ViewBag.AccountCount = db.Accounts.Count();
             return View();
         }
 
@@ -25,7 +37,27 @@ namespace MediaLife.Controllers
         public IActionResult Logout(string authKey)
         {
             Response.Cookies.Delete("auth_key");
-            return new RedirectResult("/");
+            return new RedirectResult("/Login");
+        }
+
+        [ExportFor(GasparType.TypeScript)]
+        [HttpPost("[controller]/[action]")]
+        public ActionResult<User> CreateFirstUser([FromBody] User user)
+        {
+            if (db.Accounts.Count() > 0)
+            {
+                return BadRequest();
+            }
+
+            Account newAccount = new() { Name = $"{user.Name}'s Account" };
+            db.Accounts.Add(newAccount);
+            db.SaveChanges();
+
+            user.AccountId = newAccount.AccountId;
+            db.Users.Add(user);
+            db.SaveChanges();
+
+            return user;
         }
     }
 }

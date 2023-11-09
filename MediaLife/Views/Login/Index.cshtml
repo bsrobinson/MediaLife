@@ -1,8 +1,31 @@
 ﻿@model List<ShowModel>
 @{
     ViewData["Title"] = "Login";
+    ViewData["NoHeader"] = true;
 }
 
-<form onsubmit="page.login(); return false;">
-    <input id="key" />
-</form>
+@if (ViewBag.AccountCount > 0)
+{
+
+    <form onsubmit="page.login(); return false;">
+        @Html.FormRow("text", "key", "Pass Key")
+    </form>
+
+}
+else
+{
+    User user = new User() {
+        AccountId = 0,
+        Name = "",
+        Password = Guid.NewGuid().ToString(),
+    };
+
+    <h1>Create first user</h1>
+
+    <form id="createAccountForm" onsubmit="page.createFirstAccount(); return false;">
+        @Html.FormRowFor(u => user.Name)
+        @Html.FormRowFor(u => user.Password)
+        @Html.SubmitRow("Create")
+    </form>
+
+}

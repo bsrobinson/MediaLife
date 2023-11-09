@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using MediaLife.Attributes;
 using MediaLife.Library.DAL;
 using MediaLife.Models;
 using MediaLife.Serializers;
@@ -14,6 +15,7 @@ using WCKDRZR.Gaspar;
 
 namespace MediaLife.Controllers
 {
+    [Authenticate]
     [ExportFor(GasparType.TypeScript)]
     public class VLCController : Controller
     {

@@ -1,7 +1,7 @@
 .field {
     position: relative;
-    width: 300px;
-    margin: 1.6rem auto;
+    width: 100%;
+    margin: 1.6rem 0;
 
     label {
         position: absolute;
@@ -11,6 +11,13 @@
         background-color: white;
         padding: 0 6px;
         white-space: nowrap;
+
+        .required-star {
+            color: orangered;
+            position: relative;
+            top: 1px;
+            margin-left: 0.3rem;
+        }
     }
 
     input {
@@ -19,12 +26,38 @@
         padding: 15px 10px 10px 10px;
         font-size: 1rem;
         width: 100%;
+
+        &.input-validation-error {
+            border-color: red;
+        }
+    }
+
+    .validation-message {
+        position: absolute;
+        bottom: -0.3rem;
+        right: 10px;
+        color: red;
+        font-size: 0.8rem;
+        background-color: white;
+        padding: 0 6px;
+    }
+
+    &.input-validation-success {
+        .required-star {
+            color: gray;
+        }
+    }
+    &.input-validation-error {
+        label {
+            color: red;
+        }
     }
 
     &.checkbox {
         border: 1px solid #999;
         border-radius: 5px;
-        width: 298px;
+        width: 100%;
+        width: calc(100% - 2px);
 
         label {
             position: unset;
@@ -51,13 +84,39 @@
             text-align: center;
         }
     }
+
+    &.buttons {
+        display: flex;
+        justify-content: end;
+        gap: 1rem;
+
+        input {
+            border: 1px solid black;
+            border-radius: 5px;
+            background-color: #ccc;
+            color: black;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            width: auto;
+            cursor: pointer;
+
+            &:active:hover {
+                filter: brightness(90%);
+            }
+        }
+        input[type=submit] {
+            background-color: #0088ff;
+            color: white;
+        }
+    }
 }
 
 .field-set {
-    margin: 1rem auto;
+    margin: 1.6rem auto;
     border: 1px solid #999;
     border-radius: 5px;
-    width: 298px;
+    width: 100%;
+    width: calc(100% - 2px);
     position: relative;
     padding: 1rem 0 0.5rem 0;
     display: flex;
@@ -76,20 +135,25 @@
     .field {
         border: 0;
         margin: 0;
-        width: 280px;
+        width: 100%;
         display: flex;
         align-items: center;
         justify-content: space-between;
         margin: 0.2rem 0;
-
+        
         label {
             position: unset;
             flex-grow: 2;
+            padding-left: 1.6rem;
         }
         input {
             padding: 5px;
-            width: 120px;
+            width: 50%;
             margin-right: 0.7rem;
+        }
+        
+        .validation-message {
+            display: none;
         }
 
         &.checkbox {
@@ -102,7 +166,20 @@
                 top: 7px;
                 width: auto;
                 margin: 0;
+                right: 0.8rem;
             }
         }
+    }
+}
+
+.form-disabled {
+    color: #999;
+
+    input[type=button], input[type=submit] {
+        color: color-mix(in hsl, canvastext 66%, canvas) !important;
+        border-color: color-mix(in hsl, canvastext 66%, canvas);
+    }
+    input[type=submit] {
+        background-color: #999 !important;
     }
 }

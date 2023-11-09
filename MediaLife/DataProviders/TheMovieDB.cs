@@ -24,11 +24,11 @@ namespace MediaLife.DataProviders
         {
             db = context;
 
-            ConfigService configSrv = new(db);
-            country = configSrv.Config.UserConfig.CountryCode;
-            if (configSrv.Config.UserConfig.MovieConfig.TheMovieDbApiKey != null)
+            MovieConfig movieConfig = new ConfigService(db).Config.UserConfig.MovieConfig;
+            country = movieConfig.MovieReleaseCountryCode;
+            if (movieConfig.TheMovieDbApiKey != null)
             {
-                client = new(configSrv.Config.UserConfig.MovieConfig.TheMovieDbApiKey);
+                client = new(movieConfig.TheMovieDbApiKey);
             }
         }
 

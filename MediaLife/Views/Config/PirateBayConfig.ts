@@ -1,5 +1,5 @@
 import { MediaLife } from '../../Scripts/Site'
-import { $, $OrNull } from '../../Scripts/BRLibraries/DOM'
+import { element, elementOrNull } from '../../Scripts/BRLibraries/DOM'
 import { PirateBay } from '../../Scripts/Models/~csharpe-models';
 import { MediaLifeService, ServiceErrorMessage } from '../../Scripts/Services/~csharpe-services';
 
@@ -34,10 +34,10 @@ export class PirateBayConfig {
             let urlDomain = urlDomainSplit > 0 ? pbUrl.slice(0, urlDomainSplit) : item.url;
             let urlPath = urlDomainSplit > 0 ? pbUrl.slice(urlDomainSplit) : '';
 
-            let row = $OrNull('row_' + item.id);
+            let row = elementOrNull('row_' + item.id);
             if (!row) {
 
-                row = $('piratebay_table').appendElement('div', { id: 'row_' + item.id, class: 'row' });
+                row = element('piratebay_table').appendElement('div', { id: 'row_' + item.id, class: 'row' });
 
                 let div = row.appendElement('div');
                 div.appendElement('div', { class: 'icon test' });
@@ -64,9 +64,9 @@ export class PirateBayConfig {
             cumulativeTop += row.offsetHeight * 1.5;
         });
 
-        $('piratebay_add_link').style.marginTop = (cumulativeTop) + 'px'
-        $('piratebay_add_link').removeClass('hide');
-        $('settings_content').style.minHeight = (cumulativeTop + 130) + 'px'
+        element('piratebay_add_link').style.marginTop = (cumulativeTop) + 'px'
+        element('piratebay_add_link').removeClass('hide');
+        element('settings_content').style.minHeight = (cumulativeTop + 160) + 'px'
     }
 
     relativeDate(dateStr: string) {
@@ -100,13 +100,13 @@ export class PirateBayConfig {
 
     test(id: number) {
 
-        $('row_' + id).addClass('testing');
+        element('row_' + id).addClass('testing');
 
         this.service.test(id, ServiceErrorMessage.None).then(response => {
             if (response.success) {
-                $('row_' + id).swapClass('testing', 'test-success');
+                element('row_' + id).swapClass('testing', 'test-success');
             } else {
-                $('row_' + id).swapClass('testing', 'test-fail');
+                element('row_' + id).swapClass('testing', 'test-fail');
             }
         });
     }
@@ -153,7 +153,7 @@ export class PirateBayConfig {
             let row = event.target.parentOfClass('row');
             if (row) {
                 let id = parseInt(row.id.slice(4));
-                $('piratebay_table').addClass('saving');
+                element('piratebay_table').addClass('saving');
 
                 this.service.activate(id).then(response => {
                     if (response.data) {
@@ -170,7 +170,7 @@ export class PirateBayConfig {
                         this.draw();
                     }
 
-                    $('piratebay_table').removeClass('saving');
+                    element('piratebay_table').removeClass('saving');
                 });
             }
         }

@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Text;
-using Microsoft.AspNetCore.Http;
+using System.Linq;
+using MediaLife.Library.DAL;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaLife.Attributes
 {
@@ -10,32 +11,32 @@ namespace MediaLife.Attributes
     {
         public override void OnActionExecuted(ActionExecutedContext context)
         {
-            //localhost allowed without cookie
-            if (context.HttpContext.Request.Host.ToString().StartsWith("localhost"))
-            {
-                return;
-            }
+            MySqlContext db = context.HttpContext.RequestServices.GetRequiredService<MySqlContext>();
 
-            string? envVarValue = Environment.GetEnvironmentVariable("AUTH_KEY");
-            if (context.HttpContext.Request.Cookies.TryGetValue("auth_key", out string? cookieValue)
-                && cookieValue == envVarValue)
+            if (context.HttpContext.Request.Cookies.TryGetValue("auth_key", out string? cookieValue))
             {
-                //Login successful, extend cookie
-                CookieOptions cookieOptions = new CookieOptions();
-                cookieOptions.Expires = DateTime.Now.AddYears(1);
-                context.HttpContext.Response.Cookies.Append("auth_key", cookieValue, cookieOptions);
+                User? user = db.Users.FirstOrDefault(u => u.Password == cookieValue);
+                if (user != null)
+                {
+                    //Login successful, extend cookie
+                    context.HttpContext.Response.Cookies.Append("auth_key", cookieValue, new() { Expires = DateTime.Now.AddYears(1) });
 
-                return;
-            }
+                    if (context.Controller is Controller controller)
+                    {
+                        controller.ViewBag.Username = user.Name;
+                    }
 
-            if (string.IsNullOrEmpty(envVarValue))
-            {
-                byte[] errorMessage = Encoding.UTF8.GetBytes("AUTH_KEY environment variable missing");
-                context.HttpContext.Response.Body.WriteAsync(errorMessage, 0, errorMessage.Length);
+                    return;
+                }
+                else
+                {
+                    context.HttpContext.Response.Cookies.Delete("auth_key");
+                }
             }
-            context.Result = new UnauthorizedResult();
+            
+            context.Result = new RedirectResult("/Login");
 
             return;
-        }
+        }        
     }
 }

@@ -11,8 +11,11 @@ export interface ElementAttributes {
     target?: string | null,
     src?: string | null,
 
-    type?: ('input' | 'checkbox' | 'submit' | 'button') | null,
+    name?: string,
+    type?: ('text' | 'hidden' | 'checkbox' | 'submit' | 'button' | 'number') | null,
     value?: string | null,
+    maxlength?: number | null,
+    for?: string | null,
 
     events?: EventAttributes
     bool?: BooleanAttributes,
@@ -29,6 +32,7 @@ export interface EventAttributes {
 export interface BooleanAttributes {
     disabled?: boolean,
     selected?: boolean,
+    checked?: boolean,
 }
 
 
@@ -39,8 +43,8 @@ export interface BooleanAttributes {
 * @returns {HTMLElement} - Element
 * @throws {Error} - Throws error if not found.
 */
-export function $<T = HTMLElement>(e: string) : T {
-	let element = $OrNull(e);
+export function element<T = HTMLElement>(e: string | HTMLElement) : T {
+	let element = elementOrNull(e);
 	if (!element) {
 		throw new Error(`${e} not found`);
 	}
@@ -53,7 +57,10 @@ export function $<T = HTMLElement>(e: string) : T {
 * @param {T} T - Override return type of element, defaults to HTMLElement
 * @returns {HTMLElement | null} - Element or null if no elements of class exist
 */
-export function $OrNull<T = HTMLElement>(e: string) : T | null {
+export function elementOrNull<T = HTMLElement>(e: string | HTMLElement) : T | null {
+    if (e instanceof HTMLElement) {
+        return e as T;
+    }
 	let element = document.getElementById(e);
 	if (!element) {
 		return null
@@ -69,7 +76,7 @@ export function $OrNull<T = HTMLElement>(e: string) : T | null {
 * @throws {Error} - Throws error if no elements of class exist
 * @returns {HTMLElement} - Element
 */
-export function firstOfClass<T = HTMLElement>(className: string, within: string | null = null) : T {
+export function firstOfClass<T = HTMLElement>(className: string, within: string | HTMLElement | null = null) : T {
 	let element = firstOfClassOrNull(className, within);
 	if (!element) {
 		throw new Error(`No elements of class name '${className}'`);
@@ -78,18 +85,85 @@ export function firstOfClass<T = HTMLElement>(className: string, within: string 
 }
 
 /**
-* Get first element with class name
+* Get first element with class name or null if not found
 * @param {string} className - Class Name
-* @param {string} within - Search within element with this ID
+* @param {string | HTMLElement} within - Search within this element, or element of this ID
 * @param {T} T - Override return type of element, defaults to HTMLElement
 * @returns {HTMLElement | null} - Element or null if no elements of class exist
 */
-export function firstOfClassOrNull<T = HTMLElement>(className: string, within: string | null = null) : T | null {
-	let elements = (within ? $(within) : document).getElementsByClassName(className);
+export function firstOfClassOrNull<T = HTMLElement>(className: string, within: string | HTMLElement | null = null) : T | null {
+	let elements = (within ? element(within) : document).getElementsByClassName(className);
 	if (elements.length < 1) {
 		return null;
 	}
 	return elements[0] as T;
+}
+
+/**
+* Get all elements with class name
+* @param {string} className - Class Name
+* @param {string} within - Search within element with this ID
+* @param {T} T[] - Override return type of element, defaults to HTMLElement
+* @returns {HTMLElement[]} - Element array, or an empty array
+*/
+export function elementsOfClass<T = HTMLElement>(className: string, within: string | HTMLElement | null = null) : T[] {
+	let elements = (within ? element(within) : document).getElementsByClassName(className);
+    
+    let returnElements: T[] = [];
+    for (let i = 0; i < elements.length; i++) {
+        returnElements.push(elements[i] as T);
+    }
+
+	return returnElements;
+}
+
+/**
+* Get first element with tag name
+* @param {string} tagName - Tag Name
+* @param {string} within - Search within element with this ID
+* @param {T} T - Override return type of element, defaults to HTMLElement
+* @throws {Error} - Throws error if no elements of tag exist
+* @returns {HTMLElement} - Element
+*/
+export function firstOfTag<T = HTMLElement>(tagName: string, within: string | HTMLElement | null = null) : T {
+	let element = firstOfTagOrNull(tagName, within);
+	if (!element) {
+		throw new Error(`No elements of tag name '${tagName}'`);
+	}
+	return element as T;
+}
+
+/**
+* Get first element with tag name or null if not found
+* @param {string} tagName - Tag Name*
+* @param {string | HTMLElement} within - Search within this element, or element of this ID
+* @param {T} T - Override return type of element, defaults to HTMLElement
+* @returns {HTMLElement | null} - Element or null if no elements of tag exist
+*/
+export function firstOfTagOrNull<T = HTMLElement>(tagName: string, within: string | HTMLElement | null = null) : T | null {
+	let elements = (within ? element(within) : document).getElementsByTagName(tagName);
+	if (elements.length < 1) {
+		return null;
+	}
+	return elements[0] as T;
+}
+
+/**
+* Get all elements with tag name
+* @param {string} tagName - Tag Name
+* @param {string} within - Search within element with this ID
+* @param {T} T[] - Override return type of element, defaults to HTMLElement
+* @returns {HTMLElement[]} - Element array, or an empty array
+*/
+export function elementsOfTag<T = HTMLElement>(tagName: string, within: string | HTMLElement | null = null) : T[] {
+	let elements = (within ? element(within) : document).getElementsByTagName(tagName);
+    
+    let returnElements: T[] = [];
+    for (let i = 0; i < elements.length; i++) {
+        returnElements.push(elements[i] as T);
+    }
+
+	return returnElements;
 }
 
 
@@ -188,7 +262,7 @@ export function makeElement(htmlElementName: string, attributes: ElementAttribut
             let string = (attributes as Record<string, string>)[a];
             if (a == 'html') {
                 e.innerHTML = string;
-            } else {
+            } else if (string !== null && string !== undefined) {
                 e.setAttribute(a, string);
             }
         }
@@ -404,11 +478,12 @@ declare global { interface HTMLFormElement {
     * @returns {object} - {} if no elements
     */
     toJson<T>(): T;
+    toJson<T>(nestDotted: boolean): T;
 } }
-HTMLFormElement.prototype.toJson = function<T>(): T {
-	var obj: Record<string, string> = {};
+HTMLFormElement.prototype.toJson = function<T>(nestDotted: boolean = true): T {
+	var obj: Record<string, object> = {};
  	for (var i = 0; i < this.elements.length; i++) {
- 		let element = this.elements[i] as HTMLInputElement;
+ 		let element = this.elements[i] as HTMLFormElement;
  		if (element.name) {
  			var val: any = element.value;
  			if (val == '' && this.elements[i].getAttribute('data-nullonempty') == 'true') {
@@ -423,8 +498,46 @@ HTMLFormElement.prototype.toJson = function<T>(): T {
  			if (element.type == 'checkbox') {
  				val = element.checked;
  			}
- 			obj[element.name] = val;
+
+            if (nestDotted) {
+                let dots = element.name.split('.');
+                let working = obj;
+                for (let j = 0; j < dots.length - 1; j++) {
+                    if (!working[dots[j]]) { working[dots[j]] = {} as Record<string, object>; }
+                    working = working[dots[j]] as Record<string, object>;
+                }
+                working[dots[dots.length - 1]] = val;
+            } else {
+                obj[element.name] = val;
+            }
  		}
  	}
  	return obj as T;
+}
+
+declare global { interface HTMLFormElement {
+    /**
+    * Disable all form elements
+    */
+    disable(): void;
+    /**
+    * Enable all form elements
+    */
+    enable(): void;
+    /**
+    * Toggle disabled state of all form elements
+    */
+    toggleDisabled(disabled: boolean): void;
+} }
+HTMLFormElement.prototype.disable = function(): void {
+ 	this.toggleDisabled(true);
+}
+HTMLFormElement.prototype.enable = function(): void {
+ 	this.toggleDisabled(false);
+}
+HTMLFormElement.prototype.toggleDisabled = function(disabled: boolean): void {
+    this.toggleClassIfTrue('form-disabled', disabled);
+ 	for (var i = 0; i < this.elements.length; i++) {
+ 		(this.elements[i] as HTMLInputElement).disabled = disabled
+ 	}
 }

@@ -1,5 +1,3 @@
-@use '../../Styles/Form.scss';
-
 #settings {
     display: flex;
     margin: 20px auto;
@@ -24,6 +22,7 @@
             border-style: solid;
             border-color: white;
             border-radius: 10px 0 0 10px;
+            z-index: 9;
             
             img {
                 height: 19px;
@@ -49,11 +48,33 @@
     flex-grow: 2;
     border: 1px solid #999;
     border-radius: 0 10px 10px 0;
-    padding: 20px;
     position: relative;
 
     .content-header {
         display: none;
+        justify-content: space-between;
+        border-bottom: 1px solid #999;
+
+        .back {
+            width: 50px;
+            background: url("/images/chevron-left.svg") no-repeat center;
+            background-size: 28px 28px;
+        }
+
+        .title {
+            padding: 1rem 0;
+
+            img {
+                height: 19px;
+                width: 22px;
+                margin-right: 5px;
+                vertical-align: -3px;
+            }
+        }
+
+        .right-space {
+            width: 50px;
+        }
     }
 
     .content-page {
@@ -65,62 +86,86 @@
     }
 }
 
-@media (max-width: 600px) {
+form {
+    width: 350px;
+    margin: 3rem auto;
+}
 
-    #settings {
+
+#accounts {
+
+    &.active {
+        display: flex !important;
         overflow: hidden;
+        width: 350px;
+        margin: 0 auto;
     }
 
-    .menu {
-        min-width: calc(100vw - 32px);
-        max-width: calc(100vw - 32px);
-
-        li {
-            a {
-                border-radius: 10px;
-
-                &.active {
-                    border-color: white;
-                    left: 0;
-                }
-            }
-        }
-    }
-
-    #settings_content {
-        border-radius: 10px;
-        min-width: calc(100vw - 80px);
-        max-width: calc(100vw - 80px);
+    .left, .right {
+        min-width: 350px;
 
         .content-header {
             display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid #999;
-            padding-bottom: 1rem;
-            margin-bottom: 2rem;
+            margin-top: 3rem;
+        }
 
-            #header_page_name {
-                padding-bottom: 0.5rem;
+        #user {
+            width: 340px;
+        }
+    }
+
+    .account-header {
+        font-weight: bold;
+        margin: 2rem 0 1rem 0;
+        display: flex;
+        align-items: center;
+
+        a {
+            display: none;
+            font-weight: normal;
+            font-size: 0.8rem;
+            margin-left: 1rem;
+        }
+
+        &:hover {
+            a {
+                display: block;
             }
+        }
+    }
+    .user {
+        margin-left: 1rem;
+        padding: 0.5rem 1rem;
+        display: block;
+        text-decoration: none;
+        color: black;
 
-            > div {
-                min-width: 50px;
-                
-                img {
-                    height: 19px;
-                    width: 22px;
-                    margin-right: 5px;
-                    vertical-align: -3px;
-                }
+        &:hover {
+            background-color: whitesmoke;
+        }
+        &.add-link {
+            background: url("/images/plus.svg") no-repeat 14px 8px;
+            background-size: 18px;
+            padding-left: 40px;
+            text-decoration: underline;
+            color: blue;
+
+            &:hover {
+                background-color: transparent;
             }
         }
     }
 
+    #accounts_add_link {
+        display: block;
+        margin: 2rem 0;
+    }
 }
 
 
 #piratebay {
     margin-top: 1.5rem;
+    padding: 1rem;
 
     #piratebay_table {
         position: relative;
@@ -225,4 +270,58 @@
 }
 
 
+@media (max-width: 600px) {
 
+    form {
+        width: 290px;
+    }
+
+    #settings {
+        overflow: hidden;
+    }
+
+    .menu {
+        min-width: calc(100vw - 32px);
+        max-width: calc(100vw - 32px);
+
+        li {
+            a {
+                border-radius: 10px;
+
+                &.active {
+                    border-color: white;
+                    left: 0;
+                }
+            }
+        }
+    }
+
+    #settings_content {
+        border-radius: 10px;
+        min-width: calc(100vw - 40px);
+        max-width: calc(100vw - 40px);
+
+        .content-header {
+            display: flex;
+        }
+    }
+
+    #accounts {
+        &.active {
+            width: 300px;
+        }
+    
+        .left, .right {
+            min-width: 300px;
+
+            .content-header {
+                display: flex;
+                margin-top: 1rem;
+            }
+            #user {
+                width: 290px;
+            }
+        }
+    }
+
+}

@@ -1,4 +1,4 @@
-﻿import { $ } from "./BRLibraries/DOM";
+﻿import { element } from "./BRLibraries/DOM";
 import { EpisodeObject } from "./EpisodeObject";
 import { tsEpisodeModel, tsShowModel } from "./Models/extendedModels";
 import { VLCStatus } from "./Models/~csharpe-models";
@@ -167,25 +167,25 @@ export class VLCClient {
 
             if (this.status && (this.status.state != 'stopped' || this.status.show)) {
 
-                $('content').addClass('vlc-open');
-                $('vlc_player').removeClass('hide');
-                $('vlc_player').removeClass('info-only');
-                $('vlc_player').toggleClassIfTrue('playing', this.status.state == 'playing');
-                $('vlc_player').toggleClassIfTrue('fullscreen', this.status.fullscreen);
+                element('content').addClass('vlc-open');
+                element('vlc_player').removeClass('hide');
+                element('vlc_player').removeClass('info-only');
+                element('vlc_player').toggleClassIfTrue('playing', this.status.state == 'playing');
+                element('vlc_player').toggleClassIfTrue('fullscreen', this.status.fullscreen);
 
                 let filename = this.status.information?.category?.meta?.filename;
                 if (filename) {
                     let extensionPos = filename.lastIndexOf('.');
-                    $('vlc_playing_title').innerHTML = filename.slice(0, extensionPos > 0 ? extensionPos : undefined);
-                    $('vlc-scrubber-time').innerHTML = this.convertSeconds(this.status.time) + '&nbsp;';
-                    $('vlc-scrubber-time-remaining').innerHTML = '&nbsp;' + this.convertSeconds(this.status.length);
+                    element('vlc_playing_title').innerHTML = filename.slice(0, extensionPos > 0 ? extensionPos : undefined);
+                    element('vlc-scrubber-time').innerHTML = this.convertSeconds(this.status.time) + '&nbsp;';
+                    element('vlc-scrubber-time-remaining').innerHTML = '&nbsp;' + this.convertSeconds(this.status.length);
 
-                    $('vlc-scrubber-mark').style.left = 'calc(' + (this.status.position * 100) + '% - 7px)';
+                    element('vlc-scrubber-mark').style.left = 'calc(' + (this.status.position * 100) + '% - 7px)';
 
-                    $('vlc_player').toggleClassIfTrue('with-poster', this.status.show != null);
+                    element('vlc_player').toggleClassIfTrue('with-poster', this.status.show != null);
                     if (this.status.show) {
-                        $<HTMLAnchorElement>('vlc_poster').style.backgroundImage = "url('" + (this.status.show.episodes[this.status.show.episodeIndex].poster || this.status.show.poster) + "')";
-                        $<HTMLAnchorElement>('vlc_poster').href = `/${this.status.show.siteSection}/${this.status.show.id}`;
+                        element<HTMLAnchorElement>('vlc_poster').style.backgroundImage = "url('" + (this.status.show.episodes[this.status.show.episodeIndex].poster || this.status.show.poster) + "')";
+                        element<HTMLAnchorElement>('vlc_poster').href = `/${this.status.show.siteSection}/${this.status.show.id}`;
 
                         let lastEpisode = this.status.show.episodeIndex == this.status.show.episodes.length - 1;
                         let episodeId = this.status.show.episodes[this.status.show.episodeIndex].id;
@@ -210,14 +210,14 @@ export class VLCClient {
                             window.episodeWatchIcons[iconShowId + episodeId].setPlaying(nextFileIcon);
                         }
 
-                        $('vlc_next_episode_button').toggleClassIfTrue('disabled', lastEpisode);
+                        element('vlc_next_episode_button').toggleClassIfTrue('disabled', lastEpisode);
                     }
                 }
 
             } else {
 
-                $('vlc_player').addClass('hide');
-                $('content').removeClass('vlc-open');
+                element('vlc_player').addClass('hide');
+                element('content').removeClass('vlc-open');
 
                 if (window.episodeFileIcons) {
                     for (const [key, value] of Object.entries(window.episodeFileIcons)) {
@@ -231,20 +231,20 @@ export class VLCClient {
 
     showInfo(message: string, posterImageUrl: string | null = null, posterUrl: string | null = null) {
 
-        $('content').addClass('vlc-open');
-        $('vlc_player').removeClass('hide');
-        $('vlc_player').addClass('info-only');
-        $('vlc_playing_title').innerHTML = message;
+        element('content').addClass('vlc-open');
+        element('vlc_player').removeClass('hide');
+        element('vlc_player').addClass('info-only');
+        element('vlc_playing_title').innerHTML = message;
 
-        $('vlc_player').toggleClassIfTrue('with-poster', posterImageUrl != null);
+        element('vlc_player').toggleClassIfTrue('with-poster', posterImageUrl != null);
         if (posterImageUrl && posterUrl) {
-            $<HTMLAnchorElement>('vlc_poster').style.backgroundImage = "url('" + posterImageUrl + "')";
-            $<HTMLAnchorElement>('vlc_poster').href = posterUrl;
+            element<HTMLAnchorElement>('vlc_poster').style.backgroundImage = "url('" + posterImageUrl + "')";
+            element<HTMLAnchorElement>('vlc_poster').href = posterUrl;
         }
     }
 
     showError() {
-        $('vlc_player').removeClass('hide');
+        element('vlc_player').removeClass('hide');
         this.showInfo('Cannot connect to VLC.  Is it running and configured?');
         setTimeout(() => this.updateStatus(), 3000)
     }

@@ -8,7 +8,7 @@
 //** full configuration in: ../../gaspar.config.json
 //**
 
-import { Configuration, VLCStatus, SiteSection, ShowModel, EpisodeModel, ShowSettings, Show, EpisodeId, PirateBay } from "../Models/~csharpe-models";
+import { User, Account, Configuration, VLCStatus, SiteSection, ShowModel, EpisodeModel, ShowSettings, Show, EpisodeId, PirateBay } from "../Models/~csharpe-models";
 import { ServiceErrorHandler } from "./service-error-handler";
 
 export class ServiceResponse<T> {
@@ -73,6 +73,29 @@ export class GasparServiceHelper {
 
 export namespace MediaLifeService {
 
+    //File: ../../Controllers/UsersApiController.cs
+
+    export class UsersApiController {
+        getUsers(showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<User[]>> {
+            return new GasparServiceHelper().fetch(`/UsersApi/GetUsers`, { method: 'GET' }, showError);
+        }
+        getAccounts(showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<Account[]>> {
+            return new GasparServiceHelper().fetch(`/UsersApi/GetAccounts`, { method: 'GET' }, showError);
+        }
+        addAccount(username: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<boolean>> {
+            return new GasparServiceHelper().fetch(`/UsersApi/AddAccount?username=${username || ""}`, { method: 'POST' }, showError);
+        }
+        renameAccount(accountId: number, name: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<Account>> {
+            return new GasparServiceHelper().fetch(`/UsersApi/RenameAccount/${accountId}?name=${name || ""}`, { method: 'POST' }, showError);
+        }
+        addUser(accountId: number, username: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<User>> {
+            return new GasparServiceHelper().fetch(`/UsersApi/AddUser/${accountId}?username=${username || ""}`, { method: 'POST' }, showError);
+        }
+        editUser(userModel: User, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<User>> {
+            return new GasparServiceHelper().fetch(`/UsersApi/EditUser`, { method: 'POST', body: JSON.stringify(userModel), headers: { 'Content-Type': 'application/json' } }, showError);
+        }
+    }
+    
     //File: ../../Controllers/ConfigController.cs
 
     export class ConfigController {
@@ -154,6 +177,14 @@ export namespace MediaLifeService {
         }
         deleteList(id: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<boolean>> {
             return new GasparServiceHelper().fetch(`/DeleteList/${id}`, { method: 'DELETE' }, showError);
+        }
+    }
+    
+    //File: ../../Controllers/LoginController.cs
+
+    export class LoginController {
+        createFirstUser(user: User, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<User>> {
+            return new GasparServiceHelper().fetch(`/Login/CreateFirstUser`, { method: 'POST', body: JSON.stringify(user), headers: { 'Content-Type': 'application/json' } }, showError);
         }
     }
     

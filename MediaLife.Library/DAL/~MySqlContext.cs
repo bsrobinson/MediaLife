@@ -1,4 +1,3 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 
 namespace MediaLife.Library.DAL
@@ -7,6 +6,7 @@ namespace MediaLife.Library.DAL
     {
         public MySqlContext(DbContextOptions<MySqlContext> options) : base(options) { }
 
+        public virtual DbSet<Account> Accounts { get; set; }
         public virtual DbSet<Config> Config { get; set; }
         public virtual DbSet<Episode> Episodes { get; set; }
         public virtual DbSet<List> Lists { get; set; }
@@ -17,5 +17,6 @@ namespace MediaLife.Library.DAL
         public virtual DbSet<PirateBay> Piratebay { get; set; }
         public virtual DbSet<Torrent> Torrents { get; set; }
         public virtual DbSet<TVNetwork> TVNetworks { get; set; }
+        public virtual DbSet<User> Users { get; set; }
 	}
 }

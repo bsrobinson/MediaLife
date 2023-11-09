@@ -1,4 +1,4 @@
-﻿import { $ } from './BRLibraries/DOM'
+﻿import { element } from './BRLibraries/DOM'
 import './BRLibraries/DateFormat'
 import './BRLibraries/WindowSize'
 import './AddToList';
@@ -7,12 +7,14 @@ import { EpisodeWatchIcon } from './EpisodeWatchIcon';
 import { IconMenu } from './IconMenu';
 import { VLCClient } from './Vlc';
 import { AddToList } from './AddToList';
+import { FormValidation } from './BRLibraries/FormValidation';
 
 declare global {
     interface Window {
         page: any;
         vlc: VLCClient;
         addToListMode: AddToList;
+        formValidation: FormValidation;
         episodeFileIcons: Record<string, EpisodeFileIcon>;
         episodeWatchIcons: Record<string, EpisodeWatchIcon>;
         iconMenus: Record<string, IconMenu>;
@@ -31,16 +33,16 @@ export class MediaLife {
     }
 
     toggleSiteMenu() {
-        $('burger_menu').toggleClass('open');
-        $('site_menu').toggleClass('open');
+        element('burger_menu').toggleClass('open');
+        element('site_menu').toggleClass('open');
     }
 
     openSearch() {
-        $('search_row').removeClass('hide');
-        $('search_input').focus();
+        element('search_row').removeClass('hide');
+        element('search_input').focus();
     }
     searchBlur() {
-        $('search_row').addClass('hide');
+        element('search_row').addClass('hide');
     }
 
     createCustomList() {
@@ -51,19 +53,19 @@ export class MediaLife {
     }
 
     showSnackBar(message: string, error = false) {
-        $('snack_bar').removeClass('hide');
-        $('snack_bar').toggleClassIfTrue('error', error);
-        $('snack_bar_message').innerHTML = message;
+        element('snack_bar').removeClass('hide');
+        element('snack_bar').toggleClassIfTrue('error', error);
+        element('snack_bar_message').innerHTML = message;
     }
     closeSnackBar() {
-        $('snack_bar').addClass('hide');
+        element('snack_bar').addClass('hide');
     }
 
     showProgressBar() {
-        $('site_progress_bar').removeClass('hide');
+        element('site_progress_bar').removeClass('hide');
     }
     hideProgressBar() {
-        $('site_progress_bar').addClass('hide');
+        element('site_progress_bar').addClass('hide');
     }
 
     windowResize() {

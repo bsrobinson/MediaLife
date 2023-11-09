@@ -1,5 +1,5 @@
 ﻿import { createCookie, eraseCookie, readCookie } from "./BRLibraries/Cookies";
-import { $ } from "./BRLibraries/DOM";
+import { element } from "./BRLibraries/DOM";
 import { tsEpisodeId } from "./Models/extendedModels";
 import { EpisodeId, EpisodeModel, ListEntry, ShowModel, SiteSection } from "./Models/~csharpe-models";
 import { MediaLifeService } from "./Services/~csharpe-services";
@@ -22,7 +22,7 @@ export class AddToList {
 
 	enterAddMode() {
 		window.site.showSnackBar('Adding to list:<br /><b>' + this.addToList?.name + '</b><br/><a href="JavaScript:;" onclick="addToListMode.end();">' + (this.addToList?.id == 0 ? 'Cancel' : 'Done') + '</a>');
-		$('content').addClass('add-to-list-mode');
+		element('content').addClass('add-to-list-mode');
     }
 
 	save() {
@@ -52,7 +52,7 @@ export class AddToList {
 		if (this.addToList?.id == 0) {
 			this.addToList = null;
 			window.site.closeSnackBar();
-			$('content').removeClass('add-to-list-mode');
+			element('content').removeClass('add-to-list-mode');
 		} else {
 			var url = '/lists/' + this.addToList?.id.toString();
 			this.addToList = null;

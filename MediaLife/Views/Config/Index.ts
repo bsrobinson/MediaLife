@@ -1,83 +1,90 @@
 import { MediaLife } from '../../Scripts/Site'
-import { $, $OrNull } from '../../Scripts/BRLibraries/DOM'
+import { element, elementsOfClass, firstOfClass } from '../../Scripts/BRLibraries/DOM'
 import { PirateBay } from '../../Scripts/Models/~csharpe-models';
 import { PirateBayConfig } from './PirateBayConfig';
-import { MediaLifeService, ServiceResponse } from '../../Scripts/Services/~csharpe-services';
+import { MediaLifeService } from '../../Scripts/Services/~csharpe-services';
+import { windowSize } from '../../Scripts/BRLibraries/WindowSize';
+import { FormValidation } from '../../Scripts/BRLibraries/FormValidation';
+import { UsersConfig } from './UsersConfig';
 
 export class ConfigIndex {
 
     service = new MediaLifeService.ConfigController();
+    usersConfig: UsersConfig | null = null;
     pirateBayConfig: PirateBayConfig | null = null;
 
-    pendingForms: Record<string, NodeJS.Timeout> = {};
-    formsSaving: number[] = [];
+    lastHash: string | null = null;
 
     constructor(private site: MediaLife, private data: PirateBay[]) {
+
+        setInterval(() => this.monitorHash(), 500);
+        if (location.hash == '' && windowSize().w > 600) {
+            location.href = firstOfClass<HTMLAnchorElement>('menu-link').href;
+        }
+
+        window.formValidation = new FormValidation();
+        window.formValidation.validateForms();
         
     }
 
-    switchPage(event: Event, pageId: string) {
-
-        $('settings').scrollTo(9999, 0);
-        $('header_page_name').html((event.target as HTMLElement).innerHTML);
-
-        let menuLinks = document.getElementsByClassName('menu-link')
-        for (let i = 0; i < menuLinks.length; i++) {
-            (menuLinks[i] as HTMLElement).removeClass('active')
-        }
-        (event.target as HTMLElement).addClass('active');
-
-        let pages = document.getElementsByClassName('content-page')
-        for (let i = 0; i < pages.length; i++) {
-            (pages[i] as HTMLElement).removeClass('active')
-        }
-
-        let page = $(pageId);
-
-        page.addClass('active');
-        if (!page.containsClass('loaded')) {
-
-            if (pageId == 'piratebay') {
-                this.pirateBayConfig = new PirateBayConfig();
-            }
+    monitorHash() {
+        if (location.hash != this.lastHash) {
+            element('settings').removeClass('hide');
             
-            page.addClass('loaded');
+            this.switchPage(location.hash.slice(1))
+            this.lastHash = location.hash;
         }
-
     }
-
-    backToPageMenu() {
-        $('settings').scrollTo(0, 0);
-    }
-
-    formChanged(form: HTMLFormElement) {
-
-        if (this.pendingForms[form.id]) {
-            clearTimeout(this.pendingForms[form.id]);
-        }
+    
+    switchPage(pageId: string) {
         
-        this.pendingForms[form.id] = setTimeout(() => {
-            this.saveForm(form.id);
-        }, 500);
+        element('settings').scrollTo({ top: 0, left: pageId == '' ? 0 : 9999, behavior: 'smooth' });
+
+        elementsOfClass<HTMLAnchorElement>('menu-link').forEach(link => {
+            let active = link.href.slice(link.href.length - pageId.length - 1) == `#${pageId}`
+            link.toggleClassIfTrue('active', active);
+            if (active) {
+                element('header_page_name').html(link.innerHTML);
+            }
+        });
+
+        elementsOfClass('content-page').forEach(page => {
+            let active = page.id == pageId
+            page.toggleClassIfTrue('active', active);
+            if (active) {
+                if (!page.containsClass('loaded')) {
+
+                    if (pageId == 'accounts') {
+                        this.usersConfig = new UsersConfig();
+                    }
+            
+                    if (pageId == 'piratebay') {
+                        this.pirateBayConfig = new PirateBayConfig();
+                    }
+
+                    page.addClass('loaded');
+                }
+                
+                this.usersConfig?.backToAccounts();
+            }
+
+        });
 
     }
     
-    saveForm(id: string) {
-        
+    saveForm(form: HTMLFormElement) {
+
         this.site.showProgressBar();
+        form.disable();
 
-        let saveId = new Date().valueOf();
-        this.formsSaving.push(saveId);
-
-        console.log($<HTMLFormElement>(id).toJson());
-        this.service.update($<HTMLFormElement>(id).toJson()).then(response => {
-
-            this.formsSaving.splice(this.formsSaving.findIndex(f => f == saveId), 1);
-
-            if (this.formsSaving.length == 0) {
-                this.site.hideProgressBar();
-            }
+        this.service.update(form.toJson(false)).then(_ => {
+            form.enable();
+            this.site.hideProgressBar();
         });
+    }
+
+    windowResize() {
+        this.pirateBayConfig?.draw();
     }
 
 }
