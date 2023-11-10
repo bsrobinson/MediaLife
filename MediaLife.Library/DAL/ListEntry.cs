@@ -10,9 +10,13 @@ namespace MediaLife.Library.DAL
     public class ListEntry
     {
         public required uint ListId { get; set; }
+
         public required uint EpisodeId { get; set; }
+    
         [DataType("uint")]
         public required SiteSection SiteSection { get; set; }
+
         public required ushort Rank { get; set; }
+
     }
 }

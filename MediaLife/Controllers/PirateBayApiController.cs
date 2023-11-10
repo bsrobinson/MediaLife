@@ -24,15 +24,15 @@ namespace MediaLife.Controllers
         [HttpGet("[controller]")]
         public ActionResult<List<PirateBay>> Get()
         {
-            return db.Piratebay.OrderByDescending(p => p.Active).ToList();;
+            return db.PirateBay.OrderByDescending(p => p.Active).ToList();;
         }
 
         [ExportFor(GasparType.TypeScript)]
         [HttpPost("[controller]")]
         public ActionResult<PirateBay> Add([FromBody] string newUrl)
         {
-            PirateBay piratebay = new PirateBay { Url = newUrl, Active = false, ResultsInLastRun = 0 };
-            db.Piratebay.Add(piratebay);
+            PirateBay piratebay = new PirateBay { Url = newUrl, Active = false, ResultsInLastRun = 0, ConsecutiveErrors = 0 };
+            db.PirateBay.Add(piratebay);
             db.SaveChanges();
 
             return piratebay;
@@ -42,13 +42,13 @@ namespace MediaLife.Controllers
         [HttpPut("[controller]/{id}")]
         public ActionResult<bool> Activate(uint id)
         {
-            PirateBay? piratebay = db.Piratebay.SingleOrDefault(p => p.Id == id);
+            PirateBay? piratebay = db.PirateBay.SingleOrDefault(p => p.Id == id);
             if (piratebay == null)
             {
                 return NotFound();
             }
 
-            foreach (PirateBay pirateBay in db.Piratebay.ToList())
+            foreach (PirateBay pirateBay in db.PirateBay.ToList())
             {
                 pirateBay.Active = pirateBay.Id == id;
             }
@@ -61,13 +61,13 @@ namespace MediaLife.Controllers
         [HttpDelete("[controller]/{id}")]
         public ActionResult<PirateBay> Delete(uint id)
         {
-            PirateBay? piratebay = db.Piratebay.SingleOrDefault(p => p.Id == id);
+            PirateBay? piratebay = db.PirateBay.SingleOrDefault(p => p.Id == id);
             if (piratebay == null)
             {
                 return NotFound();
             }
 
-            db.Piratebay.Remove(piratebay);
+            db.PirateBay.Remove(piratebay);
             db.SaveChanges();
 
             return piratebay;
@@ -77,7 +77,7 @@ namespace MediaLife.Controllers
         [HttpGet("[controller]/[action]/{id}")]
         public ActionResult<bool> Test(uint id)
         {
-            PirateBay? piratebay = db.Piratebay.SingleOrDefault(p => p.Id == id);
+            PirateBay? piratebay = db.PirateBay.SingleOrDefault(p => p.Id == id);
             if (piratebay == null)
             {
                 return NotFound();

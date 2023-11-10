@@ -82,7 +82,7 @@ namespace MediaLife.Services
         {
             string returnHashes = "";
 
-            PirateBay? piratebay = db.Piratebay.FirstOrDefault(p => p.Active);
+            PirateBay? piratebay = db.PirateBay.FirstOrDefault(p => p.Active);
             if (piratebay != null)
             {
                 List<Task<ClientTorrent?>> torrentTasks = new();

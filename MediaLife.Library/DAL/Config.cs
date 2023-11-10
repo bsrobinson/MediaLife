@@ -11,5 +11,6 @@ namespace MediaLife.Library.DAL
 
         [MaxLength(255)]
         public required string Value { get; set; }
+
     }
 }

@@ -14,7 +14,7 @@ namespace MediaLife.DataProviders
     {
         private TvMazeClient client;
         private Library.DAL.MySqlContext db;
-        private List<Library.DAL.TVNetwork>? tvNetworks;
+        private List<Library.DAL.TvNetwork>? tvNetworks;
 
         public TVMaze(Library.DAL.MySqlContext dbContext)
         {
@@ -118,11 +118,11 @@ namespace MediaLife.DataProviders
         {
             if (tvNetworks == null)
             {
-                tvNetworks = db.TVNetworks.ToList();
+                tvNetworks = db.TvNetworks.ToList();
             }
         }
 
-        private Library.DAL.TVNetwork? GetTVNetwork(Network network, bool addToDb = true)
+        private Library.DAL.TvNetwork? GetTVNetwork(Network network, bool addToDb = true)
         {
             if (network == null || network.Country == null)
             {
@@ -130,7 +130,7 @@ namespace MediaLife.DataProviders
             }
 
             LoadTVNetworks();
-            Library.DAL.TVNetwork? tvNetwork = tvNetworks?.FirstOrDefault(n => n.Name == network.Name && n.CountryCode == network.Country.Code);
+            Library.DAL.TvNetwork? tvNetwork = tvNetworks?.FirstOrDefault(n => n.Name == network.Name && n.CountryCode == network.Country.Code);
             if (tvNetwork == null)
             {
                 tvNetwork = new()
@@ -140,7 +140,7 @@ namespace MediaLife.DataProviders
                     HomepageUrl = network.OfficialSite
                 };
                 if (addToDb) {
-                    db.TVNetworks.Add(tvNetwork);
+                    db.TvNetworks.Add(tvNetwork);
                     db.SaveChanges();
                 }
             }

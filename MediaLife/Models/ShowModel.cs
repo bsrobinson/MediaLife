@@ -19,7 +19,7 @@ namespace MediaLife.Models
 
         public string Name { get; set; }
         public string? Poster { get; set; }
-        public TVNetwork? Network { get; set; }
+        public TvNetwork? Network { get; set; }
 
         private List<EpisodeModel> _episodes = new();
         public List<EpisodeModel> Episodes
@@ -91,7 +91,7 @@ namespace MediaLife.Models
         {
             Name = "";
         }
-        public ShowModel(Show show, TVNetwork? network) : this()
+        public ShowModel(Show show, TvNetwork? network) : this()
         {
             Id = show.ShowId;
             SiteSection = (SiteSection)show.SiteSection;

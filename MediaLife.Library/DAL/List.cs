@@ -5,12 +5,12 @@ using WCKDRZR.Gaspar;
 
 namespace MediaLife.Library.DAL
 {
-    [PrimaryKey(nameof(ListId))]
     [ExportFor(GasparType.TypeScript)]
+    [PrimaryKey(nameof(ListId))]
     public class List
     {
         public uint ListId { get; set; }
-        
+
         [MaxLength(255)]
         public required string Name { get; set; }
 

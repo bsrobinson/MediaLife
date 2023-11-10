@@ -122,7 +122,7 @@ export interface ShowModel {
     siteSection: SiteSection;
     name: string;
     poster: string | null;
-    network: TVNetwork | null;
+    network: TvNetwork | null;
     episodes: EpisodeModel[];
     added: string | null;
     deleteWatched: boolean;
@@ -191,16 +191,6 @@ export enum PageType {
     Search = 'search',
 }
 
-//File: ../../../MediaLife.Library/DAL/TVNetworks.cs
-
-export interface TVNetwork {
-    networkId: number;
-    name: string | null;
-    countryCode: string | null;
-    homepageUrl: string | null;
-    searchUrl: string | null;
-}
-
 //File: ../../../MediaLife.Library/DAL/Torrent.cs
 
 export interface Torrent {
@@ -214,7 +204,17 @@ export interface Torrent {
     manuallyAdded: boolean;
 }
 
-//File: ../../../MediaLife.Library/DAL/Piratebay.cs
+//File: ../../../MediaLife.Library/DAL/TvNetwork.cs
+
+export interface TvNetwork {
+    networkId: number;
+    name: string | null;
+    countryCode: string | null;
+    homepageUrl: string | null;
+    searchUrl: string | null;
+}
+
+//File: ../../../MediaLife.Library/DAL/PirateBay.cs
 
 export interface PirateBay {
     id: number;

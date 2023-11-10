@@ -8,10 +8,10 @@ namespace MediaLife.Library.DAL
     [PrimaryKey(nameof(AccountId))]
     public class Account
     {
-        [Key]
         public uint AccountId { get; set; }
 
         [MaxLength(255)]
         public required string Name { get; set; }
+
     }
 }

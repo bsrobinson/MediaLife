@@ -31,7 +31,7 @@ namespace MediaLife.Services
 
         public string? PirateBayIssue()
         {
-            PirateBay? piratebay = db.Piratebay.FirstOrDefault(p => p.Active);
+            PirateBay? piratebay = db.PirateBay.FirstOrDefault(p => p.Active);
             if (piratebay == null)
             {
                 return "There is no active Pirate Bay url";
@@ -84,7 +84,7 @@ namespace MediaLife.Services
                 List? list = db.Lists.SingleOrDefault(l => l.ListId == showId);
                 if (list != null)
                 {
-                    show = new() { ShowId = showId, Name = list.Name, Added = list.Created, Updated = list.Created, DeleteWatched = false, WatchFromNextPlayable = false, DownloadAllTogether = false };
+                    show = new() { ShowId = showId, SiteSection = section, Name = list.Name, Added = list.Created, Updated = list.Created, DeleteWatched = false, WatchFromNextPlayable = false, DownloadAllTogether = false };
                     episodes = (
                         from e in db.Episodes
                         join l in db.ListEntries on new { e.EpisodeId, e.SiteSection } equals new { l.EpisodeId, l.SiteSection }
@@ -149,7 +149,7 @@ namespace MediaLife.Services
 
             if (show != null && episodes != null)
             {
-                return new ShowModel(show, db.TVNetworks.SingleOrDefault(n => n.NetworkId == show.NetworkId))
+                return new ShowModel(show, db.TvNetworks.SingleOrDefault(n => n.NetworkId == show.NetworkId))
                 {
                     Episodes = episodes
                 };
@@ -485,6 +485,7 @@ namespace MediaLife.Services
                         Hash = hash,
                         Added = DateTime.Now,
                         ManuallyAdded = true,
+                        LastPercentage = 0,
                     });
                     db.SaveChanges();
                     return GetEpisode(episode.SiteSection, episode.Id);

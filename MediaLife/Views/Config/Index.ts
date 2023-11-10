@@ -1,11 +1,11 @@
 import { MediaLife } from '../../Scripts/Site'
 import { element, elementsOfClass, firstOfClass } from '../../Scripts/BRLibraries/DOM'
-import { PirateBay } from '../../Scripts/Models/~csharpe-models';
-import { PirateBayConfig } from './PirateBayConfig';
 import { MediaLifeService } from '../../Scripts/Services/~csharpe-services';
 import { windowSize } from '../../Scripts/BRLibraries/WindowSize';
 import { FormValidation } from '../../Scripts/BRLibraries/FormValidation';
 import { UsersConfig } from './UsersConfig';
+import { PirateBayConfig } from './PirateBayConfig';
+import { PirateBay } from '../../Scripts/Models/~csharpe-models';
 
 export class ConfigIndex {
 

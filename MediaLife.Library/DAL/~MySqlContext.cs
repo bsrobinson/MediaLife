@@ -9,14 +9,15 @@ namespace MediaLife.Library.DAL
         public virtual DbSet<Account> Accounts { get; set; }
         public virtual DbSet<Config> Config { get; set; }
         public virtual DbSet<Episode> Episodes { get; set; }
-        public virtual DbSet<List> Lists { get; set; }
         public virtual DbSet<ListEntry> ListEntries { get; set; }
+        public virtual DbSet<List> Lists { get; set; }
         public virtual DbSet<Log> Log { get; set; }
         public virtual DbSet<LoggedPayload> LoggedPayloads { get; set; }
-		public virtual DbSet<Show> Shows { get; set; }
-        public virtual DbSet<PirateBay> Piratebay { get; set; }
+        public virtual DbSet<PirateBay> PirateBay { get; set; }
+        public virtual DbSet<Show> Shows { get; set; }
         public virtual DbSet<Torrent> Torrents { get; set; }
-        public virtual DbSet<TVNetwork> TVNetworks { get; set; }
+        public virtual DbSet<TvNetwork> TvNetworks { get; set; }
         public virtual DbSet<User> Users { get; set; }
+
 	}
 }
