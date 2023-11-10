@@ -8,6 +8,7 @@ namespace MediaLife.Library.DAL
 {
     [ExportFor(GasparType.TypeScript)]
     [PrimaryKey(nameof(Id))]
+    [Index(nameof(Hash), IsUnique = true)]
     public class Torrent
     {
         public uint Id { get; set; }
