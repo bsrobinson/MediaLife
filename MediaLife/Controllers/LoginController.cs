@@ -15,11 +15,11 @@ namespace MediaLife.Controllers
         }
 
         [HttpGet("[controller]")]
-        public IActionResult Index(string authKey)
+        public IActionResult Index()
         {
             if (Request.Cookies.ContainsKey("auth_key"))
             {
-                return new RedirectResult("/");
+                return new RedirectResult("/Logout");
             }
 
             ViewBag.AccountCount = db.UserAccounts.Count();
