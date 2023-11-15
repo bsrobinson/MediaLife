@@ -8,7 +8,7 @@
 {
 
     <form onsubmit="page.login(); return false;">
-        @Html.FormRow("text", "key", "Pass Key")
+        @Html.FormRow("key", "Pass Key")
     </form>
 
 }
@@ -18,6 +18,7 @@ else
         AccountId = 0,
         Name = "",
         Password = Guid.NewGuid().ToString(),
+        Role = UserRole.SiteAdmin,
     };
 
     <h1>Create first user</h1>
@@ -25,6 +26,7 @@ else
     <form id="createAccountForm" onsubmit="page.createFirstAccount(); return false;">
         @Html.FormRowFor(u => user.Name)
         @Html.FormRowFor(u => user.Password)
+        @Html.HiddenFor(u => user.Role)
         @Html.SubmitRow("Create")
     </form>
 

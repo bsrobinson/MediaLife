@@ -79,7 +79,9 @@ export class FormValidation {
             this.forms.push(validationForm);
         }
 
-        this.validateForm(form);
+        if (validate) {
+            this.validateForm(form);
+        }
     }
 
     removeValidator(form: HTMLElement) {

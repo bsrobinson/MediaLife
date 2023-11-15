@@ -78,6 +78,22 @@
             width: 20px;
         }
     }
+
+    &.select {
+        border: 1px solid #999;
+        border-radius: 5px;
+        width: 100%;
+        height: 43px;
+        width: calc(100% - 2px);
+
+        select {
+            position: absolute;
+            top: 13px;
+            left: 10px;
+            width: calc(100% - 20px);
+            font-size: 1rem;
+        }
+    }
     
     &.center {
         input {
@@ -87,7 +103,7 @@
 
     &.buttons {
         display: flex;
-        justify-content: end;
+        justify-content: start;
         gap: 1rem;
 
         input {
@@ -107,6 +123,28 @@
         input[type=submit] {
             background-color: #0088ff;
             color: white;
+        }
+
+        input:disabled {
+            &[type=button], &[type=submit] {
+                color: color-mix(in hsl, canvastext 66%, canvas) !important;
+                border-color: color-mix(in hsl, canvastext 66%, canvas);
+            }
+            &[type=submit] {
+                background-color: #999 !important;
+            }
+            &:active:hover {
+                filter: brightness(100%);
+            }
+        }
+
+        &.right {
+            justify-content: end;
+        }
+        &.thin {
+            input {
+                padding: 0.25rem 0.5rem;
+            }
         }
     }
 }
@@ -174,12 +212,4 @@
 
 .form-disabled {
     color: #999;
-
-    input[type=button], input[type=submit] {
-        color: color-mix(in hsl, canvastext 66%, canvas) !important;
-        border-color: color-mix(in hsl, canvastext 66%, canvas);
-    }
-    input[type=submit] {
-        background-color: #999 !important;
-    }
 }

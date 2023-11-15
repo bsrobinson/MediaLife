@@ -123,7 +123,7 @@ export class HomeShow {
         }
 
         for (let i = 0; i < episodes.length; i++) {
-            element('episode_list').appendChild(this.episodeRow(episodes[i] as tsEpisodeModel));
+            element('episode_list').appendChild(this.episodeRow(episodes[i] as tsEpisodeModel) as HTMLElement);
         }
         element('episode_list').appendElement('input', { type: 'button', value: 'Add to List', class: 'button add edit-list-show', style: 'margin:6px 0 10px 0', events: { click: () => this.startAddToListMode() } });
     }
@@ -138,7 +138,7 @@ export class HomeShow {
         if (row) {
             row.innerHTML = '';
         } else {
-            row = makeElement('div', { id: 'episode_row' + episode.id, events: { mouseenter: (e: Event) => this.hoverEpisode(e), mouseleave: () => this.hoverOffEpisode() } });
+            row = makeElement<HTMLElement>('div', { id: 'episode_row' + episode.id, events: { mouseenter: (e: Event) => this.hoverEpisode(e), mouseleave: () => this.hoverOffEpisode() } });
         }
         row.className = 'episode-row' + ((airDate == null || airDate > new Date()) && !available ? ' future' + (episode.watched ? '-but-watched' : '') : '');
 

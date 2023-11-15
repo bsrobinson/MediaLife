@@ -2,10 +2,11 @@ import { makeElement } from "./DOM"
 
 export class FormElementOptions
 {
-    type?: ('text' | 'hidden' | 'checkbox' | 'submit' | 'button' | 'number') | null = 'text';
+    type?: ('text' | 'hidden' | 'checkbox' | 'submit' | 'button' | 'number' | 'select') | null = 'text';
     name?: string | null = null;
     label?: string | null = null;
     value?: string | null = null;
+    options?: HTMLOptionElement[] = [];
     shortString?: boolean = false;
     classNames?: string[] = [];
     isRequired?: boolean = false;
@@ -13,6 +14,12 @@ export class FormElementOptions
     maxLength?: number | null = null;
     minimum?: number | null = null;
     maximum?: number | null = null;
+}
+
+export class StyleOptions
+{
+    rightAlign?: boolean | null = null;
+    thin?: boolean = false;
 }
 
 declare global { interface HTMLElement {
@@ -29,7 +36,9 @@ declare global { interface HTMLElement {
     appendSubmitButton(label: string): HTMLElement;
     appendSubmitRow(): HTMLElement;
     appendSubmitRow(label: string): HTMLElement;
+    appendSubmitRow(label: string, styles: StyleOptions): HTMLElement;
     appendButtonRow(buttons: HTMLElement[]): HTMLElement;
+    appendButtonRow(buttons: HTMLElement[], styles: StyleOptions): HTMLElement;
     appendFieldSet(label: string, fields: HTMLElement[]): HTMLElement;
 } }
 HTMLElement.prototype.appendFormRow = function (id: string, options: FormElementOptions): HTMLElement {
@@ -41,11 +50,11 @@ HTMLElement.prototype.appendButton = function (label: string, clickEvent: EventL
 HTMLElement.prototype.appendSubmitButton = function (label: string = 'Submit'): HTMLElement {
     return this.appendChild(makeSubmitButton(label));
 }
-HTMLElement.prototype.appendSubmitRow = function (label: string = 'Submit'): HTMLElement {
-    return this.appendChild(makeSubmitRow(label));
+HTMLElement.prototype.appendSubmitRow = function (label: string = 'Submit', styles: StyleOptions | null = null): HTMLElement {
+    return this.appendChild(makeSubmitRow(label, styles));
 }
-HTMLElement.prototype.appendButtonRow = function (buttons: HTMLElement[]): HTMLElement {
-    return this.appendChild(makeButtonRow(buttons));
+HTMLElement.prototype.appendButtonRow = function (buttons: HTMLElement[], styles: StyleOptions | null = null): HTMLElement {
+    return this.appendChild(makeButtonRow(buttons, styles));
 }
 HTMLElement.prototype.appendFieldSet = function (label: string, fields: HTMLElement[]): HTMLElement {
     return this.appendChild(makeFieldSet(label, fields));
@@ -57,9 +66,8 @@ export function makeFormRow(id: string, options: FormElementOptions): HTMLElemen
     options = { ...new FormElementOptions(), ...options }
     if (!options.validationMessages) { options.validationMessages = {}; } //this line should not be hit, but causes compliation errors
 
-    let classNames = [ 'field', ...options.classNames ?? [] ];
+    let classNames = [ 'field', options.type, ...options.classNames ?? [] ];
     if (options.type == 'number' || options.shortString) { classNames.push('center'); }
-    if (options.type == 'checkbox') { classNames.push(options.type); }
 
     let valueOutput = options.value;
     let checkedOutput: boolean | undefined = undefined;
@@ -96,27 +104,43 @@ export function makeFormRow(id: string, options: FormElementOptions): HTMLElemen
         label.appendElement('span', { class: 'required-star', title: options.validationMessages['required'] ? options.validationMessages['required'] : '', html: '*' });
     }
     div.appendElement('div', { id: `${id}-validation-message`, class: 'validation-message' });
-    div.appendElement('input', { type: options.type, id: id, name: options.name ?? id, value: valueOutput, maxlength: options.maxLength, data: dataAttr, bool: { checked: checkedOutput } });
+    if (options.type != 'select') {
+        div.appendElement('input', { type: options.type, id: id, name: options.name ?? id, value: valueOutput, maxlength: options.maxLength, data: dataAttr, bool: { checked: checkedOutput } });
+    } else {
+        let select = div.appendElement('select', { id: id, name: options.name ?? id, data: dataAttr }) as HTMLSelectElement;
+        options.options?.forEach(o => {
+            select.options.add(o);
+        });
+    }
 
     return div;
 }
 
-export function makeButton(label: string, clickEvent: EventListener | undefined = undefined): HTMLElement {
-    return makeElement('input', { type: 'button', value: label, events: { click: clickEvent } });
+export function makeButton(label: string, clickEvent: EventListener | undefined = undefined): HTMLInputElement {
+    return makeElement<HTMLInputElement>('input', { type: 'button', value: label, events: { click: clickEvent } });
 }
 
-export function makeSubmitButton(label: string = 'Submit'): HTMLElement {
-    return makeElement('input', { type: 'submit', value: label });
+export function makeSubmitButton(label: string = 'Submit'): HTMLInputElement {
+    return makeElement<HTMLInputElement>('input', { type: 'submit', value: label });
 }
 
-export function makeSubmitRow(label: string = 'Submit'): HTMLElement {
+export function makeSubmitRow(label: string = 'Submit', styles: StyleOptions | null = null): HTMLElement {
+
+    styles = styles ?? new StyleOptions();
+    if (styles.rightAlign === null || styles.rightAlign === undefined) { styles.rightAlign = true };
     return makeButtonRow([
         makeSubmitButton(label)
-    ]);
+    ], styles);
 }
 
-export function makeButtonRow(buttons: HTMLElement[]): HTMLElement {
+export function makeButtonRow(buttons: HTMLElement[], styles: StyleOptions | null = null): HTMLElement {
+    
     let e = makeElement('div', { class: 'field buttons' });
+
+    styles = styles ?? new StyleOptions();
+    if (styles.rightAlign === true) { e.addClass('right'); }
+    if (styles.thin) { e.addClass('thin'); }
+
     buttons.forEach(b => {
         e.appendChild(b);
     });

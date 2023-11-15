@@ -8,7 +8,7 @@
 //** full configuration in: ../../gaspar.config.json
 //**
 
-import { User, Account, Configuration, VLCStatus, SiteSection, ShowModel, EpisodeModel, ShowSettings, Show, EpisodeId, PirateBay } from "../Models/~csharpe-models";
+import { User, UserAccount, Configuration, VLCStatus, SiteSection, ShowModel, EpisodeModel, ShowSettings, Show, EpisodeId, PirateBay } from "../Models/~csharpe-models";
 import { ServiceErrorHandler } from "./service-error-handler";
 
 export class ServiceResponse<T> {
@@ -79,13 +79,13 @@ export namespace MediaLifeService {
         getUsers(showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<User[]>> {
             return new GasparServiceHelper().fetch(`/UsersApi/GetUsers`, { method: 'GET' }, showError);
         }
-        getAccounts(showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<Account[]>> {
+        getAccounts(showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<UserAccount[]>> {
             return new GasparServiceHelper().fetch(`/UsersApi/GetAccounts`, { method: 'GET' }, showError);
         }
         addAccount(username: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<boolean>> {
             return new GasparServiceHelper().fetch(`/UsersApi/AddAccount?username=${username || ""}`, { method: 'POST' }, showError);
         }
-        renameAccount(accountId: number, name: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<Account>> {
+        renameAccount(accountId: number, name: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<UserAccount>> {
             return new GasparServiceHelper().fetch(`/UsersApi/RenameAccount/${accountId}?name=${name || ""}`, { method: 'POST' }, showError);
         }
         addUser(accountId: number, username: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<User>> {

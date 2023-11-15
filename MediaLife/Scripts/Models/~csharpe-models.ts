@@ -250,6 +250,13 @@ export interface User {
     accountId: number;
     name: string;
     password: string;
+    role: UserRole;
+}
+
+export enum UserRole {
+    User = 'User',
+    AccountAdmin = 'Account Admin',
+    SiteAdmin = 'Site Admin',
 }
 
 //File: ../../../MediaLife.Library/DAL/List.cs
@@ -260,13 +267,6 @@ export interface List {
     created: string;
 }
 
-//File: ../../../MediaLife.Library/DAL/Account.cs
-
-export interface Account {
-    accountId: number;
-    name: string;
-}
-
 //File: ../../../MediaLife.Library/DAL/ListEntry.cs
 
 export interface ListEntry {
@@ -274,4 +274,11 @@ export interface ListEntry {
     episodeId: number;
     siteSection: SiteSection;
     rank: number;
+}
+
+//File: ../../../MediaLife.Library/DAL/UserAccount.cs
+
+export interface UserAccount {
+    accountId: number;
+    name: string;
 }

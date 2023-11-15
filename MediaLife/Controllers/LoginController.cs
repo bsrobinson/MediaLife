@@ -22,7 +22,7 @@ namespace MediaLife.Controllers
                 return new RedirectResult("/");
             }
 
-            ViewBag.AccountCount = db.Accounts.Count();
+            ViewBag.AccountCount = db.UserAccounts.Count();
             return View();
         }
 
@@ -44,13 +44,13 @@ namespace MediaLife.Controllers
         [HttpPost("[controller]/[action]")]
         public ActionResult<User> CreateFirstUser([FromBody] User user)
         {
-            if (db.Accounts.Count() > 0)
+            if (db.UserAccounts.Count() > 0)
             {
                 return BadRequest();
             }
 
-            Account newAccount = new() { Name = $"{user.Name}'s Account" };
-            db.Accounts.Add(newAccount);
+            UserAccount newAccount = new() { Name = $"{user.Name}'s Account" };
+            db.UserAccounts.Add(newAccount);
             db.SaveChanges();
 
             user.AccountId = newAccount.AccountId;

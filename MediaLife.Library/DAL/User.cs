@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 using Microsoft.EntityFrameworkCore;
 using WCKDRZR.Gaspar;
 
@@ -18,5 +20,18 @@ namespace MediaLife.Library.DAL
         [MaxLength(255)]
         public required string Password { get; set; }
 
+        [Column(TypeName = "nvarchar(12)")]
+        public required UserRole Role { get; set; }
+    }
+
+    [ExportFor(GasparType.TypeScript)]
+    public enum UserRole
+    {
+        [EnumMember(Value = "User")]
+        User,
+        [EnumMember(Value = "Account Admin")]
+        AccountAdmin,
+        [EnumMember(Value = "Site Admin")]
+        SiteAdmin,
     }
 }

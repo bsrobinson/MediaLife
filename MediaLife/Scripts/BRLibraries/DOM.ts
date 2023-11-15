@@ -193,7 +193,7 @@ declare global { interface HTMLElement {
 } }
 HTMLElement.prototype.insertElementBefore = function (htmlElementName: string, attributes: ElementAttributes | null = null): HTMLElement | null {
     if (this.parentNode) {
-        return this.parentNode.insertBefore(makeElement(htmlElementName, attributes), this);
+        return this.parentNode.insertBefore(makeElement<HTMLElement>(htmlElementName, attributes), this);
     }
     return null;
 }
@@ -210,7 +210,7 @@ declare global { interface HTMLElement {
 } }
 HTMLElement.prototype.insertElementAfter = function (htmlElementName: string, attributes: ElementAttributes | null = null): HTMLElement | null {
     if (this.parentNode) {
-        return this.parentNode.insertBefore(makeElement(htmlElementName, attributes), this.nextSibling);
+        return this.parentNode.insertBefore(makeElement<HTMLElement>(htmlElementName, attributes), this.nextSibling);
     }
     return null;
 }
@@ -228,17 +228,14 @@ HTMLElement.prototype.removeElement = function (): void {
 }
 
 
-declare global { interface HTMLElement {
-    /**
-    * Make new HTML Element
-    * @param {string} htmlElementName - HTMLElement type, for example use `new HTMLDivElement`
-    * @param {ElementAttributes} attributes - Attribute name and values
-    * @returns {HTMLElement} - The element
-    */
-    makeElement(htmlElementName: string): HTMLElement;
-    makeElement(htmlElementName: string, attributes: ElementAttributes | null): HTMLElement;
-} }
-export function makeElement(htmlElementName: string, attributes: ElementAttributes | null = null): HTMLElement {
+
+/**
+* Make new HTML Element
+* @param {string} htmlElementName - HTMLElement type, for example use `new HTMLDivElement`
+* @param {ElementAttributes} attributes - Attribute name and values
+* @returns {HTMLElement} - The element
+*/
+export function makeElement<T = HTMLElement>(htmlElementName: string, attributes: ElementAttributes | null = null): T {
     var e = document.createElement(htmlElementName);
     for (let a in attributes) {
         if (a == 'events') {
@@ -267,7 +264,7 @@ export function makeElement(htmlElementName: string, attributes: ElementAttribut
             }
         }
     }
-    return e;
+    return e as T;
 }
 
 

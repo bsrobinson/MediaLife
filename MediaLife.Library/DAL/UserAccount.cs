@@ -6,7 +6,7 @@ namespace MediaLife.Library.DAL
 {
     [ExportFor(GasparType.TypeScript)]
     [PrimaryKey(nameof(AccountId))]
-    public class Account
+    public class UserAccount
     {
         public uint AccountId { get; set; }
 

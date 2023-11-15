@@ -6,7 +6,6 @@ namespace MediaLife.Library.DAL
     {
         public MySqlContext(DbContextOptions<MySqlContext> options) : base(options) { }
 
-        public virtual DbSet<Account> Accounts { get; set; }
         public virtual DbSet<Config> Config { get; set; }
         public virtual DbSet<Episode> Episodes { get; set; }
         public virtual DbSet<ListEntry> ListEntries { get; set; }
@@ -17,6 +16,7 @@ namespace MediaLife.Library.DAL
         public virtual DbSet<Show> Shows { get; set; }
         public virtual DbSet<Torrent> Torrents { get; set; }
         public virtual DbSet<TvNetwork> TvNetworks { get; set; }
+        public virtual DbSet<UserAccount> UserAccounts { get; set; }
         public virtual DbSet<User> Users { get; set; }
 
 	}

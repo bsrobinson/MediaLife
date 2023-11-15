@@ -101,7 +101,7 @@ form {
         margin: 0 auto;
     }
 
-    .left, .right {
+    .left-column, .right-column {
         min-width: 350px;
 
         .content-header {
@@ -134,11 +134,23 @@ form {
         }
     }
     .user {
+        display: flex;
+        justify-content: space-between;
         margin-left: 1rem;
         padding: 0.5rem 1rem;
-        display: block;
         text-decoration: none;
         color: black;
+
+        .name {
+
+        }
+        .role {
+            font-size: 0.8rem;
+            background-color: #666;
+            display: inline-block;
+            border-radius: 4px;
+            padding: 0.2rem 0.4rem;
+            color: white;        }
 
         &:hover {
             background-color: whitesmoke;
@@ -311,7 +323,7 @@ form {
             width: 300px;
         }
     
-        .left, .right {
+        .left-column, .right-column {
             min-width: 300px;
 
             .content-header {

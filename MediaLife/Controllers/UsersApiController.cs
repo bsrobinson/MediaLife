@@ -28,20 +28,20 @@ namespace MediaLife.Controllers
 
         [ExportFor(GasparType.TypeScript)]
         [HttpGet("[controller]/[action]")]
-        public ActionResult<List<Account>> GetAccounts()
+        public ActionResult<List<UserAccount>> GetAccounts()
         {
-            return db.Accounts.ToList();
+            return db.UserAccounts.ToList();
         }
 
         [ExportFor(GasparType.TypeScript)]
         [HttpPost("[controller]/[action]")]
         public ActionResult<bool> AddAccount(string username)
         {
-            Account newAccount = new() { Name = $"{username}'s Account" };
-            db.Accounts.Add(newAccount);
+            UserAccount newAccount = new() { Name = $"{username}'s Account" };
+            db.UserAccounts.Add(newAccount);
             db.SaveChanges();
 
-            User user = new() { Name = username, Password = Guid.NewGuid().ToString(), AccountId = newAccount.AccountId };
+            User user = new() { Name = username, Password = Guid.NewGuid().ToString(), AccountId = newAccount.AccountId, Role = UserRole.AccountAdmin };
             db.Users.Add(user);
             db.SaveChanges();
 
@@ -50,9 +50,9 @@ namespace MediaLife.Controllers
 
         [ExportFor(GasparType.TypeScript)]
         [HttpPost("[controller]/[action]/{accountId}")]
-        public ActionResult<Account> RenameAccount(uint accountId, string name)
+        public ActionResult<UserAccount> RenameAccount(uint accountId, string name)
         {
-            Account? account = db.Accounts.FirstOrDefault(a => a.AccountId == accountId);
+            UserAccount? account = db.UserAccounts.FirstOrDefault(a => a.AccountId == accountId);
             if (account == null)
             {
                 return NotFound();
@@ -68,13 +68,13 @@ namespace MediaLife.Controllers
         [HttpPost("[controller]/[action]/{accountId}")]
         public ActionResult<User> AddUser(uint accountId, string username)
         {
-            Account? account = db.Accounts.FirstOrDefault(a => a.AccountId == accountId);
+            UserAccount? account = db.UserAccounts.FirstOrDefault(a => a.AccountId == accountId);
             if (account == null)
             {
                 return NotFound();
             }
 
-            User user = new() { Name = username, Password = Guid.NewGuid().ToString(), AccountId = account.AccountId };
+            User user = new() { Name = username, Password = Guid.NewGuid().ToString(), AccountId = account.AccountId, Role = UserRole.User };
             db.Users.Add(user);
             db.SaveChanges();
 
