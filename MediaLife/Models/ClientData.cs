@@ -149,12 +149,18 @@ namespace MediaLife.Models
                         Match seriesEpisodeNumber = new Regex(@"S\d{2,4}E\d{2}", RegexOptions.IgnoreCase).Match(fileName);
                         if (seriesEpisodeNumber.Success)
                         {
-                            string showName = fileName.Substring(0, seriesEpisodeNumber.Index);
-                            showName = showName.Replace("-", "").Replace(".", "").Trim();
-                            Show = shows.FirstOrDefault(s => string.Compare(showName, s.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase) == 0 && s.SiteSection == SiteSection.TV).DeepClone();
-
-                            if (Show != null)
+                            List<string> cleansedfileNames = new() {
+                                fileName.Trim(),
+                                fileName.Replace(".", " ").Trim(),
+                                fileName.Replace("-", " ").Trim(),
+                                fileName.Replace(".", "").Replace("-", "").Trim()
+                            };
+                            IEnumerable<ShowModel> matchingShows = shows.Where(s => cleansedfileNames.Any(n => n.StartsWith(s.Name, true, CultureInfo.CurrentCulture) && s.SiteSection == SiteSection.TV));
+                            
+                            if (matchingShows.Count() >= 1)
                             {
+                                Show = matchingShows.OrderByDescending(s => s.Name.LevenshteinDistance(fileName)).First().DeepClone();
+
                                 int episodeIndex = seriesEpisodeNumber.Value.IndexOf("E", StringComparison.OrdinalIgnoreCase);
                                 if (short.TryParse(seriesEpisodeNumber.Value.Substring(1, episodeIndex - 1), out short seriesNumber)
                                     && short.TryParse(seriesEpisodeNumber.Value.Substring(episodeIndex + 1, 2), out short episodeNumber))
