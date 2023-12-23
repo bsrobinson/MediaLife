@@ -167,29 +167,35 @@ export class FormValidation {
                             fieldValue = fieldElement.options[fieldElement.selectedIndex].value;
                         }
         
-                        let errorMessage = '';
+                        let errorMessage = null;
                         
                         //Check required fields
                         let dataValRequired = fieldElement.getAttribute('data-val-required');
-                        if (dataValRequired && fieldValue == '') {
+                        if (dataValRequired !== null && fieldValue == '') {
                             errorMessage = dataValRequired;
                         }
                         
                         //Check number fields
                         let dataValNumber = fieldElement.getAttribute('data-val-number');
-                        if (dataValNumber && ((fieldValue == '' && !htmlValid) || (fieldValue != '' && fieldValue.match(/^(?:-|)[0-9.]+$/) == null))) {
+                        if (dataValNumber !== null && ((fieldValue == '' && !htmlValid) || (fieldValue != '' && fieldValue.match(/^(?:-|)[0-9.]+$/) == null))) {
                             errorMessage = dataValNumber;
+                        }
+
+                        //Check checkbox is checked
+                        let dataValChecked = fieldElement.getAttribute('data-val-checked');
+                        if (dataValChecked !== null && !field.fieldElement.checked) {
+                            errorMessage = dataValChecked;
                         }
                         
                         //Check numeric range fields
                         let dataValRange = fieldElement.getAttribute('data-val-range');
                         if (dataValRange && !Number.isNaN(parseFloat(fieldValue))) {
-                            let dataValRangeMin = fieldElement.getAttribute('data-val-range-min');
-                            if (dataValRange && dataValRangeMin && !Number.isNaN(parseFloat(dataValRangeMin)) && parseFloat(fieldValue) < parseFloat(dataValRangeMin)) {
+                            let dataValRangeMin = fieldElement.getAttribute('data-val-rangeMin');
+                            if (dataValRange !== null && dataValRangeMin !== null && !Number.isNaN(parseFloat(dataValRangeMin)) && parseFloat(fieldValue) < parseFloat(dataValRangeMin)) {
                                 errorMessage = dataValRange;
                             }
-                            let dataValRangeMax = fieldElement.getAttribute('data-val-range-max');
-                            if (dataValRange && dataValRangeMax && !Number.isNaN(parseFloat(dataValRangeMax)) && parseFloat(fieldValue) > parseFloat(dataValRangeMax)) {
+                            let dataValRangeMax = fieldElement.getAttribute('data-val-rangeMax');
+                            if (dataValRange !== null && dataValRangeMax !== null && !Number.isNaN(parseFloat(dataValRangeMax)) && parseFloat(fieldValue) > parseFloat(dataValRangeMax)) {
                                 errorMessage = dataValRange;
                             }
                         }
@@ -197,9 +203,9 @@ export class FormValidation {
                         //Check regular expression fields
                         if (errorMessage == '') {
                             let dataValRegex = fieldElement.getAttribute('data-val-regex');
-                            if (dataValRegex != null) {
-                                let dataValRegexPattern = fieldElement.getAttribute('data-val-regex-pattern');
-                                if (dataValRegexPattern != null && fieldValue.match(dataValRegexPattern) == null) {
+                            if (dataValRegex !== null) {
+                                let dataValRegexPattern = fieldElement.getAttribute('data-val-regexPattern');
+                                if (dataValRegexPattern !== null && fieldValue.match(dataValRegexPattern) == null) {
                                     errorMessage = dataValRegex;
                                 }
                             }
@@ -208,7 +214,7 @@ export class FormValidation {
                         //Check currency fields
                         if (errorMessage == '') {
                             let dataValCurrency = fieldElement.getAttribute('data-val-currency');
-                            if (dataValCurrency != null) {
+                            if (dataValCurrency !== null) {
                                 if (fieldValue.match(/^[0-9\.]+$/) == null) {
                                     errorMessage = dataValCurrency;
                                 }
@@ -216,12 +222,12 @@ export class FormValidation {
                         }
         
                         //Check compare fields
-                        if (errorMessage == '') {
+                        if (errorMessage == null) {
                             let dataValCompare = fieldElement.getAttribute('data-val-compare');
-                            if (dataValCompare != null) {
-                                let dataValCompareTo = fieldElement.getAttribute('data-val-compare-to');
-                                let dataValCompareOperand = fieldElement.getAttribute('data-val-compare-operand');
-                                if (dataValCompareTo != null && dataValCompareOperand != null && form.formElement[dataValCompareTo]) {
+                            if (dataValCompare !== null) {
+                                let dataValCompareTo = fieldElement.getAttribute('data-val-compareTo');
+                                let dataValCompareOperand = fieldElement.getAttribute('data-val-compareOperand');
+                                if (dataValCompareTo !== null && dataValCompareOperand !== null && form.formElement[dataValCompareTo]) {
                                     let cmpValue = form.formElement[dataValCompareTo].value;
                                     if (cmpValue == null && form.formElement[dataValCompareTo].nodeName.toLowerCase == 'select') {
                                         cmpValue = form.formElement[dataValCompareTo].options[form.formElement[dataValCompareTo].selectedIndex].value;
@@ -236,12 +242,12 @@ export class FormValidation {
                         }
                 
                         //Check date drop downs required
-                        if (errorMessage == '') {
+                        if (errorMessage == null) {
                             let dataValDateDropDownsRequired = fieldElement.getAttribute('data-val-datedropdownsrequired');
-                            if (dataValDateDropDownsRequired != null) {
-                                let dataValDateDropDownsRequiredMonthId = fieldElement.getAttribute('data-val-datedropdownsrequired-monthid');
-                                let dataValDateDropDownsRequiredYearId = fieldElement.getAttribute('data-val-datedropdownsrequired-yearid');
-                                if (dataValDateDropDownsRequiredMonthId != null && elementOrNull(dataValDateDropDownsRequiredMonthId) && dataValDateDropDownsRequiredYearId != null && elementOrNull(dataValDateDropDownsRequiredYearId)) {
+                            if (dataValDateDropDownsRequired !== null) {
+                                let dataValDateDropDownsRequiredMonthId = fieldElement.getAttribute('data-val-datedropdownsrequiredMonthid');
+                                let dataValDateDropDownsRequiredYearId = fieldElement.getAttribute('data-val-datedropdownsrequiredYearid');
+                                if (dataValDateDropDownsRequiredMonthId !== null && elementOrNull(dataValDateDropDownsRequiredMonthId) && dataValDateDropDownsRequiredYearId !== null && elementOrNull(dataValDateDropDownsRequiredYearId)) {
                                     let monthValue = elementOrNull<HTMLFormElement>(dataValDateDropDownsRequiredMonthId)?.value;
                                     if (monthValue == null) { monthValue = element<HTMLFormElement>(dataValDateDropDownsRequiredMonthId).options[element<HTMLFormElement>(dataValDateDropDownsRequiredMonthId).selectedIndex].value; }
                                     let yearValue = elementOrNull<HTMLFormElement>(dataValDateDropDownsRequiredYearId)?.value;
@@ -254,11 +260,11 @@ export class FormValidation {
                         }
                         
                         //Check credit card date is in the past
-                        if (errorMessage == '') {
+                        if (errorMessage == null) {
                             let dataValCCDateInPast = fieldElement.getAttribute('data-val-ccdateinpast');
-                            if (dataValCCDateInPast != null) {
-                                let dataValCCDateInPastYearId = fieldElement.getAttribute('data-val-ccdateinpast-yearid');
-                                if (dataValCCDateInPastYearId != null && elementOrNull(dataValCCDateInPastYearId)) {
+                            if (dataValCCDateInPast !== null) {
+                                let dataValCCDateInPastYearId = fieldElement.getAttribute('data-val-ccdateinpastYearid');
+                                if (dataValCCDateInPastYearId !== null && elementOrNull(dataValCCDateInPastYearId)) {
                                     let yearValue = elementOrNull<HTMLFormElement>(dataValCCDateInPastYearId)?.value;
                                     if (yearValue == null) { yearValue = element<HTMLFormElement>(dataValCCDateInPastYearId).options[element<HTMLFormElement>(dataValCCDateInPastYearId).selectedIndex].value; }
                                     if (fieldValue != '' && !isNaN(fieldValue) && yearValue != '' && !isNaN(yearValue)) {
@@ -274,18 +280,21 @@ export class FormValidation {
         
         
                         //Output error message
-                        if (fieldElement.id && elementOrNull(fieldElement.id + '-validation-message')) {
-                            element(fieldElement.id + '-validation-message').innerHTML = errorMessage;
+                        if (fieldElement.id && elementOrNull(fieldElement.id + '_validation_message')) {
+                            let validationMessage = element(fieldElement.id + '_validation_message')
+                            validationMessage.html(errorMessage ?? '');
+                            validationMessage.title = errorMessage ?? '';
+                            validationMessage.ariaLabel = '';
                         }
         
-                        //Update field class
-                        fieldElement.parentOfClass('field')?.toggleClassIfTrue('input-validation-error', errorMessage != '')
-                        fieldElement.toggleClassIfTrue('input-validation-error', errorMessage != '');
+                        //Update field-row class
+                        fieldElement.parentOfType('form-field-row')?.toggleClassIfTrue('input-validation-error', errorMessage != null)
+                        fieldElement.toggleClassIfTrue('input-validation-error', errorMessage != null);
 
-                        fieldElement.parentOfClass('field')?.toggleClassIfTrue('input-validation-success', errorMessage == '')
-                        fieldElement.toggleClassIfTrue('input-validation-success', errorMessage == '');
+                        fieldElement.parentOfType('form-field-row')?.toggleClassIfTrue('input-validation-success', errorMessage == null)
+                        fieldElement.toggleClassIfTrue('input-validation-success', errorMessage == null);
                         
-                        if (errorMessage != '') {
+                        if (errorMessage != null) {
                             this.summaryLines.push({ message: errorMessage, fieldElement: fieldElement });
                             return false;
                         }

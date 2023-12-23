@@ -6,17 +6,17 @@
 <div id="settings" class="hide">
 
     <ul class="menu">
-        <li><a href="#accounts" class="menu-link">👤 Accounts</a></li>
-        <li><a href="#client" class="menu-link">🖥️ Client Updates</a></li>
-        <li><a href="#piratebay" class="menu-link">🏴‍☠️ Pirate Bay</a></li>
-        <li><a href="#providers" class="menu-link">📀 Data Providers</a></li>
-        <li><a href="#vlc" class="menu-link"><img src="/images/vlc.svg">VLC</a></li>
+        <li>@Html.Icon(new SolidIcon("user") { FixedWidth = true }, "Accounts", "#accounts", "menu-link")</li>
+        <li>@Html.Icon(new SolidIcon("desktop") { FixedWidth = true }, "Client Updates", "#client", "menu-link")</li>
+        <li>@Html.Icon(new SolidIcon("skull-crossbones") { FixedWidth = true }, "Pirate Bay", "#piratebay", "menu-link")</li>
+        <li>@Html.Icon(new SolidIcon("binary") { FixedWidth = true }, "Data Providers", "#providers", "menu-link")</li>
+        <li>@Html.Icon(new SolidIcon("traffic-cone") { FixedWidth = true }, "VLC", "#vlc", "menu-link")</li>
     </ul>
 
     <div id="settings_content">
 
         <div class="content-header">
-            <a href="#" class="back"></a>
+            @Html.Icon(new SolidIcon("chevron-left"), action: "#", classes: "back")
             <div id="header_page_name" class="title"></div>
             <div class="right-space"></div>
         </div>
@@ -24,11 +24,11 @@
         <div id="accounts" class="content-page">
             <div class="left-column">
                 <div id="accounts_table"></div>
-                <a href="JavaScript:;" id="accounts_add_link" class="hide" onclick="page.usersConfig.addAccount()">Add Account</a>
+                @Html.Icon("plus", "Add Account", "page.usersConfig.addAccount()", "hide icon-link", new() { { "id", "accounts_add_link" } })
             </div>
             <div class="right-column">
                 <div class="content-header" style="">
-                    <a href="JavaScript:;" onclick="page.usersConfig.backToAccounts()" class="back"></a>
+                    @Html.Icon(new SolidIcon("chevron-left"), action: "page.usersConfig.backToAccounts()", classes: "back")
                     <div class="title">Edit User</div>
                     <div class="right-space"></div>
                 </div>
@@ -72,7 +72,7 @@
                 @Html.FormRowFor(m => Model.UserConfig.MovieConfig.UpdateFromDataProvider, "For Movies"),
                 @Html.FormRowFor(m => Model.UserConfig.BookConfig.UpdateFromDataProvider, "For Books"),
             })
-            @Html.FormRowFor(m => Model.UserConfig.MovieConfig.MovieReleaseCountryCode, new() { ShortString = true })
+            @Html.FormRowFor(m => Model.UserConfig.MovieConfig.MovieReleaseCountryCode, new() { Style = FormRowStyle.OutlineInset })
             @Html.FormRowFor(m => Model.UserConfig.MovieConfig.TheMovieDbApiKey)
             @Html.SubmitRow("Save")
         </form>

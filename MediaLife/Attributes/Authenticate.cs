@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Claims;
 using MediaLife.Library.DAL;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -22,8 +23,8 @@ namespace MediaLife.Attributes
                     context.HttpContext.Response.Cookies.Append("auth_key", cookieValue, new() { Expires = DateTime.Now.AddYears(1) });
 
                     if (context.Controller is Controller controller)
-                    {
-                        controller.ViewBag.Username = user.Name;
+                    {   
+                        context.HttpContext.User = new ClaimsPrincipal(new ApplicationUser(user));
                     }
 
                     return;
@@ -38,5 +39,17 @@ namespace MediaLife.Attributes
 
             return;
         }        
+    }
+
+    public class ApplicationUser : ClaimsIdentity
+    {
+        public User User { get; }
+        public override string Name => User.Name;
+        public override bool IsAuthenticated => true;
+
+        public ApplicationUser(User user)
+        {
+            User = user;
+        }
     }
 }

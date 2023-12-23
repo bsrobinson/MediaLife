@@ -7,6 +7,7 @@ using MediaLife.Extensions;
 using MediaLife.Library.DAL;
 using WCKDRZR.Gaspar;
 using MediaLife.Library.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace MediaLife.Models
 {
@@ -39,11 +40,16 @@ namespace MediaLife.Models
         }
 
         public DateTime? Added { get; set; }
+        [Display(Name = "Delete Watched")]
         public bool DeleteWatched { get; set; }
+        [Display(Name = "Watch From Next Playable")]
         public bool WatchFromNextPlayable { get; set; }
+        [Display(Name = "Download All Together")]
         public bool DownloadAllTogether { get; set; }
+        [Display(Name = "Download Limit")]
         public int? DownloadLimit { get; set; }
 
+        [Display(Name = "Recommended By")]
         public string? RecommendedBy { get; set; }
 
         public double SearchScore { get; set; }
@@ -79,6 +85,7 @@ namespace MediaLife.Models
         public bool Complete => UnwatchedCount == 0;
 
         internal List<EpisodeModel> UnSkipped => _episodes.Where(e => !e.Skip).ToList();
+        [Display(Name = "Skip Until Series")]
         public short? SkipUntilSeries => _episodes.Count > 0 && UnSkipped.Count > 0 ? UnSkipped.Min(e => e.SeriesNumber) : (short)1;
 
         public DateTime? LastWatched => Episodes.Max(e => new[] { e.StartedWatching, e.Watched }.Max());

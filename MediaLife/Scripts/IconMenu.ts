@@ -12,7 +12,7 @@ export class IconMenu {
     menuHoverTimeout: NodeJS.Timeout | null = null;
     touchTimer: NodeJS.Timeout | null = null;
 
-    constructor(public id: string, public parentNode: HTMLElement, public button: HTMLElement, public items: ElementAttributes[]) {
+    constructor(public id: string, public parentNode: HTMLElement, public button: HTMLElement, public icons: HTMLElement[]) {
 
         if (!window.iconMenus) {
             window.iconMenus = {};
@@ -38,16 +38,16 @@ export class IconMenu {
                     mouseleave: () => this.mouseLeaveMenu()
                 }
             });
-            this.items.forEach(item => {
+            this.icons.forEach(icon => {
 
-                item.html = item.html || item.title;
-                item.class = 'menu-item ' + item.class;
+                // icon.html(icon.html() || icon.title);
+                icon.className = 'menu-item ' + icon.className;
 
-                item.events = item.events || {};
-                item.events.mouseenter = (e: Event) => this.mouseEnterMenuItem(e);
-                item.events.mouseleave = (e: Event) => this.mouseLeaveMenuItem(e);
+                // icon.events = icon.events || {};
+                icon.onmouseenter = (e: Event) => this.mouseEnterMenuItem(e);
+                icon.onmouseleave = (e: Event) => this.mouseLeaveMenuItem(e);
 
-                this.menuNode.appendElement('div', item);
+                this.menuNode.appendChild(icon);
             });
             this.menuNode.appendElement('div', { class: 'active-mark' });
         }

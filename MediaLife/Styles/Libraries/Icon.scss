@@ -1,0 +1,18 @@
+icon {
+    display: inline;
+    text-align: center;    
+}
+
+icon-link a, icon-and-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &.tight {
+        gap: 0.25rem;
+    }
+}
+
+icon-link a {
+    text-decoration: none;
+}

@@ -6,6 +6,7 @@ import { tsEpisodeId, tsEpisodeModel, tsListPageModel, tsShowModel } from '../..
 import { EpisodeObject } from '../../Scripts/EpisodeObject';
 import { EpisodeFileIcon } from '../../Scripts/EpisodeFileIcon';
 import { EpisodeWatchIcon } from '../../Scripts/EpisodeWatchIcon';
+import '../../Scripts/BRLibraries/Form'
 
 export class HomeIndex {
 
@@ -107,8 +108,12 @@ export class HomeIndex {
         let sortSelect = element<HTMLSelectElement>(list + '_sort_select');
         let option = sortSelect.options[sortSelect.selectedIndex];
         let order = option.value;
-        let decending = option.getAttribute('data-direction') == 'desc';
-        let headers = option.getAttribute('data-group-headers') == 'true';
+
+        let decending = order.slice(0, 5) == 'desc_';
+        if (decending) { order = order.slice(5); }
+
+        let headers = order.slice(0, 6) == 'group_';
+        if (headers) { order = order.slice(6); }
 
         this.showLists[list].sort((a, b) => {
             let sortA = a[order]?.toString() || (decending ? '0' : 'zzz');
@@ -127,9 +132,6 @@ export class HomeIndex {
             this.addPoster(list + '_posters', this.showLists[list][i]);
             previousValue = this.showLists[list][i][order];
         }
-
-        element(list + '_sort_button_label').innerHTML = option.text
-
     }
 
     addPoster(toElement: string, show: tsShowModel) {
@@ -186,8 +188,7 @@ export class HomeIndex {
         let ep = show.nextEpisode as tsEpisodeModel;
         if (show.unwatchedCount == 0) {
             if (show.startedAiring) {
-                episodeContent.appendElement('img', { src: '/images/tick.svg' });
-                episodeContent.appendElement('span', { html: 'All ' + (this.data.context.siteSection == SiteSection.Books ? 'read' : 'watched') });
+                episodeContent.appendIcon('check', { label: 'All ' + (this.data.context.siteSection == SiteSection.Books ? 'read' : 'watched') });
             } else if (show.firstAirDate != null) {
                 episodeContent.appendElement('span', { html: (this.data.context.siteSection == SiteSection.TV ? 'Starts ' : 'Released ') + new Date(show.firstAirDate).format('j M Y') });
             }
@@ -209,10 +210,9 @@ export class HomeIndex {
 
         let addToListContent = row.appendElement('span', { class: 'add-to-list-show' });
         if (window.addToListMode.containsAll(show.episodeIds as tsEpisodeId[])) {
-            addToListContent.appendElement('img', { src: '/images/tick.svg' });
-            addToListContent.appendElement('span', { html: 'In List' });
+            addToListContent.appendIcon('check', { label: 'In List' });
         } else {
-            addToListContent.appendElement('span', { html: `Add ${show.episodeCount > 1 ? 'All ' + show.episodeCount : ''} to list`, class: 'poster-icon add-to-list', events: { click: (e: Event) => this.addEpisodesToList(e) } });
+            addToListContent.appendIcon('plus', { label: `Add ${show.episodeCount > 1 ? 'All ' + show.episodeCount : ''} to list`, class: 'poster-icon add-to-list', click: (e: Event) => this.addEpisodesToList(e) });
         }
 
         return row;
@@ -240,20 +240,24 @@ export class HomeIndex {
     addEpisodesToList(event: Event) {
         if (event.target instanceof HTMLElement) {
 
-            event.target.addClass('saving');
-            event.target.innerHTML = '';
-            
-            let showIdString = event.target.parentOfClass('poster')?.id.slice(5);
-            if (showIdString) {
-                let showId = parseInt(showIdString);
-                let episodeIds = this.data.shows.find(s => s.id == showId)?.episodeIds as tsEpisodeId[];
-                if (episodeIds && episodeIds.length > 0) {
+            let parent = event.target.parentOfClass('add-to-list-show');
+            if (parent) {
                     
-                    episodeIds[0].showId = showId;                
-                    
-                    window.addToListMode.add(episodeIds, episodes => {
-                        this.updateEpisodeRow(this.data.shows.find(s => s.id == episodes[0].showId));
-                    });
+                parent.html('');
+                parent.appendIcon('ellipsis');
+                
+                let showIdString = event.target.parentOfClass('poster')?.id.slice(5);
+                if (showIdString) {
+                    let showId = parseInt(showIdString);
+                    let episodeIds = this.data.shows.find(s => s.id == showId)?.episodeIds as tsEpisodeId[];
+                    if (episodeIds && episodeIds.length > 0) {
+                        
+                        episodeIds[0].showId = showId;                
+                        
+                        window.addToListMode.add(episodeIds, episodes => {
+                            this.updateEpisodeRow(this.data.shows.find(s => s.id == episodes[0].showId));
+                        });
+                    }
                 }
             }
         }

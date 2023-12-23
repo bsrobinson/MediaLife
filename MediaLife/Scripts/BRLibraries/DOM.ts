@@ -16,6 +16,7 @@ export interface ElementAttributes {
     value?: string | null,
     maxlength?: number | null,
     for?: string | null,
+    list?: string | null,
 
     events?: EventAttributes
     bool?: BooleanAttributes,
@@ -24,6 +25,7 @@ export interface ElementAttributes {
 
 export interface EventAttributes {
     click?: EventListener,
+    change?: EventListener,
     mouseover?: EventListener,
     mouseout?: EventListener,
     mouseenter?: EventListener,
@@ -183,6 +185,22 @@ HTMLElement.prototype.appendElement = function (htmlElementName: string, attribu
 
 declare global { interface HTMLElement {
     /**
+    * Insert an existing element into to the receivers parent, before the reciever
+    * @param {HTMLElement} node - HTMLElement to insert
+    * @param {string} where - Where to insert, 'before' or 'after'
+    * @returns {HTMLElement} - Inserted element
+    */
+    insert(node: HTMLElement, where: ('before' | 'after')): HTMLElement | null;
+} }
+HTMLElement.prototype.insert = function (htmlElement: HTMLElement, where: ('before' | 'after')): HTMLElement | null {
+    if (this.parentNode) {
+        return this.parentNode.insertBefore(htmlElement, where == 'before' ? this : this.nextSibling);
+    }
+    return null;
+}
+
+declare global { interface HTMLElement {
+    /**
     * Insert a new element into to the receivers parent, before the reciever
     * @param {string} htmlElementName - HTMLElement type, for example use `new HTMLDivElement`
     * @param {ElementAttributes} attributes - Attribute name and values
@@ -192,10 +210,7 @@ declare global { interface HTMLElement {
     insertElementBefore(htmlElementName: string, attributes: ElementAttributes | null): HTMLElement | null;
 } }
 HTMLElement.prototype.insertElementBefore = function (htmlElementName: string, attributes: ElementAttributes | null = null): HTMLElement | null {
-    if (this.parentNode) {
-        return this.parentNode.insertBefore(makeElement<HTMLElement>(htmlElementName, attributes), this);
-    }
-    return null;
+    return this.insert(makeElement<HTMLElement>(htmlElementName, attributes), 'before');
 }
 
 declare global { interface HTMLElement {
@@ -209,10 +224,7 @@ declare global { interface HTMLElement {
     insertElementAfter(htmlElementName: string, attributes: ElementAttributes | null): HTMLElement | null;
 } }
 HTMLElement.prototype.insertElementAfter = function (htmlElementName: string, attributes: ElementAttributes | null = null): HTMLElement | null {
-    if (this.parentNode) {
-        return this.parentNode.insertBefore(makeElement<HTMLElement>(htmlElementName, attributes), this.nextSibling);
-    }
-    return null;
+    return this.insert(makeElement<HTMLElement>(htmlElementName, attributes), 'after');
 }
 
 declare global { interface HTMLElement {
@@ -241,7 +253,9 @@ export function makeElement<T = HTMLElement>(htmlElementName: string, attributes
         if (a == 'events') {
             let events = (attributes as Record<'events', Record<string, EventListener>>).events;
             for (let v in events) {
-                e.addEventListener(v, (e: Event) => events[v](e));
+                if (events[v]) {
+                    e.addEventListener(v, (e: Event) => events[v](e));
+                }
             }
         } else if (a == 'bool') {
             let bools = (attributes as Record<'bool', Record<string, boolean>>).bool;
@@ -275,9 +289,13 @@ declare global { interface HTMLElement {
     * @returns {HTMLElement} - Matching parent or null
     */
     parentOfType(nodeName: string): HTMLElement | null;
+    parentOfType(nodeName: string, includeThis: boolean): HTMLElement | null;
 } }
-HTMLElement.prototype.parentOfType = function (nodeName: string): HTMLElement | null {
+HTMLElement.prototype.parentOfType = function (nodeName: string, includeThis = true): HTMLElement | null {
     var e = this;
+    if (includeThis && e.nodeName.toLowerCase() == nodeName.toLowerCase()) {
+        return e;
+    }
     while (e.parentElement) {
         e = e.parentElement;
         if (e.nodeName && e.nodeName.toLowerCase() == nodeName.toLowerCase()) {
@@ -294,9 +312,13 @@ declare global { interface HTMLElement {
     * @returns {HTMLElement} - Matching parent or null
     */
     parentOfId(id: string): HTMLElement | null;
+    parentOfId(id: string, includeThis: boolean): HTMLElement | null;
 } }
-HTMLElement.prototype.parentOfId = function (id: string): HTMLElement | null {
+HTMLElement.prototype.parentOfId = function (id: string, includeThis = true): HTMLElement | null {
     var e = this;
+    if (includeThis && e.id == id) {
+        return e;
+    }
     while (e.parentElement) {
         e = e.parentElement;
         if (e.id && e.id == id) {
@@ -313,9 +335,13 @@ declare global { interface HTMLElement {
     * @returns {HTMLElement} - Matching parent or null
     */
     parentOfClass(className: string): HTMLElement | null;
+    parentOfClass(className: string, includeThis: boolean): HTMLElement | null;
 } }
-HTMLElement.prototype.parentOfClass = function (className: string): HTMLElement | null {
+HTMLElement.prototype.parentOfClass = function (className: string, includeThis = true): HTMLElement | null {
     var e = this;
+    if (includeThis && e.containsClass(className)) {
+        return e;
+    }
     while (e.parentElement) {
         e = e.parentElement;
         if (e.className && e.containsClass(className)) {
@@ -533,7 +559,6 @@ HTMLFormElement.prototype.enable = function(): void {
  	this.toggleDisabled(false);
 }
 HTMLFormElement.prototype.toggleDisabled = function(disabled: boolean): void {
-    this.toggleClassIfTrue('form-disabled', disabled);
  	for (var i = 0; i < this.elements.length; i++) {
  		(this.elements[i] as HTMLInputElement).disabled = disabled
  	}

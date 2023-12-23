@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node $npm_package_config_scripts/watch",
     "publish": "node $npm_package_config_scripts/publish",
-    "update-template": "node $npm_package_config_scripts/update"
+    "update-template": "node $npm_package_config_scripts/update",
+    "dbsync": "node $npm_package_config_scripts/dbsync"
   },
   "devDependencies": {
     "bestzip": "^2.2.1",

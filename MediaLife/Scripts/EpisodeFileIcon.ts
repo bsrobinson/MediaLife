@@ -1,4 +1,4 @@
-﻿import { makeElement } from "./BRLibraries/DOM";
+﻿import { BrandIcon, FadeAnimation, Icon, IconStyle, SolidIcon, makeIcon } from "./BRLibraries/Icon";
 import { EpisodeObject } from "./EpisodeObject";
 import { tsEpisodeModel } from "./Models/extendedModels";
 import { EpisodeModel } from "./Models/~csharpe-models";
@@ -25,9 +25,12 @@ export class EpisodeFileIcon {
         }
         else {
             window.episodeFileIcons[thisId] = this;
-            this.node = makeElement('div', { title: episode.filePath });
-            
+            this.node = makeIcon('', { class: 'episode-file-icon', htmlAttributes: { title: episode.filePath } });            
             this.updateClass();
+        }
+
+        if (additionalClasses) {
+            this.node.addClass(additionalClasses);
         }
 
     }
@@ -35,25 +38,26 @@ export class EpisodeFileIcon {
     updateClass() {
 
         let episode = this.episodeObj.episode;
-        this.node.className = 'episode-file-icon ' + this.additionalClasses;
+
+        this.node.removeClass('orange');
+        this.node.removeClass('faded');
+        this.node.style.fontSize = '';
 
         if (episode.hasTorrests) {
-            this.node.addClass('downloading');
+            this.node.changeIcon('download');
             this.node.title = episode.torrents.map(t => t.hash).join('\n');
         }
         else if (episode.filePath && episode.inCloud) {
-            this.node.addClass('in-cloud');
-            if (episode.requestDownload) {
-                this.node.addClass('request-download');
-            }
+            this.node.changeIcon(episode.requestDownload ? 'cloud-arrow-down' : 'cloud');
             this.addClick(() => this.toggleRequestDownload());
         }
         else if (episode.filePath) {
-            this.node.addClass('playable');
+            this.node.changeIcon(new BrandIcon('youtube'));
             this.addClick(() => this.play());
         }
         else if (episode.watched == null && !episode.skip) {
-            this.node.addClass('no-file');
+            this.node.changeIcon('video-slash');
+            this.node.addClass('faded');
             this.addClick(() => this.addTorrent())
         }
         else {
@@ -82,7 +86,8 @@ export class EpisodeFileIcon {
 
     setSaving() {
         this.removeClick();
-        this.node.addClass('saving');
+        this.node.changeIcon(new Icon('ellipsis', { animation: new FadeAnimation() }));
+        this.node.style.fontSize = '1.6rem';
     }
 
     addTorrent() {
@@ -121,8 +126,7 @@ export class EpisodeFileIcon {
 
     toggleRequestDownload() {
         if (!this.episodeObj.anySaving()) {
-            this.node.addClass('saving');
-            this.removeClick();
+            this.setSaving();
             this.episodeObj.toggleRequestDownload(() => this.updateClass());
         }
     }
@@ -131,7 +135,8 @@ export class EpisodeFileIcon {
         for (const [key, value] of Object.entries(window.episodeFileIcons)) {
             value.updateClass();
         }
-        this.node.addClass('playing')
+        this.node.changeIcon(new SolidIcon('traffic-cone'));
+        this.node.addClass('orange');
         this.removeClick();
     }
 

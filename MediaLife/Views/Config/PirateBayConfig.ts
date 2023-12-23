@@ -1,4 +1,5 @@
 import { element, elementOrNull } from '../../Scripts/BRLibraries/DOM'
+import { FadeAnimation, Icon, IconStyle, SolidIcon } from '../../Scripts/BRLibraries/Icon';
 import { PirateBay } from '../../Scripts/Models/~csharpe-models';
 import { MediaLifeService, ServiceErrorMessage } from '../../Scripts/Services/~csharpe-services';
 
@@ -39,7 +40,7 @@ export class PirateBayConfig {
                 row = element('piratebay_table').appendElement('div', { id: 'row_' + item.id, class: 'row' });
 
                 let div = row.appendElement('div');
-                div.appendElement('div', { class: 'icon test' });
+                div.appendIcon(new Icon('ellipsis'), { class: 'test-icon' })
 
                 div = div.appendElement('div', { class: 'main-label' });
                 let url = div.appendElement('div', { class: 'url' });
@@ -52,10 +53,10 @@ export class PirateBayConfig {
                     div.appendElement('div', { class: 'metrics', html: 'Last Error: ' + this.relativeDate(item.lastError) + ' (' + item.consecutiveErrors + ' fails)' });
                 }
 
-                let buttons = row.appendElement('div');
-                buttons.appendElement('div', { class: 'icon active-icon active', title: 'Active' });
-                buttons.appendElement('div', { class: 'icon button active-icon inactive', title: 'Make Active', events: { click: (e: Event) => this.makeActive(e) } });
-                buttons.appendElement('div', { class: 'icon button delete', title: 'Delete', events: { click: (e: Event) => this.deleteEntry(e) } });
+                let buttons = row.appendElement('div', { style: 'font-size: 1.4rem' });
+                buttons.appendIcon(new SolidIcon('circle-check'), { class: 'icon button active', htmlAttributes: { title: 'Active' } });
+                buttons.appendIcon(new SolidIcon('circle-check'), { class: 'icon button inactive', click: (e: Event) => this.makeActive(e), htmlAttributes: { title: 'Make Active' } });
+                buttons.appendIcon(new Icon('trash-can'), { class: 'icon button', click: (e: Event) => this.deleteEntry(e), htmlAttributes: { title: 'Delete' } });
             }
             row.toggleClassIfTrue('active', item.active);
 

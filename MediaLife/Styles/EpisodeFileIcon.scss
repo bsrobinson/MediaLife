@@ -1,49 +1,27 @@
-﻿.episode-file-icon {
+﻿@use './Libraries/fontawesome-6.4.2/fontawesome.scss';
 
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: auto 100%;
+.episode-file-icon {
+
+    font-size: 1.2rem;
     height: 20px;
     width: 40px;
+    justify-content: center;
 
     &.search-page {
-        background-position-x: left;
-        width: 27px;
-        min-width: 27px;
+        width: 24px;
+        min-width: 24px !important;
+        text-align: left !important;
     }
 
     &.clickable {
         cursor: pointer;
     }
 
-    &.no-file {
-        background-image: url('/images/video-slash-solid.svg');
+    &.faded {
         opacity: 0.3;
     }
 
-    &.downloading {
-        background-image: url('/images/transmission.svg');
-    }
-
-    &.playable {
-        background-image: url('/images/play-tube.svg');
-    }
-
-    &.in-cloud {
-        background-image: url('/images/icloud.svg');
-        background-size: 23px;
-
-        &.request-download {
-            background-image: url('/images/icloud-download.svg');
-        }
-    }
-
-    &.saving {
-        background-image: url('/images/ellipsis.svg') !important;
-        opacity: 1 !important;
-    }
-
-    &.playing {
-        background-image: url('/images/vlc.svg') !important;
+    &.orange {
+        color: orangered;
     }
 }

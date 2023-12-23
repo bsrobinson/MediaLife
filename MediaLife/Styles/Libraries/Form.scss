@@ -1,0 +1,647 @@
+@use './Icon.scss';
+@use './fontawesome-6.4.2/fontawesome.scss';
+@use "sass:selector";
+@use "sass:string";
+
+$form-row-node-type: 'form-field-row';
+
+$style-outline: '.form-field-row-style-outline';
+$style-outline-inset: '.form-field-row-style-outline-inset';
+$style-block-row: '.form-field-row-style-block-row';
+$style-underline: '.form-field-row-style-underline';
+$style-underline-hover: '.form-field-row-style-underline-hover';
+$style-inline-border: '.form-field-row-style-inline-border';
+$style-inline-border-hover: '.form-field-row-style-inline-border-hover';
+$style-frameless: '.form-field-row-style-frameless';
+$style-buttons: '.form-field-row-buttons';
+
+$type-text: '.form-field-row-text';
+$type-checkbox: '.form-field-row-checkbox';
+$type-number: '.form-field-row-number';
+$type-select: '.form-field-row-select';
+
+
+@function str-replace($string, $search, $replace: '') {
+    $index: str-index($string, $search);
+    @if $index {
+        @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+    }
+    @return $string;
+}
+
+@mixin forTypes($types...) {
+    @include forStyles($types) { @content; }
+}
+@mixin forStyles($styles...) {
+
+    $style-selector: '';
+    @each $style in $styles {
+        $selector: #{selector.append($form-row-node-type, $style)};
+
+        @if ($style-selector != '') {
+            $style-selector: $style-selector + ', ';
+        }
+        $style-selector: $style-selector + $selector;
+    }
+
+    $nested-style: str-replace(#{&}, $form-row-node-type, '');
+    @if (string.length($nested-style) == 0) {
+        @at-root #{$style-selector} {
+            @content
+        }
+    }
+    @else {
+        @if (string.slice($nested-style, 0, 1) == '.') {
+            $nested-style: '&' + $nested-style;
+        }
+        @at-root #{selector.nest(#{$style-selector}, $nested-style)} {
+            @content;
+        }   
+    }
+}
+
+
+#{$form-row-node-type} {
+    display: inline-flex;
+    align-items: stretch;
+    position: relative;
+    white-space: nowrap;
+    
+    @include forStyles($style-outline) {
+        border: 1px solid rgba(0, 0, 0, 0.4);
+        border-color: color-mix(in srgb, currentColor 40%, transparent);
+        border-radius: 5px;
+    }
+
+    @include forStyles($style-outline, $style-block-row, $style-buttons) {
+        width: 100%;
+        display: flex;
+        box-sizing: border-box;
+    }
+
+    @include forStyles($style-outline, $style-buttons) {
+        margin: 1.6rem 0;
+    }
+    @include forStyles($style-block-row) {
+        margin: 0.2rem 0;
+    }
+    
+    @include forStyles($style-underline) {
+        border-bottom: 1px solid currentColor;
+    }
+    @include forStyles($style-underline-hover) {
+        border: 0;
+        margin-bottom: 1px;
+        &:hover, &:focus-within {
+            border-bottom: 1px solid currentColor;
+            margin-bottom: 0;
+        }
+    }
+
+    @include forStyles($style-inline-border) {
+        border: 1px dotted rgba(0, 0, 0, 0.4);
+        border-color: color-mix(in srgb, currentColor 40%, transparent);
+        border-radius: 2px;
+    }
+    @include forStyles($style-inline-border-hover) {
+        border: 0;
+        margin: 1px;
+        &:hover, &:focus-within {
+            border: 1px dotted rgba(0, 0, 0, 0.4);
+            border-color: color-mix(in srgb, currentColor 40%, transparent);
+            margin: 0;
+        }
+    }
+
+    @include forStyles($style-underline, $style-inline-border, $style-frameless) {
+        vertical-align: bottom;
+        max-width: 100%;
+    }
+
+    @include forStyles($style-buttons) {
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+
+        &.form-field-row-thin {
+            button.form-row-button {
+                padding: 0.25rem 0.5rem;
+            }
+        }
+        &.form-field-row-tight {
+            gap: 0.5rem;
+        }
+    }
+
+
+    label {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        min-height: 1.25em;
+
+        .primary-label, .secondary-label {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        @include forStyles($style-outline) {
+            &:not(#{$form-row-node-type + $style-outline-inset + ' label'}) {
+                .primary-label {
+                    position: absolute;
+                    top: -0.7em;
+                    background: var(--background-color, white);
+                    // background: linear-gradient(0, white 0%, white 60%, transparent 60%, transparent 100%);
+                    font-size: 0.9em;
+                    padding: 0 0.4em;
+                    z-index: 1;
+                }
+                &.label-left .primary-label { left: 0.4em; }
+                &.label-right .primary-label { right: 0.4em; }
+
+                .required-star {
+                    position: relative;
+                    top: 0.2em;
+                }
+            }
+            padding-top: 0.7em;
+            padding-bottom: 0.7em;
+            &.label-left { padding-left: 0.7em; }
+            &.label-right { padding-right: 0.7em; }
+
+            &.label-left .secondary-label:not(:empty) { padding-right: 0.3em; }
+            &.label-right .secondary-label:not(:empty) { padding-left: 0.3em; }
+        }
+
+        @include forStyles($style-inline-border) {
+            padding-top: 0.3em;
+            padding-bottom: 0.3em;
+            &.label-left { padding-left: 0.3em; }
+            &.label-right { padding-right: 0.3em; }
+        }
+
+        @include forStyles($style-block-row) {
+            &.label-left {
+                min-width: var(--label-width, 200px);
+                max-width: var(--label-width, 200px);
+                flex-grow: 2;
+            }
+        }
+
+        &:not(:empty) {
+            @include forStyles($style-outline-inset, $style-inline-border) {
+                &.label-left { padding-right: 0.3em; }
+                &.label-right { padding-left: 0.3em; }
+            }
+            @include forStyles($style-underline, $style-frameless) {
+                &.label-left { padding-right: 0.3em; }
+                &.label-right { padding-left: 0.3em; }
+            }
+            @include forStyles($style-block-row) {
+                &.label-right { padding-left: 0.3em; }
+            }
+        }
+        
+        @include forStyles($style-underline, $style-frameless, $style-inline-border) {
+            .primary-label, .secondary-label {
+                span {
+                    color: rgba(0, 0, 0, 0.4);
+                    color: color-mix(in srgb, currentColor 40%, transparent);
+                }
+            }
+        }
+
+        @include forTypes($type-checkbox) {
+            &.label-left {
+                flex-grow: 2;
+            }
+        }
+
+        .required-star {
+            color: orangered;
+        }
+    }
+
+    .focus-ring {
+        position: absolute;
+        top: 0; left: 0;
+        height: 100%; width: 100%;
+        pointer-events: none;
+        
+        @include forStyles($style-outline) {
+            border-radius: 5px;
+        }
+        @include forStyles($style-underline, $style-inline-border, $style-frameless) {
+            border-radius: 2px;
+        }
+        @include forStyles($style-underline-hover, $style-inline-border-hover) {
+            display: none;
+        }
+    }
+
+    input {
+        color: inherit;
+        width: 0;
+    }
+
+    input, select {
+        flex-grow: 1;
+        font: inherit;
+
+        @include forStyles($style-outline, $style-underline, $style-inline-border, $style-frameless) {
+            outline: none;
+    
+            &:focus + .focus-ring {
+                outline: 2px auto Highlight;
+                outline: 2px auto -webkit-focus-ring-color;
+            }
+        }
+    }
+
+    @include forStyles($style-block-row) {
+        select {
+            width: calc(100% - var(--label-width, 200px));
+            left: var(--label-width, 200px);
+
+            &:focus + .focus-ring + .select-value-display {
+                outline: 2px auto Highlight;
+                outline: 2px auto -webkit-focus-ring-color;
+            }
+        }
+    }
+
+    .switch-wrapper {
+        @include forStyles($style-outline) {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            input {
+                height: min(1.5em, 24px);
+                width: calc(min(2.25em, 40px) - 0.25em);
+            }
+        }
+        @include forStyles($style-block-row) {
+            padding: 0.2em 0;
+            justify-content: end;
+            flex-grow: 1;
+        }
+        @include forStyles($style-outline, $style-underline, $style-inline-border, $style-frameless) {
+            input:focus::before {
+                outline: none !important;
+            }
+        }
+    }
+
+    input, .select-value-display {
+        border: 0;
+        background-color: transparent;
+        flex-grow: 2;
+
+        @include forStyles($style-outline) {
+            padding-top: 0.7em;
+            padding-bottom: 0.7em;
+        }
+        @include forStyles($style-outline-inset) {
+            text-align: right;
+        }
+        @include forStyles($style-inline-border) {
+            padding-top: 0.3em;
+            padding-bottom: 0.3em;
+        }
+        @include forStyles($style-block-row) {
+            border: 1px solid rgba(0, 0, 0, 0.4);
+            border-color: color-mix(in srgb, currentColor 40%, transparent);
+            border-radius: 5px;
+            padding: 0.2em;
+            box-sizing: border-box;
+        }
+    }
+
+    .select-value-display {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+        pointer-events: none;
+
+        &.with-handle {
+            padding-right: 1.6rem;
+            &::after {
+                content: '\f0dc'; // $fa-var-sort;
+                @extend .fa-regular;
+                @extend .fa-fw;
+                font-weight: 600;
+                position: absolute;
+                right: 0;
+                top: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+            }
+        }
+
+        @include forStyles($style-block-row) {
+            padding-right: calc(1.6rem + 0.2em);
+            &::after {
+                right: 0.2em;
+            }
+        }
+    }
+
+    @include forStyles($style-block-row) {
+        input[type=checkbox] {
+            flex-grow: unset;
+        }
+    }
+
+    select {
+        position: absolute;
+        width: 100%;
+        min-height: 100%;
+        max-height: 100%;
+        opacity: 0;
+    }
+
+
+    .value-span {
+        position: absolute;
+        visibility: hidden;
+    }
+
+
+    .validation-message {
+        position: absolute;
+    }
+
+    &.input-validation-success {
+        .required-star {
+            color: 1px solid rgba(0, 0, 0, 0.5);
+            color: color-mix(in srgb, currentColor 50%, transparent);
+        }
+    }
+    &.input-validation-error {
+        
+        @include forStyles($style-outline, $style-underline, $style-inline-border, $style-frameless, $style-block-row) {
+            border-color: red;
+            label, icon {
+                color: red;
+            }
+        }
+
+        .validation-message {
+            display: block;
+            color: red;
+
+            @include forStyles($style-outline) {
+                bottom: -0.7em;
+                right: 10px;
+                font-size: 0.8em;
+                background: var(--background-color, white);
+                // background: linear-gradient(0, transparent 0%, transparent 30%, white 30%, white 100%);
+                padding: 0 6px;
+                z-index: 1;
+            }
+
+            @include forStyles($style-block-row) {
+                left: calc(var(--label-width, 200px) - 1.3rem);
+            }
+            @include forStyles($style-underline, $style-inline-border, $style-frameless) {
+                position: static;
+            }
+            @include forStyles($style-underline, $style-inline-border, $style-frameless, $style-block-row) {
+                @extend .fa-regular;
+                @extend .fa-fw;
+                @extend .fa-circle-exclamation;
+                text-indent: -999em;
+                align-self: center;
+                overflow: hidden;
+                font-size: 0.85em;
+                height: 1em;
+                font-weight: 600;
+                &::before {
+                    float: left;
+                    text-indent: 0;
+                    height: 100%;
+                    align-items: center;
+                    display: flex;
+                }
+            }
+
+        }
+        
+        @include forStyles($style-underline-hover) {
+            border-bottom: 1px solid red !important;
+            margin-bottom: 0 !important;
+        }
+        @include forStyles($style-inline-border-hover) {
+            border: 1px dotted red !important;
+            margin: 0 !important;
+        }
+        @include forStyles($style-underline-hover, $style-inline-border-hover) {
+            .focus-ring {
+                display: block;
+            }
+        }
+    }
+
+    &:has(input:disabled, select:disabled) {
+        opacity: 0.5;
+        input { color: currentColor; }
+    }
+}
+
+
+input[type=checkbox].switch {
+    position: relative;
+    height: min(1em, 24px);
+    width: calc(min(1.7em, 40px) - 0.25em);
+    margin-left: 0.25em;
+    cursor: pointer;
+    font-size: inherit;
+    outline: none;
+
+    &::before {
+        content: "";
+        left: -0.25em;
+        top: 0;
+        position: absolute;
+        width: calc(100% + 0.25em);
+        height: 100%;
+        box-sizing: border-box;
+        border: clamp(0.5px, 0.06em, 1px) solid #999;
+        background: whitesmoke;
+        border-radius: 14px;
+        padding: 0 1px;      
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        background: white;
+        box-shadow: clamp(0.5px, 0.06em, 1px) 0px clamp(1px, 0.06em, 2px) black;
+        height: calc(100% - clamp(1px, 0.12em, 1.5px) * 2);
+        width: calc(50% + 0.25em);
+        border-radius: 12px;
+        top: clamp(1px, 0.12em, 1.5px);
+        left: calc(clamp(1px, 0.12em, 1.5px) - 0.25em);
+        transition: 0.4s;
+    }
+
+    &:focus::before {
+        outline: 2px auto Highlight;
+        outline: 2px auto -webkit-focus-ring-color
+    }
+
+    &:checked {
+        &::before {
+            background: #00b900;
+            border-color: #666;
+        }
+        &::after {
+            left: calc(50% - clamp(1px, 0.12em, 1.5px) - 0.25em);
+            box-shadow: clamp(-0.5px, 0.06em, -1px) 0px min(2px, 0.12em) black;
+        }
+    }
+
+    &:disabled {
+        opacity: 0.5;
+    }
+}
+
+form-field-set {
+    margin: 1.6rem auto;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    border-color: color-mix(in srgb, currentColor 40%, transparent);
+    border-radius: 5px;
+    width: 100%;
+    width: calc(100% - 2px);
+    position: relative;
+    padding: 1rem 0 0.5rem 0;
+    display: flex;
+    flex-direction: column;
+
+    .label {
+        position: absolute;
+        top: -0.7em;
+        left: 0.4rem;
+        font-size: 0.9rem;
+        background: var(--background-color, white);
+        // background: linear-gradient(0, white 0%, white 60%, transparent 60%, transparent 100%);
+        padding: 0 6px;
+        z-index: 1;
+    }
+
+    #{$form-row-node-type} {
+        padding-left: 1.6rem;
+        padding-right: 0.7rem;
+
+        #{'&' + $style-block-row} {
+            select {
+                width: calc(100% - var(--label-width, 200px) - 2.6rem);
+                left: calc(var(--label-width, 200px) + 1.6rem);
+            }
+            &.input-validation-error .validation-message {
+                left: var(--label-width, 200px);
+            }
+        }
+    }
+}
+
+
+button.form-row-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 5px;
+    color: black;
+    font: inherit;
+    padding: 0.5rem 1rem;
+    width: auto;
+    cursor: pointer;
+
+    icon {
+        min-width: unset !important;
+    }
+
+    .label {
+        white-space: nowrap;
+    }
+
+    &:active:hover {
+        filter: brightness(90%);
+    }
+
+    &.form-field-row-thin {
+        padding: 0.25rem 0.5rem;
+    }
+
+    &.form-field-row-space-after {
+        margin-right: auto;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        &:active:hover {
+            filter: brightness(100%);
+        }
+    }
+    
+    &.show-temporary-icons {
+        icon:not(.temporary-icon) {
+            display: none;
+        }
+    }
+
+    &.form-field-row-button-color- {
+        &grey {
+            border: 1px solid #666;
+            background-color: #ccc;
+        }
+        &default-click {
+            border: 1px solid #666;
+            background-color: #0088ff;
+            color: white;
+        }
+        &green {
+            border: 1px solid #060;
+            background-color: #9f9;
+        }
+        &red {
+            border: 1px solid #600;
+            background-color: #fcc;
+        }
+        &transparent {
+            border: 0;
+            background-color: transparent;
+            &:active:hover:not(:disabled) {
+                background-color: whitesmoke;
+                filter: none
+            }
+        }
+    }
+}
+
+form {
+    &:has(.input-validation-error) {
+        button.form-row-button[type=submit] {
+            opacity: 0.5;
+            &:active:hover {
+                filter: brightness(100%);
+            }
+        }
+    }
+
+    hr {
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.4);
+        border-color: color-mix(in srgb, currentColor 40%, transparent);
+        margin: 1rem 0;
+    }
+}
+form-field-set {
+    hr {
+        margin: 0.5rem 0.7rem 0.5rem 1.6rem;
+    }
+}

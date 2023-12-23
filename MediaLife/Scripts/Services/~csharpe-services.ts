@@ -73,6 +73,14 @@ export class GasparServiceHelper {
 
 export namespace MediaLifeService {
 
+    //File: ../../Controllers/UpdateController.cs
+
+    export class UpdateController {
+        updateFromReplay(showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<string>> {
+            return new GasparServiceHelper().fetch(`/Update/replay`, { method: 'GET' }, showError);
+        }
+    }
+    
     //File: ../../Controllers/UsersApiController.cs
 
     export class UsersApiController {
@@ -185,6 +193,9 @@ export namespace MediaLifeService {
     export class LoginController {
         createFirstUser(user: User, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<User>> {
             return new GasparServiceHelper().fetch(`/Login/CreateFirstUser`, { method: 'POST', body: JSON.stringify(user), headers: { 'Content-Type': 'application/json' } }, showError);
+        }
+        resetPassKey(showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<string[]>> {
+            return new GasparServiceHelper().fetch(`/Login/ResetPassKey`, { method: 'POST' }, showError);
         }
     }
     

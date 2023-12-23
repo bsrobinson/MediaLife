@@ -234,9 +234,9 @@ export interface Show {
     name: string;
     poster: string | null;
     networkId: number | null;
+    updated: string;
     added: string;
     recommendedBy: string | null;
-    updated: string;
     deleteWatched: boolean;
     watchFromNextPlayable: boolean;
     downloadAllTogether: boolean;

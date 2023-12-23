@@ -23,55 +23,30 @@ h1 {
     .buttons {
         margin: 0.2em 0 0.2em auto;
         display: flex;
+        gap: 1rem;
     }
 }
 
 .button {
-    font-size: 1.2em;
-    border-width: 1px;
-    border-style: solid;
-    background-repeat: no-repeat;
-    background-position: 10px center;
-    background-size: 20px;
-    padding: 5px 12px 5px 36px;
-    margin-left: 0.5em;
+    font-size: 1.2em !important;
     cursor: pointer;
     
     &.add {
         border-color: #060;
         background-color: #9f9;
-        background-image: url('/images/plus.svg');
-        
-        &.save {
-            background-image: url('/images/tick.svg');
-        }
     }
 
     &.remove {
         border-color: #600;
         background-color: #fcc;
-        background-image: url('/images/cross.svg');
-        background-size: 17px;
     }
 
     &.settings {
-        border-color: #666;
-        background-color: #ccc;
-        background-image: url('/images/cog.svg');
-        padding-left: 31px;
-        z-index: 99999;
-    }
+        z-index: 1;
 
-    &.edit {
-        border-color: #666;
-        background-color: #ccc;
-        background-image: url('/images/pencil.svg');
-    }
-    &.delete {
-        border-color: #666;
-        background-color: #ccc;
-        background-image: url('/images/bin.svg');
-        padding-left: 31px;
+        &.open {
+            z-index: 99999;
+        }
     }
 }
 
@@ -90,20 +65,18 @@ h1 {
     position: fixed;
     background: white;
     border: 1px solid black;
-    padding: 8px 14px;
+    padding: 1rem 1.2rem;
     right: 18px;
     z-index: 99999;
+    width: 300px;
 
-    label {
-        display: flex;
-        width: 280px;
-        justify-content: space-between;
-        margin: 8px 0;
-        align-items: center;
+    form-field-row {
+        --label-width: 150px;
     }
-    input, select {
-        font-size: 1em;
-        max-width: 100px;
+
+    .form-field-row-buttons {
+        margin: 0;
+        margin-top: 1rem;
     }
 }
 
@@ -252,44 +225,21 @@ h1 {
     }
 
     .icon {
-        display: inline-block;
-        background-repeat: no-repeat;
-        background-position: center;
+        text-align: center;
         height: 20px;
         width: 40px;
-        
-        &.up {
-            background-image: url('/images/arrow-up.svg');
-        }
-        &.down {
-            background-image: url('/images/arrow-down.svg');
-        }
-        &.remove {
-            background-image: url('/images/bin.svg');
-        }
-        &.add {
-            background-image: url('/images/plus.svg');
-            width: auto;
-            background-position-x: 0;
-            padding-left: 22px;
-            
-            &.saving {
-                background-image: url('/images/ellipsis.svg');
-                cursor: default;
-            }
-        }
     }
 }
 
 #content.edit-list .episode-row:first-child .icon.up {
-    display: none;
+    display: none !important;
 }
 #content.edit-list .episode-row:nth-last-child(2) .icon.down {
     background: initial;
     cursor: default;
 }
 #content.edit-list .episode-row:first-child:nth-last-child(2) .icon.remove {
-    display: none;
+    display: none !important;
 }
 
 #poster {

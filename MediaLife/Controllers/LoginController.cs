@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using MediaLife.Attributes;
 using MediaLife.Library.DAL;
 using Microsoft.AspNetCore.Mvc;
 using WCKDRZR.Gaspar;
@@ -7,7 +10,7 @@ namespace MediaLife.Controllers
 {
     public class LoginController : Controller
     {
-        private MySqlContext db;
+        private readonly MySqlContext db;
 
         public LoginController(MySqlContext context)
         {
@@ -58,6 +61,25 @@ namespace MediaLife.Controllers
             db.SaveChanges();
 
             return user;
+        }
+
+        [ExportFor(GasparType.TypeScript)]
+        [HttpPost("[controller]/[action]")]
+        public ActionResult<List<string>> ResetPassKey()
+        {
+            if (Request.Cookies.TryGetValue("auth_key", out string? cookieValue))
+            {
+                User? user = db.Users.FirstOrDefault(u => u.Password == cookieValue);
+                if (user != null)
+                {
+                    user.Password = Guid.NewGuid().ToString();
+                    db.SaveChanges();
+
+                    return new List<string> { user.Password };
+                }
+            }
+
+            return BadRequest();
         }
     }
 }

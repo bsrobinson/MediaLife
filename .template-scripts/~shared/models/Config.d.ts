@@ -5,6 +5,7 @@ export interface Config {
 	defaultProject: string,
     embededJsMapOffset: number;
     publish: PublishConfig;
+	dbSyncConnectionString: string;
 
 }
 

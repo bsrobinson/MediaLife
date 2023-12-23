@@ -18,69 +18,46 @@
             if (Model.SiteSection == SiteSection.TV) { buttonName = "Show"; }
             if (Model.SiteSection == SiteSection.Movies) { buttonName = "Movie" + (Model.Show.EpisodeCount > 1 ? "s" : ""); }
             if (Model.SiteSection == SiteSection.Books) { buttonName = "Book" + (Model.Show.EpisodeCount > 1 ? "s" : ""); }
-            <input type="button" value="Add @buttonName" id="addShowButton" class="button add @(Model.Show.Added == null ? "" : "hide")" onclick="page.addShow()" />
-            <input type="button" value="Remove @buttonName" id="removeShowButton" class="button remove @(Model.Show.Added != null && Model.Show.Episodes.Count(e => e.Watched != null || e.StartedWatching != null) == 0 ? "" : "hide")" onclick="page.removeShow()" />
-            <input type="button" value="" id="showSettingsButton" class="button settings @(Model.Show.Added != null ? "" : "hide")" onclick="page.toggleSettingsMenu()" />
+
+            @Html.Button($"Add {buttonName}", new("plus"), "page.addShow()", new() { Colour = ButtonColour.Green, Classes = $"button add {(Model.Show.Added == null ? "" : "hide")}" }, new() { { "id", "addShowButton" } })
+            @Html.Button($"Remove {buttonName}", new("xmark"), "page.removeShow()", new() { Colour = ButtonColour.Red, Classes = $"button remove {(Model.Show.Added != null && Model.Show.Episodes.Count(e => e.Watched != null || e.StartedWatching != null) == 0 ? "" : "hide")}" }, new() { { "id", "removeShowButton" } })
+            @Html.Button(new Icon("gear"), "page.toggleSettingsMenu()", new() { Classes = $"button settings {(Model.Show.Added != null ? "" : "hide")}" }, new() { { "id", "showSettingsButton" } })
         }
         else
         {
-            <input type="button" value="Edit List" class="button edit edit-list-hide" onclick="page.editList()" />
-            <input type="button" value="Save List" class="button add save edit-list-show" onclick="page.editListSave()" />
-            <input type="button" value="Cancel" class="button remove edit-list-show" onclick="page.editListCancel()" />
-            <input type="button" value="" class="button delete edit-list-show" onclick="page.deleteList()" />
+            @Html.Button("Edit List", new("pencil"), "page.editList()", new() { Classes = "button edit edit-list-hide" })
+            @Html.Button("Save List", new("check"), "page.editListSave()", new() { Colour = ButtonColour.Green, Classes = "button add save edit-list-show" })
+            @Html.Button("Cancel", new("xmark"), "page.editListCancel()", new() { Colour = ButtonColour.Red, Classes = "button remove edit-list-show" })
+            @Html.Button(new Icon("trash-can"), "page.deleteList()", new() { Classes = "button delete edit-list-show" })
         }
     </div>
 </div>
 
 <div id="blackout" class="hide" onclick="page.toggleSettingsMenu()"></div>
 <form id="settings_menu" class="@(Model.ShowListOptions ? "for_list" : "") hide" onsubmit="page.saveSettings(); return false;">
-    <label>
-        Recommended by
-        <input list="recommenders" name="recommendedBy" value="@Model.Show.RecommendedBy" data-nullonempty="true" />
-        <datalist id="recommenders">
-            @foreach (string recommender in Model.Recommenders)
-            {
-                <option value="@recommender"></option>
-            }
-        </datalist>
-    </label>
-    <label>
-        Download Limit
-        <input name="downloadLimit" type="number" value="@(Model.Show.DownloadLimit)" style="width:50px;" />
-    </label>
-    <label>
-        Delete files when watched
-        <input name="deleteWatched" type="checkbox" @(Model.Show.Added == null || Model.Show.DeleteWatched ? "checked" : "") />
-    </label>
-    <label>
-        Watch from next available
-        <input name="watchFromNextPlayable" type="checkbox" @(Model.Show.Added == null || Model.Show.WatchFromNextPlayable ? "checked" : "") />
-    </label>
-    <label>
-        Download all together
-        <input name="downloadAllTogether" type="checkbox" @(Model.Show.Added == null || Model.Show.DownloadAllTogether ? "checked" : "") />
-    </label>
+    @Html.FormRowFor(m => Model.Show.RecommendedBy, new() { Style = FormRowStyle.BlockRow, DataList = Model.Recommenders })
+    @Html.FormRowFor(m => Model.Show.DownloadLimit, new() { Style = FormRowStyle.BlockRow })
+    @Html.FormRowFor(m => Model.Show.DeleteWatched, new() { Style = FormRowStyle.BlockRow })
+    @Html.FormRowFor(m => Model.Show.WatchFromNextPlayable, new() { Style = FormRowStyle.BlockRow })
+    @Html.FormRowFor(m => Model.Show.DownloadAllTogether, new() { Style = FormRowStyle.BlockRow })
     @if (Model.SiteSection == SiteSection.TV)
     {
-        <label>
-            Skip until series
-            <select name="skipUntilSeries" data-type="int" data-nullonempty="true">
-                @{ int? prevSeries = Model.Show.Episodes.FirstOrDefault()?.SeriesNumber; }
-                <option value="@prevSeries">-</option>
-                @foreach (EpisodeModel episode in Model.Show.Episodes)
-                {
-                    if (prevSeries != episode.SeriesNumber)
-                    {
-                        <!option value="@episode.SeriesNumber" @(Model.Show.SkipUntilSeries == episode.SeriesNumber ? "selected" : "")>@episode.SeriesNumber</!option>
-                    }
-                    prevSeries = episode.SeriesNumber;
-                }
-            </select>
-        </label>
+        var seriesList = new List<SelectListItem>();
+        int? prevSeries = Model.Show.Episodes.FirstOrDefault()?.SeriesNumber;
+
+        seriesList.Add(new() { Text = "-", Value = prevSeries.ToString() });
+        foreach (EpisodeModel episode in Model.Show.Episodes)
+        {
+            if (prevSeries != episode.SeriesNumber)
+            {
+                seriesList.Add(new() { Text = episode.SeriesNumber.ToString(), Value = episode.SeriesNumber.ToString(), Selected = Model.Show.SkipUntilSeries == episode.SeriesNumber });
+            }
+            prevSeries = episode.SeriesNumber;
+        }
+
+        @Html.FormRowFor(m => Model.Show.SkipUntilSeries, new() { Style = FormRowStyle.BlockRow, SelectOptions = seriesList, WithSelectHandle = true })
     }
-    <label>
-        <input type="submit" value="Save" />
-    </label>
+    @Html.SubmitRow("Save", new() { Thin = true })
 </form>
 
 <div id="page-content">

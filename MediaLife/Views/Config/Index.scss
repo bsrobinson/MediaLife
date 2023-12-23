@@ -1,3 +1,5 @@
+@use '../../Styles/Libraries/fontawesome-6.4.2/fontawesome.scss';
+
 #settings {
     display: flex;
     margin: 20px auto;
@@ -14,7 +16,7 @@
         margin: 0;
         
         a {
-            display: block;
+            display: flex;
             padding: 1rem 10px;
             text-decoration: none;
             color: black;
@@ -56,20 +58,19 @@
         border-bottom: 1px solid #999;
 
         .back {
+            font-size: 28px;
             width: 50px;
-            background: url("/images/chevron-left.svg") no-repeat center;
-            background-size: 28px 28px;
+            justify-content: center;
+            text-decoration: none;
+            color: black;
         }
 
         .title {
             padding: 1rem 0;
-
-            img {
-                height: 19px;
-                width: 22px;
-                margin-right: 5px;
-                vertical-align: -3px;
-            }
+            display: flex;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            align-items: center;
         }
 
         .right-space {
@@ -156,11 +157,9 @@ form {
             background-color: whitesmoke;
         }
         &.add-link {
-            background: url("/images/plus.svg") no-repeat 14px 8px;
-            background-size: 18px;
-            padding-left: 40px;
-            text-decoration: underline;
+            justify-content: start;
             color: blue;
+            cursor: pointer;
 
             &:hover {
                 background-color: transparent;
@@ -169,7 +168,7 @@ form {
     }
 
     #accounts_add_link {
-        display: block;
+        display: flex;
         margin: 2rem 0;
     }
 }
@@ -203,7 +202,7 @@ form {
                     display: block;
                 }
                 .inactive {
-                    display: none;
+                    display: none !important;
                 }
             }
 
@@ -221,11 +220,6 @@ form {
 
                 a {
                     color: #006;
-                    text-decoration: none;
-
-                    &:hover {
-                        text-decoration: underline;
-                    }
                 }
             }
 
@@ -234,40 +228,32 @@ form {
             }
 
             .icon {
-                background-repeat: no-repeat;
-                background-position: center;
-                mask-repeat: no-repeat;
-                mask-position: center;
                 height: 20px;
-                width: 20px;
-                margin-right: 10px;
-            
-                &.delete {
-                    background-image: url('/images/bin.svg');
-                }
-                &.active-icon {
-                    background-image: url('/images/active.svg');
-                }
+                margin-left: 1rem;
+
                 &.inactive {
                     opacity: 0.4;
                 }
-
-                .button {
+                &.button {
                     cursor: pointer;
                 }
             }
 
-            &.testing .icon.test {
-                mask-image: url('/images/ellipsis.svg');
-                background-color: #999;
+            .test-icon {
+                margin-right: 1rem;
             }
-            &.test-success .icon.test {
-                mask-image: url('/images/tick.svg');
-                background-color: green;
+
+            &.testing .test-icon {
+                @extend .fa-ellipsis;
+                @extend .fa-fade;
             }
-            &.test-fail .icon.test {
-                mask-image: url('/images/cross.svg');
-                background-color: red;
+            &.test-success .test-icon {
+                @extend .fa-check;
+                color: green;
+            }
+            &.test-fail .test-icon {
+                @extend .fa-xmark;
+                color: red;
             }
         }
     }
@@ -315,6 +301,7 @@ form {
 
         .content-header {
             display: flex;
+            align-items: center;
         }
     }
 

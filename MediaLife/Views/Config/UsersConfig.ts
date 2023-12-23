@@ -2,7 +2,9 @@ import { element } from '../../Scripts/BRLibraries/DOM'
 import { UserAccount, User, UserRole } from '../../Scripts/Models/~csharpe-models';
 import { MediaLifeService } from '../../Scripts/Services/~csharpe-services';
 import '../../Scripts/BRLibraries/Form';
+import '../../Scripts/BRLibraries/Icon';
 import { makeButton } from '../../Scripts/BRLibraries/Form';
+import { Icon } from '../../Scripts/BRLibraries/Icon';
 
 export class UsersConfig {
 
@@ -11,7 +13,7 @@ export class UsersConfig {
 
     service = new MediaLifeService.UsersApiController();
 
-    copyLinkButton: HTMLInputElement | null = null;
+    copyLinkButton: HTMLButtonElement | null = null;
 
     constructor() {
         this.loadData();
@@ -52,7 +54,7 @@ export class UsersConfig {
                     userRow.appendElement('div', { class: 'role', html: Object.values(UserRole).at(parseInt(user.role)) })
                 });
 
-                table.appendElement('a', { class: 'user add-link', href: 'JavaScript:;', html: 'Add User', events: { click: () => this.addUser(account.accountId) } });                
+                table.appendIcon(new Icon('user-plus'), { label: 'Add User', class: 'user add-link', click: () => this.addUser(account.accountId) });
             });
         }
 
@@ -108,16 +110,16 @@ export class UsersConfig {
         let user = this.users?.find(u => u.userId == userId);
         if (user) {
 
-            this.copyLinkButton = makeButton('Copy login link', () => this.copyLoginLink());
+            this.copyLinkButton = makeButton('Copy login link', { icon: new Icon('copy'), spaceAfter: true, click: () => this.copyLoginLink() });
             let roleOptions: HTMLOptionElement[] = [];
             for (let i = Object.entries(UserRole).length - 1; i >= 0; i--) { 
                 roleOptions.push(new Option(Object.values(UserRole).at(i), i.toString(), i == 0, parseInt(user.role) == i));
             }
 
-            userForm.appendFormRow('name', { label: 'Display Name', value: user.name, isRequired: true });
-            userForm.appendFormRow('password', { label: 'Pass Key', value: user.password, isRequired: true });
-            userForm.appendFormRow('role', { label: 'Role', type: 'select', options: roleOptions })
+            userForm.appendFormRow('name', { label: 'Display Name', value: user.name, required: true });
+            userForm.appendFormRow('password', { label: 'Pass Key', value: user.password, required: true });
             userForm.appendButtonRow([ this.copyLinkButton ], { thin: true });
+            userForm.appendFormRow('role', { label: 'Role', selectOptions: roleOptions })
             userForm.appendElement('input', { type: 'hidden', name: 'userId', value: userId.toString() });
             userForm.appendElement('input', { type: 'hidden', name: 'accountId', value: user.accountId.toString() });
             userForm.appendSubmitRow('Save');
@@ -127,19 +129,16 @@ export class UsersConfig {
     }
 
     copyLoginLink() {
+
         let form = element<HTMLFormElement>('user')
         let user = form.toJson<User>();
         let url = window.location;
         navigator.clipboard.writeText(`${url.protocol}//${url.host}/Login/${user.password}`);
         
         if (this.copyLinkButton) {
-            this.copyLinkButton.value = 'Copied';
-            this.copyLinkButton.disabled = true;
+            this.copyLinkButton.disableWithTick('Copied');
             setTimeout(() => {
-                if (this.copyLinkButton) {
-                    this.copyLinkButton.value = 'Copy login link';
-                    this.copyLinkButton.disabled = false;
-                }
+                this.copyLinkButton?.enable();
             }, 1000);
         }
     }

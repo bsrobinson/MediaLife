@@ -2,7 +2,11 @@
 @use './EpisodeWatchIcon.scss';
 @use './Vlc.scss';
 @use './LoadingBar.scss';
-@use './Form.scss';
+@use './Libraries/Form.scss';
+@use './Libraries/fontawesome-6.4.2/fontawesome.scss';
+@use './Libraries/fontawesome-6.4.2/regular.scss';
+@use './Libraries/fontawesome-6.4.2/solid.scss';
+@use './Libraries/fontawesome-6.4.2/brands.scss';
 
 *, html {
     margin: 0;
@@ -21,17 +25,18 @@ body {
     position: fixed;
     display: flex;
     background: #333;
-    width: calc(100vw - 40px);
+    width: 100vw;
     height: 60px;
-    padding: 0 20px 0 20px;
     justify-content: space-between;
     align-items: center;
     z-index: 99;
 
-    .header-left {
+    .header-left, .header-right {
         display: flex;
+        gap: 1rem;
         justify-content: space-between;
         align-items: center;
+        margin-left: 20px;
     }
 
     a {
@@ -80,7 +85,7 @@ body {
     max-width: 400px;
     height: 100%;
     z-index: 999;
-    transition: .25s ease-in-out;
+    transition: .3s ease;
 
     &.open {
         left: 0;
@@ -112,7 +117,7 @@ body {
     }
 
     .menu-item {
-        display: block;
+        display: flex;
         padding: 12px 5px;
         margin: 0 20px;
         color: white;
@@ -121,17 +126,52 @@ body {
     }
 }
 
+#user_menu {
+    position: fixed;
+    bottom: calc(100vh - 60px);
+    right: 10px;
+    background: whitesmoke;
+    border: 2px solid #333;
+    max-width: 290px;
+    z-index: 98;
+    transition: 0.3s ease;
+    visibility: hidden;
+    
+    .username {
+        background: #333;
+        color: white;
+        margin: 0.3rem 0;
+    }
+
+    .row {
+        padding: 12px 40px 12px 20px;
+
+        &.indent {
+            margin-left: 20px;
+        }
+    }
+    
+    a {
+        color: black;
+        display: flex;
+        
+        &:hover {
+            background-color: #ddd;
+        }
+    }
+}
+
 #content {
     padding: 60px 16px 20px 16px;
 }
 #content .edit-list-show, #content .add-to-list-show {
-    display: none;
+    display: none !important;
 }
 #content.edit-list .edit-list-show, #content.add-to-list-mode .add-to-list-show {
-    display: initial;
+    display: initial !important;
 }
 #content.edit-list .edit-list-hide, #content.add-to-list-mode .add-to-list-hide {
-    display: none;
+    display: none !important;
 }
 
 
@@ -190,7 +230,6 @@ body {
     transform: rotate(0deg);
     transition: .5s ease-in-out;
     cursor: pointer;
-    margin-right: 1rem;
 
     span {
         display: block;
@@ -231,6 +270,40 @@ body {
             top: 10px;
             width: 0%;
             left: 50%;
+        }
+    }
+}
+
+#user_menu_button {
+    position: relative;
+    color: white;
+    width: 52px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 32px;
+
+    .icon {
+        position: absolute;
+        top: 0;
+        transition: .25s;
+
+        &.icon-user {
+            left: 0;
+        }
+        &.icon-close {
+            left: 52;
+            opacity: 0;
+        }
+    }
+
+    &.open {
+        .icon-user {
+            left: 52;
+            opacity: 0;
+        }
+        .icon-close {
+            left: 0;
+            opacity: 1;
         }
     }
 }

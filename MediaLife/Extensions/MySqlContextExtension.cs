@@ -2,7 +2,7 @@
 using System.Linq;
 using MediaLife.Library.DAL;
 
-namespace MediaLife
+namespace MediaLife.Extensions
 {
 	public static class MySqlContextExtension
     {

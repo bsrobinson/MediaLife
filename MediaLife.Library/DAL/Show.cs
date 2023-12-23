@@ -23,12 +23,14 @@ namespace MediaLife.Library.DAL
 
         public uint? NetworkId { get; set; }
 
+        public required DateTime Updated { get; set; }
+
+
+
         public required DateTime Added { get; set; }
 
         [MaxLength(100)]
         public string? RecommendedBy { get; set; }
-
-        public required DateTime Updated { get; set; }
 
         public required bool DeleteWatched { get; set; }
 
@@ -37,6 +39,5 @@ namespace MediaLife.Library.DAL
         public required bool DownloadAllTogether { get; set; }
 
         public int? DownloadLimit { get; set; }
-
     }
 }

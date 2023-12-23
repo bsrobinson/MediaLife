@@ -4,6 +4,8 @@ import { EpisodeObject } from "./EpisodeObject";
 import { IconMenu } from "./IconMenu";
 import { SiteSection } from "./Models/~csharpe-models";
 import { MediaLifeService } from "./Services/~csharpe-services";
+import './BRLibraries/Icon';
+import { FadeAnimation, Icon, IconStyle, SolidIcon, makeIcon } from "./BRLibraries/Icon";
 
 export class EpisodeWatchIcon {
 
@@ -36,13 +38,12 @@ export class EpisodeWatchIcon {
         else {
 
             window.episodeWatchIcons[thisId] = this;
-            this.node = makeElement('div', { });
+            this.node = makeElement('div', { class: 'episode-watch-icon' });
             // this.node.obj = this;
 
-            this.watchButtonNode = this.node.appendElement('div', {
-                class: 'watched-button', events: {
-                    click: () => this.iconClick(),
-                }
+            this.watchButtonNode = this.node.appendIcon(new SolidIcon('eye'), { 
+                class: 'watched-button',
+                click: () => this.iconClick() 
             });
 
             this.iconMenu = new IconMenu(
@@ -50,12 +51,16 @@ export class EpisodeWatchIcon {
                 this.node,
                 this.watchButtonNode,
                 [
-                    { title: 'Skip', class: 'skip', events: { click: () => this.toggleSkip() } },
-                    { title: 'Started', class: 'started', events: { click: () => this.toggleStarted() } },
-                    { title: this.watchedString, class: 'watched', events: { click: () => this.toggleWatched() } },
+                    makeIcon('ban', { label: 'Skip', class: 'skip', click: () => this.toggleSkip() }),
+                    makeIcon('stopwatch', { label: 'Started', class: 'started', click: () => this.toggleStarted() }),
+                    makeIcon('eye', { label: this.watchedString, class: 'watched', click: () => this.toggleWatched() }),
                 ]
             );
             this.updateClass();
+        }
+
+        if (additionalClasses) {
+            this.node.addClass(additionalClasses);
         }
 
     }
@@ -63,16 +68,16 @@ export class EpisodeWatchIcon {
     updateClass() {
 
         let episode = this.episodeObj.episode;
-        this.node.className = 'episode-watch-icon ' + this.additionalClasses;
 
-        if (episode.watched) {
-            this.node.addClass('watched');
-        }
-        else if (episode.startedWatching) {
-            this.node.addClass('started-watching');
-        }
-        else if (episode.skip) {
-            this.node.addClass('skip');
+        this.node.removeClass('saving')
+        this.watchButtonNode.changeIcon(new SolidIcon('eye'));
+
+        this.node.toggleClassIfTrue('watched', episode.watched != null);
+        this.node.toggleClassIfTrue('started-watching', episode.watched == null && episode.startedWatching != null);
+        this.node.toggleClassIfTrue('skip', episode.skip);
+
+        if (episode.skip) {
+            this.watchButtonNode.changeIcon(new SolidIcon('ban'));
         }
 
         this.watchButtonNode.title = '';
@@ -104,6 +109,7 @@ export class EpisodeWatchIcon {
         this.iconMenu.closeTouchMenu();
         if (!this.episodeObj.anySaving()) {
             this.node.addClass('saving');
+            this.watchButtonNode.changeIcon(new Icon('ellipsis', { animation: new FadeAnimation() }))
             this.episodeObj.toggleWatched(() => this.updateClass());
         }
     }
@@ -112,6 +118,7 @@ export class EpisodeWatchIcon {
         this.iconMenu.closeTouchMenu();
         if (!this.episodeObj.anySaving()) {
             this.node.addClass('saving');
+            this.watchButtonNode.changeIcon(new Icon('ellipsis', { animation: new FadeAnimation() }))
             this.episodeObj.toggleStartedWatching(() => this.updateClass());
         }
     }
@@ -120,6 +127,7 @@ export class EpisodeWatchIcon {
         this.iconMenu.closeTouchMenu();
         if (!this.episodeObj.anySaving()) {
             this.node.addClass('saving');
+            this.watchButtonNode.changeIcon(new Icon('ellipsis', { animation: new FadeAnimation() }))
             this.episodeObj.toggleSkip(() => this.updateClass());
         }
     }
@@ -128,6 +136,7 @@ export class EpisodeWatchIcon {
         if (!this.episodeObj.anySaving() && !this.episodeObj.episode.startedWatching) {
 
             this.node.addClass('saving');
+            this.watchButtonNode.changeIcon(new Icon('ellipsis', { animation: new FadeAnimation() }))
             this.episodeObj.toggleStartedWatching(() => this.playingSetAsStarted());
 
             if (nextFileIcon && nextFileIcon.episodeObj.episode.inCloud && !nextFileIcon.episodeObj.episode.requestDownload) {

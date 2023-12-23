@@ -95,10 +95,16 @@
                 </div>
                 <a href="/@sectionUrl">@icon&nbsp;&nbsp;@siteSection</a>
             </div>
-            <form action="/@sectionUrl/search">
-                <input type="search" name="q" value="@ViewBag.q" placeholder="search" />
-            </form>
-            <a href="JavaScript:;" class="search-link" onclick="site.openSearch()">🔍</a>
+            <div class="header-right">
+                <form action="/@sectionUrl/search">
+                    <input type="search" name="q" value="@ViewBag.q" placeholder="search" />
+                </form>
+                <a href="JavaScript:;" class="search-link" onclick="site.openSearch()">🔍</a>
+                <div id="user_menu_button" onclick="site.toggleUserMenu()">
+                    @Html.Icon(new Icon("user-circle"), classes: "icon icon-user")
+                    @Html.Icon(new Icon("xmark"), classes: "icon icon-close")
+                </div>
+            </div>
         </div>
         <div id="search_row" class="hide">
             <form action="/@sectionUrl/search">
@@ -112,9 +118,19 @@
                 <a href="/movies" class="section-button"><span class="icon">🎥</span><span class="label">Movies</span></a>
                 <a href="/books" class="section-button"><span class="icon">📚</span><span class="label">Books</span></a>
             </div>
-            <a class="menu-item" href="JavaScript:;" onclick="site.createCustomList();">📝 Create Custom List</a>
-            <a class="menu-item" href="/Config">⚙️ Settings</a>
-            <a class="menu-item" href="/Log">🪵 Log</a>
+            @Html.Icon(new Icon("📝") { FixedWidth = true }, "Create Custom List", "site.createCustomList();", "menu-item")
+            @Html.Icon(new Icon("⚙️") { FixedWidth = true }, "Settings", "/Config", "menu-item")
+            @Html.Icon(new Icon("🪵") { FixedWidth = true }, "Log", "/Log", "menu-item")
+        </div>
+        
+        <div id="user_menu">
+            <div class="row username">@User.Identity?.Name</div>
+            @Html.Icon(new Icon("xmarks-lines") { FixedWidth = true }, "Pass Key", classes: "row")
+            @Html.Icon(new Icon("copy") { FixedWidth = true }, "Copy Pass Key", "site.copyPasskey()", "row indent")
+            @Html.Icon(new Icon("link") { FixedWidth = true }, "Copy Login Link", "site.copyLoginLink()", "row indent")
+            @Html.Icon(new Icon("retweet") { FixedWidth = true }, "Reset Pass Key", "site.resetPasskey()", "row indent")
+            <hr />
+            @Html.Icon(new Icon("right-from-bracket") { FixedWidth = true }, "Logout", "/Logout", "row")
         </div>
     }
 
@@ -146,8 +162,8 @@
                     <div id="vlc_playing_title"></div>
                 </div>
                 <div class="vlc-buttons">
-                    <a href="JavaScript:;" class="fullscreen" onclick="vlc.fullscreen();"></a>
-                    <a href="JavaScript:;" class="fullscreen-exit" onclick="vlc.fullscreen();"></a>
+                    @Html.Icon(new SolidIcon("up-right-and-down-left-from-center"), action: "vlc.fullscreen()", classes: "fullscreen")
+                    @Html.Icon(new SolidIcon("down-left-and-up-right-to-center"), action: "vlc.fullscreen()", classes: "fullscreen-exit")
                 </div>
             </div>
             <div class="vlc-detail-row">
@@ -161,16 +177,16 @@
                 <div class="vlc-buttons">
                     <div class="vlc-side-controls"></div>
                     <div class="vlc-central-controls">
-                        <a href="JavaScript:;" class="restart" style="margin:0;" onclick="vlc.previous();"></a>
-                        <a href="JavaScript:;" class="skip-back" onclick="vlc.skipBack();"></a>
-                        <a href="JavaScript:;" class="play" onclick="vlc.play();"></a>
-                        <a href="JavaScript:;" class="pause" onclick="vlc.pause();"></a>
-                        <a href="JavaScript:;" class="skip" onclick="vlc.skip();"></a>
-                        <a href="JavaScript:;" id="vlc_next_episode_button" class="next" onclick="vlc.next();"></a>
+                        @Html.Icon(new SolidIcon("backward-step"), action: "vlc.previous()")
+                        @Html.Icon(new SolidIcon("rotate-left"), action: "vlc.skipBack()")
+                        @Html.Icon(new SolidIcon("play"), action: "vlc.play()", classes: "play")
+                        @Html.Icon(new SolidIcon("pause"), action: "vlc.pause()", classes: "pause")
+                        @Html.Icon(new SolidIcon("rotate-right"), action: "vlc.skip()")
+                        @Html.Icon(new SolidIcon("forward-step"), action: "vlc.next()", htmlAttributes: new() { { "id", "vlc_next_episode_button" } })
                     </div>
                     <div class="vlc-side-controls">
-                        <a href="JavaScript:;" class="fullscreen" onclick="vlc.fullscreen();"></a>
-                        <a href="JavaScript:;" class="fullscreen-exit" onclick="vlc.fullscreen();"></a>
+                        @Html.Icon(new SolidIcon("up-right-and-down-left-from-center"), action: "vlc.fullscreen()", classes: "fullscreen")
+                        @Html.Icon(new SolidIcon("down-left-and-up-right-to-center"), action: "vlc.fullscreen()", classes: "fullscreen-exit")
                     </div>
                 </div>
             </div>

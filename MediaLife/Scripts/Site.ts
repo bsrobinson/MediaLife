@@ -8,6 +8,8 @@ import { IconMenu } from './IconMenu';
 import { VLCClient } from './Vlc';
 import { AddToList } from './AddToList';
 import { FormValidation } from './BRLibraries/FormValidation';
+import { createCookie, readCookie } from './BRLibraries/Cookies';
+import { MediaLifeService } from './Services/~csharpe-services';
 
 declare global {
     interface Window {
@@ -24,6 +26,8 @@ declare global {
 }
 
 export class MediaLife {
+
+    loginService = new MediaLifeService.LoginController();
     
     constructor() {
         
@@ -35,6 +39,13 @@ export class MediaLife {
     toggleSiteMenu() {
         element('burger_menu').toggleClass('open');
         element('site_menu').toggleClass('open');
+    }
+
+    toggleUserMenu() {
+        let open = 
+        element('user_menu_button').toggleClass('open');
+        element('user_menu').style.visibility = element('user_menu_button').containsClass('open') ? 'visible' : 'hidden';
+        element('user_menu').style.bottom = `calc(100vh - 57px - ${element('user_menu_button').containsClass('open') ? element('user_menu').offsetHeight : '0'}px)`;
     }
 
     openSearch() {
@@ -49,6 +60,32 @@ export class MediaLife {
         let name = prompt('List Name:')
         if (name) {
             window.addToListMode.create(name);
+        }
+    }
+
+    copyPasskey() {
+        let key = readCookie('auth_key');
+        if (key) {
+            navigator.clipboard.writeText(key);
+            this.toggleUserMenu();
+        }
+    }
+    copyLoginLink() {
+        let key = readCookie('auth_key');
+        let url = window.location;
+        if (key) {
+            this.toggleUserMenu();
+            navigator.clipboard.writeText(`${url.protocol}//${url.host}/Login/${key}`);
+        }
+    }
+    resetPasskey() {
+        this.toggleUserMenu();
+        if (confirm('Are you sure?\n\nOther devices will be logged out.')) {
+            this.loginService.resetPassKey().then(response => {
+                if (response.data?.length == 1) {
+                    location.href = `/Login/${response.data[0]}`;
+                }
+            })
         }
     }
 

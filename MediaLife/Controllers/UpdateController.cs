@@ -1,4 +1,32 @@
-﻿using System.Collections.Generic;
+﻿//!!
+//TODO - Next
+//  Embed related (or any) shows
+//      Taskmaster should embed Champion of Champions (as series), and the podcast (inline)
+//      Apprentise should embed You're Fired (inline)
+//          Sequel shows could also be embeded as series
+//          Inline is [Matching Date | Matching Title (maybe regex)
+//      Embeded shows don't show in list view
+//      Shows not embeded, but related should show as new episodes until embeded or ignored
+//  Config page
+//      
+//TODO - Bugs
+//  Setting panel not showing defaults on add new show (noticeable with download limit)
+//  If file is added manually for an existing torrent:
+//      on first run, torrent is deleted, file is tagged, but path isn't saved - SAVE PATH
+//      on next run (because the file isn't logged); torrent will be re-added :/
+//  If a folder is saved; try to handle
+//      
+//TODO - Future
+//  Allow manual/multiple torrent management
+//      Add and delete multiple hashes to an episode
+//      If any hash completes, all are removed (should just work as-is)
+//      If torrent added too long ago, automatically add as many as we can
+//  Books file list should be received and understood
+//      Enable book torrenting
+//  Flag Orange Files and allow confirm (remove orange and fully reset name)
+//  List un-mapped files and delete or map
+
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using MediaLife.Library.DAL;
 using System.Linq;
@@ -7,17 +35,21 @@ using MediaLife.Models;
 using System.IO;
 using System;
 using MediaLife.Library.Models;
+using WCKDRZR.Gaspar;
+using System.Diagnostics;
 
 namespace MediaLife.Controllers
 {
     public class UpdateController : Controller
     {
+        private MySqlContext db;
         private ShowsService showSrv;
         private ClientService clientSrv;
         private ConfigService configSrv;
 
         public UpdateController(MySqlContext context)
         {
+            db = context;
             Guid sessionId = Guid.NewGuid();
             showSrv = new(context, sessionId);
             clientSrv = new(context, sessionId);
@@ -31,45 +63,32 @@ namespace MediaLife.Controllers
             _ = showSrv.UpdateLastUpdatedAsync().Result;
         }
 
+        [ExportFor(GasparType.TypeScript)]
+        [HttpGet("[controller]/replay")]
+        public ActionResult<string> UpdateFromReplay()
+        {
+            LoggedPayload payload = db.LoggedPayloads.First();
+            if (payload.Received != null) {
+                return RunUpdate(payload.Received);
+            }
+            throw new UnreachableException();
+        }
+
         [HttpPost("[controller]/client")]
         public IActionResult UpdateFromClient()
         {
-            //!!
-            //TODO - Next
-            //  Embed related (or any) shows
-            //      Taskmaster should embed Champion of Champions (as series), and the podcast (inline)
-            //      Apprentise should embed You're Fired (inline)
-            //          Sequel shows could also be embeded as series
-            //          Inline is [Matching Date | Matching Title (maybe regex)
-            //      Embeded shows don't show in list view
-            //      Shows not embeded, but related should show as new episodes until embeded or ignored
-            //  Config page
-            //      
-            //TODO - Bugs
-            //  Setting panel not showing defaults on add new show (noticeable with download limit)
-            //  If file is added manually for an existing torrent:
-            //      on first run, torrent is deleted, file is tagged, but path isn't saved - SAVE PATH
-            //      on next run (because the file isn't logged); torrent will be re-added :/
-            //  If a folder is saved; try to handle
-            //      
-            //TODO - Future
-            //  Allow manual/multiple torrent management
-            //      Add and delete multiple hashes to an episode
-            //      If any hash completes, all are removed (should just work as-is)
-            //      If torrent added too long ago, automatically add as many as we can
-            //  Books file list should be received and understood
-            //      Enable book torrenting
-            //  Flag Orange Files and allow confirm (remove orange and fully reset name)
-            //  List un-mapped files and delete or map
+            StreamReader body = new(Request.Body);
+            string data = body.ReadToEndAsync().Result;
+            return Content(RunUpdate(data));
+        }
 
+        private string RunUpdate(string data)
+        {
             try
             {
                 if (configSrv.Config.UserConfig.ClientUpdateEnabled)
                 {
                     showSrv.HousekeepLogs(configSrv.Config.LogDays);
-
-                    StreamReader body = new(Request.Body);
-                    string data = body.ReadToEndAsync().Result;
 
                     clientSrv.LogReceivedPayload(data);
 
@@ -78,7 +97,7 @@ namespace MediaLife.Controllers
                     {
                         string error = "Received data payload is invalid.  Couldn't find FILES and TORRENTS";
                         clientSrv.LogError(error);
-                        return Content(AddGroup("ERROR", error));
+                        return AddGroup("ERROR", error);
                     }
                     clientSrv.LogClientData(clientData, "Received");
 
@@ -111,17 +130,17 @@ namespace MediaLife.Controllers
 
                         clientSrv.LogReplyPayload(returnData);
 
-                        return Content(returnData);
+                        return returnData;
                     }
                     else
                     {
                         clientSrv.LogError($"Update Stopped: Client File Threshold Breached. {clientData.Files.Count} files sent, {dbFileCount} files in database ({clientFilePercentage}%)");
-                        return Content("Error: File Threshold Breached");
+                        return "Error: File Threshold Breached";
                     }
                 }
 
                 clientSrv.LogDisabled();
-                return Content("Update is Disabled");
+                return "Update is Disabled";
             }
             catch (Exception e)
             {

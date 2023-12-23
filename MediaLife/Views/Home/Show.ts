@@ -7,6 +7,8 @@ import { tsEpisodeId, tsEpisodeModel, tsShowModel, tsShowModelForList } from "..
 import { EpisodeId, EpisodeModel, ShowModel, ShowPageModel, ShowSettings, SiteSection } from "../../Scripts/Models/~csharpe-models";
 import { MediaLifeService } from "../../Scripts/Services/~csharpe-services";
 import { MediaLife } from "../../Scripts/Site";
+import '../../Scripts/BRLibraries/Form';
+
 
 export class HomeShow {
 
@@ -125,7 +127,7 @@ export class HomeShow {
         for (let i = 0; i < episodes.length; i++) {
             element('episode_list').appendChild(this.episodeRow(episodes[i] as tsEpisodeModel) as HTMLElement);
         }
-        element('episode_list').appendElement('input', { type: 'button', value: 'Add to List', class: 'button add edit-list-show', style: 'margin:6px 0 10px 0', events: { click: () => this.startAddToListMode() } });
+        element('episode_list').appendButton('Add to List', { classes: 'button add edit-list-show', click: () => this.startAddToListMode() });
     }
 
     episodeRow(episode: tsEpisodeModel) {
@@ -174,9 +176,9 @@ export class HomeShow {
         icons.appendChild(new EpisodeFileIcon(episode.obj, 'edit-list-hide add-to-list-hide').node);
         icons.appendChild(new EpisodeWatchIcon(episode.obj, 'edit-list-hide add-to-list-hide').node);
 
-        icons.appendElement('a', { href: 'JavaScript:;', class: 'icon up edit-list-show', title: 'Move up', events: { click: (e: Event) => this.moveEpisodeUp(e) } });
-        icons.appendElement('a', { href: 'JavaScript:;', class: 'icon down edit-list-show', title: 'Move down', events: { click: (e: Event) => this.moveEpisodeDown(e) } });
-        icons.appendElement('a', { href: 'JavaScript:;', class: 'icon remove edit-list-show', title: 'Remove', events: { click: (e: Event) => this.removeEpisode(e) } });
+        icons.appendIcon('arrow-up', { class: 'icon edit-list-show', click: (e: Event) => this.moveEpisodeUp(e), htmlAttributes: { title: 'Move up' } });
+        icons.appendIcon('arrow-down', { class: 'icon edit-list-show', click: (e: Event) => this.moveEpisodeDown(e), htmlAttributes: { title: 'Move down' } });
+        icons.appendIcon('trash-can', { class: 'icon edit-list-show', click: (e: Event) => this.removeEpisode(e), htmlAttributes: { title: 'Remove' } });
 
         if (window.addToListMode.contains(episode)) {
             icons.appendElement('span', { class: 'add-to-list-show', html: 'In List' });
@@ -240,6 +242,7 @@ export class HomeShow {
             let hide = !element('settings_menu').containsClass('hide');
             element('blackout').toggleClassIfTrue('hide', hide);
             element('settings_menu').toggleClassIfTrue('hide', hide);
+            element('showSettingsButton').toggleClassIfTrue('open', !hide);
         }
     }
 

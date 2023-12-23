@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MediaLife.DataProviders;
+using MediaLife.Extensions;
 using MediaLife.Library.DAL;
 using MediaLife.Library.Models;
 using MediaLife.Models;

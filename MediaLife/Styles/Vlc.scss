@@ -10,106 +10,126 @@
     border-radius: 10px;
     color: white;
     z-index: 99;
-    display: flex
-}
+    display: flex;
 
-    #vlc_player .vlc-content {
+    .vlc-content {
         width: 100%
     }
 
-    #vlc_player .vlc-title {
+    .vlc-title {
         display: flex;
         justify-content: space-between;
-    }
-        #vlc_player .vlc-title .vlc-title-text {
+    
+        .vlc-title-text {
             display: flex;
             align-items: center;
             overflow: hidden;
             flex-grow: 1;
         }
-        #vlc_player .vlc-title .vlc-title-text img {
+        .vlc-title-text img {
             height: 22px;
             margin-right: 10px;
         }
-        #vlc_player .vlc-title .vlc-buttons {
+        .vlc-buttons {
             display: none;
-        }
 
-    #vlc_player #vlc_playing_title {
+            @media (max-width: 500px) {
+                display: block;
+            }
+        }
+    }
+
+    #vlc_playing_title {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    #vlc_player .vlc-buttons {
+    .vlc-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin: 0 10px;
         white-space: nowrap;
-    }
-    #vlc_player .vlc-buttons a {
-        mask-repeat: no-repeat;
-        mask-size: 22px 22px;
-        mask-position: center;
-        height: 32px;
-        min-width: 22px;
-        margin-left: 12px;
-        background-color: white;
-        display: inline-block;
-    }
-        #vlc_player .vlc-buttons .play {
-            mask-image: url('/images/play.svg');
+        
+        a {
+            color: white;
+            text-decoration: none;
+            justify-content: center;
+            height: 32px;
+            width: 34px;
+        
+            &.pause {
+                display: none !important;
+            }
+            &.fullscreen-exit {
+                display: none !important;
+            }
+
+            &.disabled {
+                opacity: 0.4;
+                cursor: default;
+            }
         }
-        #vlc_player .vlc-buttons .pause {
-            mask-image: url('/images/pause.svg');
-            display: none;
+
+        icon {
+            font-size: 22px;
         }
-        #vlc_player .vlc-buttons .skip {
-            mask-image: url('/images/forward.svg');
+
+        .vlc-side-controls {
+            a {
+                justify-content: end;
+            }
+            @media (max-width: 500px) {
+                display: none;
+            }
         }
-        #vlc_player .vlc-buttons .skip-back {
-            mask-image: url('/images/back.svg');
+        
+        .vlc-central-controls {
+            min-width: 50%;
+            display: flex;
+            justify-content: space-evenly;
+
+            @media (max-width: 500px) {
+                width: 100%;
+                justify-content: space-between;
+            }
         }
-        #vlc_player .vlc-buttons .restart {
-            mask-image: url('/images/previous.svg');
+
+        @media (max-width: 500px) {
+            margin: 0;
         }
-        #vlc_player .vlc-buttons .next {
-            mask-image: url('/images/next.svg');
-        }
-        #vlc_player .vlc-buttons .fullscreen {
-            mask-image: url('/images/fullscreen.svg');
-        }
-        #vlc_player .vlc-buttons .fullscreen-exit {
-            mask-image: url('/images/fullscreen-exit.svg');
-            display: none;
-        }
-    #vlc_player.playing .vlc-buttons .play {
-        display: none;
-    }
-    #vlc_player.playing .vlc-buttons .pause {
-        display: inline-block;
-    }
-    #vlc_player.fullscreen .vlc-buttons .fullscreen {
-        display: none;
-    }
-    #vlc_player.fullscreen .vlc-buttons .fullscreen-exit {
-        display: inline-block;
     }
 
-    #vlc_player .vlc-buttons a.disabled {
-        opacity: 0.4;
-        cursor: default;
+    &.playing {
+        .vlc-buttons {
+            .play {
+                display: none !important;
+            }
+            .pause {
+                display: flex !important;
+            }
+            .fullscreen {
+                display: none !important;
+            }
+            .fullscreen-exit {
+                display: flex !important;
+            }
+        }
     }
 
-    #vlc_player .vlc-scrubber {
+    .vlc-scrubber {
         display: flex;
         justify-content: space-evenly;
         align-items: center;
         margin: 10px 0 5px 0;
-    }
-        #vlc_player .vlc-scrubber .time {
+
+        .time {
             color: #ccc;
             font-size: 0.9em;
             min-width: 45px;
         }
-        #vlc_player .vlc-scrubber .vlc-scrubber-bar {
+        
+        .vlc-scrubber-bar {
             position: relative;
             height: 30px;
             width: 60%;
@@ -119,7 +139,8 @@
             background-position: center;
             cursor: pointer;
         }
-        #vlc_player .vlc-scrubber #vlc-scrubber-mark {
+
+        #vlc-scrubber-mark {
             position: absolute;
             top: calc(50% - 7px);
             height: 14px;
@@ -127,61 +148,37 @@
             border-radius: 50%;
             background: #999;
         }
-
-    #vlc_player .vlc-detail-row .vlc-buttons {
-        display: flex;
-        justify-content: space-between;
-        margin: 0 10px;
-    }
-    #vlc_player .vlc-detail-row .vlc-central-controls {
-        min-width: 50%;
-        display: flex;
-        justify-content: space-evenly;
     }
 
-    #vlc_player.info-only .vlc-title {
-        align-items: start;
-    }
-    #vlc_player.info-only #vlc_playing_title {
-        white-space: initial;
-        text-overflow: initial;
-    }
-    #vlc_player.info-only .vlc-detail-row {
-        display: none;
+    &.info-only {
+        .vlc-title {
+            align-items: start;
+        }
+        #vlc_playing_title {
+            white-space: initial;
+            text-overflow: initial;
+        }
+        .vlc-detail-row {
+            display: none;
+        }
     }
 
-    #vlc_player.with-poster {
+    &.with-poster {
         padding-left: 10px;
         max-width: 405px;
-    }
-        #vlc_player.with-poster #vlc_poster {
+    
+        #vlc_poster {
             width: 70px;
             height: 99px;
             background-size: 100%;
             background-repeat: no-repeat;
             margin-right: 15px;
         }
-        #vlc_player.with-poster .vlc-content {
+        .vlc-content {
             width: calc(100% - 85px);
         }
-
-
-@media (max-width: 500px) {
-    #vlc_player .vlc-detail-row .vlc-buttons {
-        margin: 0;
-    }
-    #vlc_player .vlc-detail-row .vlc-central-controls {
-        width: 100%;
-        justify-content: space-between;
-    }
-    #vlc_player .vlc-detail-row .vlc-side-controls {
-        display: none;
-    }
-    #vlc_player .vlc-title .vlc-buttons {
-        display: block;
     }
 }
-
 
 #content.vlc-open {
     padding-bottom: 150px;
