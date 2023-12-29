@@ -138,7 +138,7 @@ export class AddToList {
 		}
 
 		this.addToList = {
-			id: showModel.id,
+			id: parseInt(showModel.id),
 			name: showModel.name,
 			episodes: episodes
 		};

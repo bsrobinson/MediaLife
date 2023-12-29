@@ -43,16 +43,16 @@ namespace MediaLife.DataProviders
             List<Task<ShowModel?>> movieShowTasks = new();
 
             List<ShowModel> movies = new();
-            List<int> validIds = new();
+            List<string> validIds = new();
 
-            List<int> orderedCollectionIds = new();
-            List<int> orderedMovieIds = new();
+            List<string> orderedCollectionIds = new();
+            List<string> orderedMovieIds = new();
 
             //Search collections
             foreach (SearchCollection collection in (await client.SearchCollectionAsync(query)).Results)
             {
-                validIds.Add(collection.Id);
-                orderedCollectionIds.Add(collection.Id);
+                validIds.Add(collection.Id.ToString());
+                orderedCollectionIds.Add(collection.Id.ToString());
                 movieShowTasks.Add(GetMovieFromCollectionAsync(collection.Id));
             }
             while (movieShowTasks.Any())
@@ -62,8 +62,8 @@ namespace MediaLife.DataProviders
 
                 if (finishedTask.Result != null)
                 {
-                    int score = 9999 - orderedCollectionIds.IndexOf((int)finishedTask.Result.Id);
-                    ShowModel? movieInDb = showsService.GetShow(SiteSection.Movies, finishedTask.Result.Id);
+                    int score = 9999 - orderedCollectionIds.IndexOf(finishedTask.Result.Id.ToString());
+                    ShowModel? movieInDb = showsService.GetShow(SiteSection.Movies, finishedTask.Result.Id.ToString());
                     if (movieInDb != null)
                     {
                         movieInDb.SearchScore = score;
@@ -75,14 +75,14 @@ namespace MediaLife.DataProviders
                         movies.Add(finishedTask.Result);
                     }
 
-                    validIds.Add((int)finishedTask.Result.Id);
+                    validIds.Add(finishedTask.Result.Id.ToString());
                 }
             }
 
             //Search movies
             foreach (SearchMovie movie in (await client.SearchMovieAsync(query)).Results)
             {
-                orderedMovieIds.Add(movie.Id);
+                orderedMovieIds.Add(movie.Id.ToString());
                 movieDetailTasks.Add(client.GetMovieAsync(movie.Id));
             }
             while (movieDetailTasks.Any())
@@ -90,13 +90,13 @@ namespace MediaLife.DataProviders
                 Task<Movie> finishedTask = Task.WhenAny(movieDetailTasks).Result;
                 movieDetailTasks.Remove(finishedTask);
 
-                int score = 999 - orderedMovieIds.IndexOf(finishedTask.Result.Id);
-                int id = finishedTask.Result.BelongsToCollection?.Id ?? finishedTask.Result.Id;
+                int score = 999 - orderedMovieIds.IndexOf(finishedTask.Result.Id.ToString());
+                string id = (finishedTask.Result.BelongsToCollection?.Id ?? finishedTask.Result.Id).ToString();
                 if (!validIds.Contains(id))
                 {
                     validIds.Add(id);
 
-                    ShowModel? movieInDb = showsService.GetShow(SiteSection.Movies, (uint)id);
+                    ShowModel? movieInDb = showsService.GetShow(SiteSection.Movies, id);
                     if (movieInDb != null)
                     {
                         movieInDb.SearchScore = score;
@@ -121,10 +121,10 @@ namespace MediaLife.DataProviders
             return movies;
         }
 
-        public async Task<ShowModel?> GetMovieAsync(uint movieId)
+        public async Task<ShowModel?> GetMovieAsync(int movieId)
         {
             if (client == null) { return null; }
-            return await GetMovieAsync(await client.GetMovieAsync((int)movieId));
+            return await GetMovieAsync(await client.GetMovieAsync(movieId));
         }
 
         private async Task<ShowModel?> GetMovieAsync(Movie movie, double? searchScore = null)
@@ -145,12 +145,12 @@ namespace MediaLife.DataProviders
                 ReleaseDateItem? release = Release(movie.Id);
                 model = new()
                 {
-                    Id = (uint)movie.Id,
+                    Id = movie.Id.ToString(),
                     Name = movie.Title,
                     Poster = FullPosterPath(movie.PosterPath),
                     SiteSection = SiteSection.Movies,
                     Episodes = new() { new EpisodeModel() {
-                        Id = (uint)movie.Id,
+                        Id = movie.Id.ToString(),
                         SiteSection = SiteSection.Movies,
                         Name = movie.Title,
                         SeriesNumber = 1,
@@ -184,11 +184,11 @@ namespace MediaLife.DataProviders
             foreach (SearchMovie part in movieCollection.Parts)
             {
                 ReleaseDateItem? release = Release(part.Id);
-                model.Id = (uint)part.Id;
+                model.Id = part.Id.ToString();
                 model.SiteSection = SiteSection.Movies;
                 model.AddEpisode(new()
                 {
-                    Id = (uint)part.Id,
+                    Id = part.Id.ToString(),
                     SiteSection = SiteSection.Movies,
                     Name = part.Title,
                     SeriesNumber = 1,

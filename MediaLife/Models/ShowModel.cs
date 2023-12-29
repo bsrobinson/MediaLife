@@ -15,7 +15,7 @@ namespace MediaLife.Models
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class ShowModel
     {
-        public uint Id { get; set; }
+        public string Id { get; set; }
         public SiteSection SiteSection { get; set; }
 
         public string Name { get; set; }
@@ -30,6 +30,10 @@ namespace MediaLife.Models
                 if (SiteSection == SiteSection.TV)
                 {
                     return _episodes.OrderBy(e => e.SeriesNumber).ThenBy(e => e.AirDate ?? DateTime.MaxValue).ThenBy(e => e.Number).ToList();
+                }
+                else if (SiteSection == SiteSection.YouTube)
+                {
+                    return _episodes.OrderBy(e => e.AirDate).ToList();
                 }
                 else
                 {

@@ -28,10 +28,12 @@ namespace MediaLife.Library.Models
         Lists = 1,
         [EnumMember(Value = "tv")]
         TV = 10,
+        [EnumMember(Value = "youtube")]
+        YouTube = 15,
         [EnumMember(Value = "movies")]
         Movies = 20,
         [EnumMember(Value = "books")]
-        Books = 30
+        Books = 30,
     }
 
     [ExportFor(GasparType.TypeScript)]

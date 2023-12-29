@@ -16,7 +16,9 @@ export class ConfigIndex {
     lastHash: string | null = null;
 
     constructor(private site: MediaLife, private data: PirateBay[]) {
+    }
 
+    init() {
         setInterval(() => this.monitorHash(), 500);
         if (location.hash == '' && windowSize().w > 600) {
             location.href = firstOfClass<HTMLAnchorElement>('menu-link').href;
@@ -24,7 +26,7 @@ export class ConfigIndex {
 
         window.formValidation = new FormValidation();
         window.formValidation.validateForms();
-        
+
     }
 
     monitorHash() {
@@ -76,8 +78,8 @@ export class ConfigIndex {
 
         this.site.showProgressBar();
         form.disable();
-
-        this.service.update(form.toJson(false)).then(_ => {
+        
+        this.service.update(form.toJson(false, false)).then(_ => {
             form.enable();
             this.site.hideProgressBar();
         });

@@ -8,6 +8,10 @@
 			{
 				"Type": "TypeScript",
 				"Location": "./Scripts/Models/~csharpe-models.ts"
+			},
+			{
+				"Type": "TypeScript",
+				"Location": "../MediaServer/macos/cs-models.ts"
 			}
 		],
 		"NumericEnums": true,

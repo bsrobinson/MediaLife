@@ -13,7 +13,8 @@ namespace MediaLife.Library.DAL
     {
         public uint Id { get; set; }
 
-        public required uint EpisodeId { get; set; }
+        [MaxLength(50)]
+        public required string EpisodeId { get; set; }
 
         [DataType("uint")]
         public required SiteSection SiteSection { get; set; }

@@ -8,7 +8,9 @@ export class LoginIndex {
     service = new MediaLifeService.LoginController();
 
     constructor() {
-        
+    }
+
+    init() {
         elementOrNull('key')?.focus();
         elementOrNull('user_Password')?.focus();
         elementOrNull('user_Name')?.focus();

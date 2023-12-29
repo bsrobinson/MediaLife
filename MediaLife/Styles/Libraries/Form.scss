@@ -1,7 +1,9 @@
-@use './Icon.scss';
 @use './fontawesome-6.4.2/fontawesome.scss';
+@use './Icon.scss';
 @use "sass:selector";
 @use "sass:string";
+@import './fontawesome-6.4.2/functions';
+@import './fontawesome-6.4.2/variables';
 
 $form-row-node-type: 'form-field-row';
 
@@ -327,7 +329,7 @@ $type-select: '.form-field-row-select';
         &.with-handle {
             padding-right: 1.6rem;
             &::after {
-                content: '\f0dc'; // $fa-var-sort;
+                content: quote($fa-var-sort);
                 @extend .fa-regular;
                 @extend .fa-fw;
                 font-weight: 600;
@@ -339,12 +341,12 @@ $type-select: '.form-field-row-select';
                 align-items: center;
                 height: 100%;
             }
-        }
-
-        @include forStyles($style-block-row) {
-            padding-right: calc(1.6rem + 0.2em);
-            &::after {
-                right: 0.2em;
+            
+            @include forStyles($style-block-row) {
+                padding-right: calc(1.6rem + 0.2em);
+                &::after {
+                    right: 0.2em;
+                }
             }
         }
     }
@@ -579,6 +581,14 @@ button.form-row-button {
 
     &.form-field-row-space-after {
         margin-right: auto;
+    }
+
+    &.form-field-row-stacked-icon {
+        flex-direction: column;
+
+        icon {
+            font-size: 1.6rem;
+        }
     }
 
     &:disabled {

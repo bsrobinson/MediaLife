@@ -1,10 +1,10 @@
-import { element, elementOrNull, makeElement } from "../../Scripts/BRLibraries/DOM";
+import { element, elementOrNull, firstOfClass, makeElement } from "../../Scripts/BRLibraries/DOM";
 import { windowSize } from "../../Scripts/BRLibraries/WindowSize";
 import { EpisodeFileIcon } from "../../Scripts/EpisodeFileIcon";
 import { EpisodeObject } from "../../Scripts/EpisodeObject";
 import { EpisodeWatchIcon } from "../../Scripts/EpisodeWatchIcon";
-import { tsEpisodeId, tsEpisodeModel, tsShowModel, tsShowModelForList } from "../../Scripts/Models/extendedModels";
-import { EpisodeId, EpisodeModel, ShowModel, ShowPageModel, ShowSettings, SiteSection } from "../../Scripts/Models/~csharpe-models";
+import { tsEpisodeModel, tsShowModel, tsShowModelForList } from "../../Scripts/Models/extendedModels";
+import { EpisodeId, EpisodeModel, ShowPageModel, ShowSettings, SiteSection } from "../../Scripts/Models/~csharpe-models";
 import { MediaLifeService } from "../../Scripts/Services/~csharpe-services";
 import { MediaLife } from "../../Scripts/Site";
 import '../../Scripts/BRLibraries/Form';
@@ -17,9 +17,12 @@ export class HomeShow {
     activeSeries: number | null = null;
     editedList: tsShowModelForList | null = null;
 
-    constructor(private site: MediaLife, private data: ShowPageModel) {
+    resized = false;
 
-        this.windowResize();
+    constructor(private site: MediaLife, private data: ShowPageModel) {
+    }
+
+    init() {
 
         let lastSeries = this.data.show.nextEpisode ? this.data.show.nextEpisode.seriesNumber : null;
         let maxSeries = Math.max(...this.data.show.episodes.map(e => e.seriesNumber));
@@ -27,7 +30,6 @@ export class HomeShow {
             lastSeries = maxSeries;
         }
         this.activeSeries = lastSeries;
-        let activeSeriesButton = null;
 
         if (elementOrNull('series_list')) {
             element('series_list').innerHTML = '';
@@ -36,16 +38,9 @@ export class HomeShow {
 
             element('series_list').appendElement('li').appendElement('a', { html: 'All', href: 'JavaScript:;', events: { click: (e: Event) => this.selectSeries(e) } });
             for (let i = 0; i < series.length; i++) {
-                let button = element('series_list')
+                element('series_list')
                     .appendElement('li', { class: series[i] == this.activeSeries ? 'active' : '' })
                     .appendElement('a', { html: series[i].toString(), href: 'JavaScript:;', events: { click: (e: Event) => this.selectSeries(e) } });
-                if (series[i] == this.activeSeries) {
-                    activeSeriesButton = button;
-                }
-            }
-
-            if (activeSeriesButton && this.activeSeries > 3) {
-                activeSeriesButton.scrollIntoView();
             }
         }
 
@@ -145,7 +140,9 @@ export class HomeShow {
         row.className = 'episode-row' + ((airDate == null || airDate > new Date()) && !available ? ' future' + (episode.watched ? '-but-watched' : '') : '');
 
         let name = row.appendElement('div', { class: 'name-and-number' + (all ? ' wide-number' : '') });
-        name.appendElement('span', { class: 'number', html: (all ? 'S' + episode.seriesNumber + ': ' : '') + episode.number });
+        if (this.data.siteSection != SiteSection.YouTube) {
+            name.appendElement('span', { class: 'number', html: (all ? 'S' + episode.seriesNumber + ': ' : '') + episode.number });
+        }
         name.appendElement('span', { class: 'name', html: episode.name });
         name.appendElement('span', { html: ' ' });
         if (airDate && this.data.siteSection != SiteSection.Books) {
@@ -191,7 +188,7 @@ export class HomeShow {
 
     hoverEpisode(event: Event) {
         if (event.target instanceof HTMLElement) {
-            let id = parseInt(event.target.id.slice(11));
+            let id = event.target.id.slice(11);
             let episode = this.data.show.episodes.find(e => e.id == id);
             if (episode && episode.poster) {
                 element('poster').innerHTML = '';
@@ -205,7 +202,7 @@ export class HomeShow {
     }
 
     addShow() {
-        element<HTMLInputElement>('addShowButton').disabled = true;
+        element<HTMLButtonElement>('addShowButton').disableWithSpinIcon();
         this.service.addShow(this.data.show.siteSection, this.data.show.id).then(response => {
             if (response.data) {
                 element('showName').html(response.data.name);
@@ -215,7 +212,7 @@ export class HomeShow {
             } else {
                 element('addShowButton').removeClass('hide');
             }
-            element<HTMLInputElement>('addShowButton').disabled = false;
+            element<HTMLButtonElement>('addShowButton').enable();
         });
     }
 
@@ -223,7 +220,7 @@ export class HomeShow {
         if (this.data.someEpisodesInList) {
             alert('Cannot remove as some parts are in one or more custom lists');
         } else {
-            element<HTMLInputElement>('removeShowButton').disabled = true;
+            element<HTMLButtonElement>('removeShowButton').disableWithSpinIcon();
             this.service.removeShow(this.data.show.siteSection, this.data.show.id).then(response => {
                 if (response.data) {
                     element('removeShowButton').addClass('hide');
@@ -232,31 +229,29 @@ export class HomeShow {
                 } else {
                     element('removeShowButton').removeClass('hide');
                 }
-                element<HTMLInputElement>('removeShowButton').disabled = false;
+                element<HTMLButtonElement>('removeShowButton').enable();
             });
         }
     }
 
     toggleSettingsMenu() {
-        if (!element('showSettingsButton').containsClass('saving')) {
-            let hide = !element('settings_menu').containsClass('hide');
-            element('blackout').toggleClassIfTrue('hide', hide);
-            element('settings_menu').toggleClassIfTrue('hide', hide);
-            element('showSettingsButton').toggleClassIfTrue('open', !hide);
-        }
+        let hide = !element('settings_menu').containsClass('hide');
+        element('blackout').toggleClassIfTrue('hide', hide);
+        element('settings_menu').toggleClassIfTrue('hide', hide);
+        element('showSettingsButton').toggleClassIfTrue('open', !hide);
     }
 
     saveSettings() {
 
         this.toggleSettingsMenu();
-        element('showSettingsButton').addClass('saving');
+        element<HTMLButtonElement>('showSettingsButton').disableWithSpinIcon();
 
-        let form = element<HTMLFormElement>('settings_menu').toJson<ShowSettings>();
-        this.service.saveSettings(this.data.show.siteSection, this.data.show.id, form).then(response => {
+        let form = element<HTMLFormElement>('settings_menu').toJson<ShowPageModel>().show as ShowSettings;
+        this.service.saveSettings(this.data.show.siteSection, this.data.show.id, form).then(() => {
             if (form.skipUntilSeries != this.data.show.skipUntilSeries) {
                 location.reload();
             } else {
-                element('showSettingsButton').removeClass('saving')
+                element<HTMLButtonElement>('showSettingsButton').enable()
             }
         });
         
@@ -288,6 +283,14 @@ export class HomeShow {
     }
 
 
+    openNetwork() {
+        let url = this.data.show.id.slice(0, 2) == 'PL'
+            ? `https://www.youtube.com/playlist?list=${this.data.show.id}`
+            : `https://www.youtube.com/channel/${this.data.show.id}`
+        window.open(url);
+    }
+
+
     editList() {
 
         element('content').addClass('edit-list');
@@ -313,7 +316,7 @@ export class HomeShow {
         if (event.target instanceof HTMLElement) {
             let row = event.target.parentOfClass('episode-row');
             if (row) {
-                let id = parseInt(row.id.slice(11));
+                let id = row.id.slice(11);
                 let episode = this.data.show.episodes.find(e => e.id == id);
                 if (episode) {
                     let index = this.editedListIndex(episode);
@@ -331,7 +334,7 @@ export class HomeShow {
         if (event.target instanceof HTMLElement) {
             let row = event.target.parentOfClass('episode-row');
             if (row) {
-                let id = parseInt(row.id.slice(11));
+                let id = row.id.slice(11);
                 let episode = this.data.show.episodes.find(e => e.id == id);
 
                 if (episode && this.editedList) {
@@ -350,7 +353,7 @@ export class HomeShow {
         if (event.target instanceof HTMLElement) {
             let row = event.target.parentOfClass('episode-row');
             if (row && this.editedList) {
-                let id = parseInt(row.id.slice(11));
+                let id = row.id.slice(11);
                 let episode = this.data.show.episodes.find(e => e.id == id);
                 let index = this.editedList.episodes.findIndex(e => e.id == episode?.id && e.siteSection == episode.siteSection);
 
@@ -372,7 +375,7 @@ export class HomeShow {
     }
     deleteList() {
         if (confirm('Are you sure you want to delete this list?\n\nThis cannot be undone, but entries will still be added to your database')) {
-            this.service.deleteList(this.data.show.id).then(response => {
+            this.service.deleteList(parseInt(this.data.show.id)).then(response => {
                if (response.data) {
                    location.href = '/' + this.data.siteSection;
                }
@@ -382,7 +385,7 @@ export class HomeShow {
     editListSave(addAfterSave: boolean) {
         if (this.editedList) {
             let episodes = this.editedList.episodes.map(e => ({ id: e.id, section: e.siteSection } as EpisodeId))
-            this.service.updateList(this.data.show.id, element<HTMLInputElement>('editListTitle').value, episodes).then(response => {
+            this.service.updateList(parseInt(this.data.show.id), element<HTMLInputElement>('editListTitle').value, episodes).then(response => {
                 if (response.data) {
                     this.data.show = response.data;
                     element('showName').html(this.data.show.name);
@@ -424,6 +427,9 @@ export class HomeShow {
         let windowHeight = windowSize().h;
         let contentTop = element('page-content').getPosition().top;
 
+        console.log(element('page-content'));
+        console.log('windowResize - ' + windowHeight + ' - ' + contentTop);
+
         if (elementOrNull('series_list_wrapper')) {
             element('series_list_wrapper').style.height = (windowHeight - contentTop - 2) + 'px';
         }
@@ -432,6 +438,14 @@ export class HomeShow {
 
         if (elementOrNull('showSettingsButton')) {
             element('settings_menu').style.top = (element('showSettingsButton').getPosition().top + element('showSettingsButton').offsetHeight + 2) + 'px';
+        }
+        
+        if (!this.resized && this.activeSeries && this.activeSeries > 3) {
+            let activeSeriesButton = firstOfClass('active', element('series_list'));
+            if (activeSeriesButton) {   
+                activeSeriesButton.scrollIntoView();
+                this.resized = true;
+            }
         }
     }
 

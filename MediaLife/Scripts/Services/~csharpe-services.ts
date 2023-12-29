@@ -8,7 +8,7 @@
 //** full configuration in: ../../gaspar.config.json
 //**
 
-import { User, UserAccount, Configuration, VLCStatus, SiteSection, ShowModel, EpisodeModel, ShowSettings, Show, EpisodeId, PirateBay } from "../Models/~csharpe-models";
+import { ClientData, ClientActions, User, UserAccount, Configuration, VLCStatus, SiteSection, ShowModel, EpisodeModel, ShowSettings, Show, EpisodeId, PirateBay } from "../Models/~csharpe-models";
 import { ServiceErrorHandler } from "./service-error-handler";
 
 export class ServiceResponse<T> {
@@ -76,8 +76,8 @@ export namespace MediaLifeService {
     //File: ../../Controllers/UpdateController.cs
 
     export class UpdateController {
-        updateFromReplay(showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<string>> {
-            return new GasparServiceHelper().fetch(`/Update/replay`, { method: 'GET' }, showError);
+        runUpdate(clientData: ClientData, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<ClientActions>> {
+            return new GasparServiceHelper().fetch(`/Update/client`, { method: 'POST', body: JSON.stringify(clientData), headers: { 'Content-Type': 'application/json' } }, showError);
         }
     }
     
@@ -153,22 +153,22 @@ export namespace MediaLifeService {
         allShows(section: SiteSection, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<ShowModel[]>> {
             return new GasparServiceHelper().fetch(`/${section}/all`, { method: 'GET' }, showError);
         }
-        addShow(section: SiteSection, showId: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<ShowModel>> {
+        addShow(section: SiteSection, showId: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<ShowModel>> {
             return new GasparServiceHelper().fetch(`/${section}/add/${showId}`, { method: 'POST' }, showError);
         }
-        removeShow(section: SiteSection, showId: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<boolean>> {
+        removeShow(section: SiteSection, showId: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<boolean>> {
             return new GasparServiceHelper().fetch(`/${section}/remove/${showId}`, { method: 'DELETE' }, showError);
         }
-        updateShow(section: SiteSection, showId: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<ShowModel | null>> {
+        updateShow(section: SiteSection, showId: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<ShowModel | null>> {
             return new GasparServiceHelper().fetch(`/${section}/update/${showId}`, { method: 'POST' }, showError);
         }
-        episode(section: SiteSection, episodeId: number, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<EpisodeModel>> {
+        episode(section: SiteSection, episodeId: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<EpisodeModel>> {
             return new GasparServiceHelper().fetch(`/${section}/Episode/${episodeId}`, { method: 'GET' }, showError);
         }
-        saveSettings(section: SiteSection, showId: number, model: ShowSettings, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<Show>> {
+        saveSettings(section: SiteSection, showId: string, model: ShowSettings, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<Show>> {
             return new GasparServiceHelper().fetch(`/${section}/SaveSettings/${showId}`, { method: 'PUT', body: JSON.stringify(model), headers: { 'Content-Type': 'application/json' } }, showError);
         }
-        updateEpisode(section: SiteSection, showId: number, episode: EpisodeModel, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<ShowModel>> {
+        updateEpisode(section: SiteSection, showId: string, episode: EpisodeModel, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<ShowModel>> {
             return new GasparServiceHelper().fetch(`/${section}/UpdateEpisode/${showId}`, { method: 'PUT', body: JSON.stringify(episode), headers: { 'Content-Type': 'application/json' } }, showError);
         }
         addTorrentHash(episode: EpisodeModel, hash: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<EpisodeModel>> {

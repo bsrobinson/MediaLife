@@ -20,23 +20,25 @@ export class HomeIndex {
     } = { watching: [], notWatchedRecently: [], notStarted: [], allShows: [] };
 
     constructor(private site: MediaLife, private data: tsListPageModel) {
+    }
 
+    init() {
         if (this.data.context.pageType == PageType.Search) {
             this.addShowsToLists(this.data.shows);
             this.showAllShows();
         }
         else {
             this.addShowsToLists([
-                { id: 0, skellington: true, started: true, watchedRecently: true },
-                { id: 1, skellington: true, started: true, watchedRecently: true },
-                { id: 2, skellington: true, started: true, watchedRecently: true },
-                { id: 3, skellington: true, started: true, watchedRecently: true },
-                { id: 4, skellington: true, started: true, watchedRecently: true },
-                { id: 5, skellington: true },
-                { id: 6, skellington: true },
-                { id: 7, skellington: true },
-                { id: 8, skellington: true },
-                { id: 9, skellington: true },
+                { id: '0', skellington: true, started: true, watchedRecently: true },
+                { id: '1', skellington: true, started: true, watchedRecently: true },
+                { id: '2', skellington: true, started: true, watchedRecently: true },
+                { id: '3', skellington: true, started: true, watchedRecently: true },
+                { id: '4', skellington: true, started: true, watchedRecently: true },
+                { id: '5', skellington: true },
+                { id: '6', skellington: true },
+                { id: '7', skellington: true },
+                { id: '8', skellington: true },
+                { id: '9', skellington: true },
             ] as tsShowModel[]);
 
             this.service.watching(this.data.context.siteSection).then(response => {
@@ -66,7 +68,7 @@ export class HomeIndex {
     }
 
     addShowsToLists(shows: tsShowModel[]) {
-
+        
         if (!this.data.shows) { this.data.shows = []; }
         this.data.shows = this.data.shows.concat(shows.filter(s => this.data.shows.find(m => m.id == s.id) == null));
 
@@ -136,16 +138,18 @@ export class HomeIndex {
 
     addPoster(toElement: string, show: tsShowModel) {
 
+        let poster;
+
         if (show.skellington) {
 
-            let poster = element(toElement).appendElement('div', { class: 'poster skellington' });
+            poster = element(toElement).appendElement('div', { class: 'poster skellington' });
             poster.appendElement('a');
             poster.appendElement('div', { class: 'name', html: '&nbsp;' });
             poster.appendElement('div', { class: 'episode-row', html: '&nbsp;' });
 
         } else {
 
-            let poster = element(toElement).appendElement('div', { id: 'show_' + show.id, class: 'poster' });
+            poster = element(toElement).appendElement('div', { id: 'show_' + show.id, class: 'poster' });
             let image = poster.appendElement('a', { href: `/${show.isList ? 'lists' : this.data.context.siteSection}/${show.id}` });
             poster.appendElement('div', { class: 'name', html: this.data.context.siteSection != SiteSection.TV ? show.posterName : show.name });
             poster.appendChild(this.episodeRow(show));
@@ -177,6 +181,10 @@ export class HomeIndex {
                     }
                 });
             }
+        }
+        
+        if (this.data.context.siteSection == SiteSection.YouTube) {
+            poster.addClass('round');
         }
     }
 
@@ -246,9 +254,8 @@ export class HomeIndex {
                 parent.html('');
                 parent.appendIcon('ellipsis');
                 
-                let showIdString = event.target.parentOfClass('poster')?.id.slice(5);
-                if (showIdString) {
-                    let showId = parseInt(showIdString);
+                let showId = event.target.parentOfClass('poster')?.id.slice(5);
+                if (showId) {
                     let episodeIds = this.data.shows.find(s => s.id == showId)?.episodeIds as tsEpisodeId[];
                     if (episodeIds && episodeIds.length > 0) {
                         

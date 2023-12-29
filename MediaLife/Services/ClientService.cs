@@ -49,7 +49,7 @@ namespace MediaLife.Services
         }
 
 
-        public string TorrentsToDelete(ref ClientData clientData)
+        public List<ClientTorrent> TorrentsToDelete(ref ClientData clientData)
         {
             List<ClientTorrent> returnTorrents = new();
             for (int i = clientData.Torrents.Count - 1; i >= 0; i--)
@@ -61,26 +61,26 @@ namespace MediaLife.Services
                     clientData.Torrents.RemoveAt(i);
                 }
             }
-            return returnTorrents.ToStringList();
+            return returnTorrents;
         }
 
-        public string TorrentsToSave(SiteSection section, ref ClientData clientData)
+        public List<ClientTorrent> TorrentsToSave(ref ClientData clientData)
         {
             List<ClientTorrent> returnTorrents = new();
-            foreach (ClientTorrent torrent in clientData.Torrents.Where(t => t.Episode?.SiteSection == section))
+            foreach (ClientTorrent torrent in clientData.Torrents)
             {
                 if (torrent.PercentComplete == 100)
                 {
                     returnTorrents.Add(torrent.DeepClone());
-                    db.Log(SessionId, $"Request Save {section} Torrent: {torrent.Hash} - {torrent.TorrentName} - {torrent.DestinationFileName}");
+                    db.Log(SessionId, $"Request Save {torrent.Episode?.SiteSection} Torrent: {torrent.Hash} - {torrent.TorrentName} - {torrent.DestinationFileName}");
                 }
             }
-            return returnTorrents.ToStringList(withFileLocations: true);
+            return returnTorrents;//.ToStringList(withFileLocations: true);
         }
 
-        public string TorrentsToAdd(List<ShowModel> shows, ref ClientData clientData)
+        public List<ClientTorrent> TorrentsToAdd(List<ShowModel> shows, ref ClientData clientData)
         {
-            string returnHashes = "";
+            List<ClientTorrent> returnTorrents = new();
 
             PirateBay? piratebay = db.PirateBay.FirstOrDefault(p => p.Active);
             if (piratebay != null)
@@ -133,7 +133,7 @@ namespace MediaLife.Services
                         {
                             db.Torrents.Add(torrent.DbTorrent());
                             clientData.Torrents.Add(torrent);
-                            returnHashes += torrent.Hash + "\t" + torrent.TorrentName + "\n";
+                            returnTorrents.Add(torrent);
                             db.Log(SessionId, $"Request Add Torrent: {torrent.Hash} - {torrent.TorrentName}");
                         }
 
@@ -171,10 +171,39 @@ namespace MediaLife.Services
             //Add manual torrents
             foreach (Torrent torrent in db.Torrents.Where(t => t.ManuallyAdded))
             {
-                returnHashes += torrent.Hash + "\t" + torrent.Name + "\n";
+                returnTorrents.Add(new() { Hash = torrent.Hash, TorrentName = torrent.Name });
             }
 
-            return returnHashes;
+            return returnTorrents;
+        }
+
+        public List<ClientTorrent> FilesToDownload(List<ShowModel> shows)
+        {
+            List<ClientTorrent> downloadFiles = new();
+
+            foreach (ShowModel show in shows)
+            {
+                List<EpisodeModel> missingFiles = show.Unwatched.Where(e => e.FilePath == null && e.SiteSection == SiteSection.YouTube).ToList();
+                if (missingFiles.Count > 0 && (show.DownloadLimit == null || show.UnwatchedCount - missingFiles.Count < show.DownloadLimit))
+                {
+                    downloadFiles.Add(new(show, missingFiles.First()));
+
+                    if (show.DownloadAllTogether)
+                    {
+                        foreach (EpisodeModel episode in missingFiles.Skip(1))
+                        {
+                            downloadFiles.Add(new(show, episode));
+                        }
+                    }
+                }
+            }
+
+            foreach (ClientTorrent file in downloadFiles)
+            {
+                db.Log(SessionId, $"Request download of YouTube file - {file.DestinationFileName}");
+            }
+            
+            return downloadFiles;
         }
 
         public async Task<ClientTorrent?> SearchForTorrent(PirateBay piratebay, ShowModel? show, EpisodeModel episode, bool stripSpecialChars = false)
@@ -240,7 +269,7 @@ namespace MediaLife.Services
         }
 
 
-        public string FilesToReTag(ClientData clientData)
+        public List<ClientFile> FilesToReTag(ClientData clientData)
         {
             List<ClientFile> returnFiles = new();
             if (clientData.UnwatchedTag != null)
@@ -254,10 +283,10 @@ namespace MediaLife.Services
                     }
                 }
             }
-            return returnFiles.ToStringList(withTags: true);
+            return returnFiles;
         }
 
-        public string FilesToDelete(ref ClientData clientData)
+        public List<ClientFile> FilesToDelete(ref ClientData clientData)
         {
             List<ClientFile> returnFiles = new();
             for (int i = clientData.Files.Count - 1; i >= 0; i--)
@@ -269,19 +298,19 @@ namespace MediaLife.Services
                     clientData.Files.RemoveAt(i);
                 }
             }
-            return returnFiles.ToStringList();
+            return returnFiles;
         }
 
-        public string FilesToDownloadFromCloud(List<ShowModel> shows, ClientData clientData)
+        public List<EpisodeModel> FilesToDownloadFromCloud(List<ShowModel> shows, ClientData clientData)
         {
-            List<string> paths = new();
+            List<EpisodeModel> episodes = new();
 
             //Manually requested
             foreach (ClientFile file in clientData.Files.Where(f => f.Episode?.RequestDownload == true))
             {
                 if (file.Episode?.FilePath != null)
                 {
-                    paths.Add(file.Episode.FilePath);
+                    episodes.Add(file.Episode);
                     db.Log(SessionId, $"Request Download from Cloud (manually): {file.Episode.FilePath}");
                 }
             }
@@ -295,13 +324,13 @@ namespace MediaLife.Services
                     EpisodeModel? nextEpisodeWithFile = show.Unwatched.FirstOrDefault(e => e.FilePath != null);
                     if (nextEpisodeWithFile?.inCloud == true && nextEpisodeWithFile.FilePath != null)
                     {
-                        paths.Add(nextEpisodeWithFile.FilePath);
+                        episodes.Add(nextEpisodeWithFile);
                         db.Log(SessionId, $"Request Download from Cloud (next episode): {nextEpisodeWithFile.FilePath}");
                     }
                 }
             }
 
-            return string.Join("\n", paths);
+            return episodes;
         }
 
 

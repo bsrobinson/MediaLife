@@ -104,11 +104,5 @@ export class MediaLife {
     hideProgressBar() {
         element('site_progress_bar').addClass('hide');
     }
-
-    windowResize() {
-        if (window.page?.windowResize) {
-            window.page.windowResize();
-        }
-    }
     
 }

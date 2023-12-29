@@ -75,21 +75,21 @@ namespace MediaLife.Services
             return issue;
         }
 
-        public ShowModel? GetShow(SiteSection section, uint showId)
+        public ShowModel? GetShow(SiteSection section, string showId)
         {
             Show? show = null;
             List<EpisodeModel>? episodes = null;
 
             if (section == SiteSection.Lists)
             {
-                List? list = db.Lists.SingleOrDefault(l => l.ListId == showId);
+                List? list = db.Lists.SingleOrDefault(l => l.ListId.ToString() == showId);
                 if (list != null)
                 {
                     show = new() { ShowId = showId, SiteSection = section, Name = list.Name, Added = list.Created, Updated = list.Created, DeleteWatched = false, WatchFromNextPlayable = false, DownloadAllTogether = false };
                     episodes = (
                         from e in db.Episodes
                         join l in db.ListEntries on new { e.EpisodeId, e.SiteSection } equals new { l.EpisodeId, l.SiteSection }
-                        where l.ListId == showId
+                        where l.ListId.ToString() == showId
                         select new EpisodeModel(e)
                         {
                             Number = (short)l.Rank,
@@ -115,7 +115,7 @@ namespace MediaLife.Services
                     }
                     else { return null; }
                 }
-                else if (section != SiteSection.TV) { throw new NotImplementedException(); }
+                else if (section != SiteSection.TV && section != SiteSection.YouTube) { throw new NotImplementedException(); }
 
                 show = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
                 episodes = (
@@ -158,30 +158,35 @@ namespace MediaLife.Services
             return null;
         }
 
-        public async Task<ShowModel?> GetShowFromProviderAsync(SiteSection section, uint showId)
+        public async Task<ShowModel?> GetShowFromProviderAsync(SiteSection section, string showId)
         {
-            if (section == SiteSection.TV)
+            bool idIsNumeric = int.TryParse(showId, out int numericId);
+            if (section == SiteSection.TV && idIsNumeric)
             {
-                return await new TVMaze(db).GetShowAsync(showId);
+                return await new TVMaze(db).GetShowAsync(numericId);
             }
-            if (section == SiteSection.Movies)
+            if (section == SiteSection.YouTube)
             {
-                return await new TheMovieDB(db).GetMovieAsync(showId);
+                return await new YouTube(db).GetShowAsync(showId);
             }
-            if (section == SiteSection.Books)
+            if (section == SiteSection.Movies && idIsNumeric)
             {
-                return await new Goodreads(db).GetBookAsync(showId);
+                return await new TheMovieDB(db).GetMovieAsync(numericId);
+            }
+            if (section == SiteSection.Books && idIsNumeric)
+            {
+                return await new Goodreads(db).GetBookAsync(numericId);
             }
             throw new NotImplementedException();
         }
 
-        public async Task<uint> GetShowIdFromEpisodeFromProviderAsync(SiteSection section, uint episodeId)
+        public async Task<string> GetShowIdFromEpisodeFromProviderAsync(SiteSection section, string episodeId)
         {
-            if (section == SiteSection.TV)
+            if (section == SiteSection.TV && int.TryParse(episodeId, out int numericId))
             {
-                return (uint)(await new TVMaze(db).GetShowIdFromEpisode((int)episodeId) ?? 0);
+                return (await new TVMaze(db).GetShowIdFromEpisode(numericId) ?? 0).ToString();
             }
-            if (section == SiteSection.Movies || section == SiteSection.Books)
+            if (section == SiteSection.YouTube || section == SiteSection.Movies || section == SiteSection.Books)
             {
                 return episodeId;
             }
@@ -203,7 +208,7 @@ namespace MediaLife.Services
             return null;
         }
 
-        public EpisodeModel? GetEpisode(SiteSection section, uint episodeId)
+        public EpisodeModel? GetEpisode(SiteSection section, string episodeId)
         {
             Episode? episode = db.Episodes.FirstOrDefault(e => e.EpisodeId == episodeId && e.SiteSection == section);
             if (episode != null)
@@ -213,7 +218,7 @@ namespace MediaLife.Services
             return null;
         }
 
-        public List<Torrent> Torrents(SiteSection section, uint episodeId)
+        public List<Torrent> Torrents(SiteSection section, string episodeId)
         {
             return db.Torrents.Where(t => t.EpisodeId == episodeId && t.SiteSection == section).ToList();
         }
@@ -230,7 +235,7 @@ namespace MediaLife.Services
             return db.ListEntries.Where(l => show.Episodes.Select(e => e.Id).Contains(l.EpisodeId)).Count() > 0;
         }
 
-        public ShowModel? AddShow(SiteSection section, uint showId)
+        public ShowModel? AddShow(SiteSection section, string showId)
         {
             Show? dbShow = db.Shows.SingleOrDefault(s => s.ShowId == showId);
             if (dbShow == null)
@@ -280,7 +285,7 @@ namespace MediaLife.Services
             return null;
         }
 
-        public bool RemoveShow(SiteSection section, uint showId)
+        public bool RemoveShow(SiteSection section, string showId)
         {
             Show? dbShow = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
             if (dbShow != null)
@@ -323,11 +328,11 @@ namespace MediaLife.Services
             return true;
         }
 
-        public async Task<string?> UpdateShowAsync(SiteSection section, uint showId)
+        public async Task<string?> UpdateShowAsync(SiteSection section, string showId)
         {
-            if (section == SiteSection.Lists)
+            if (section == SiteSection.Lists && uint.TryParse(showId, out uint numericId))
             {
-                return UpdateList(showId) ? null : "Failed to update list";
+                return UpdateList(numericId) ? null : "Failed to update list";
             }
             
             Show? dbShow = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
@@ -398,7 +403,7 @@ namespace MediaLife.Services
             List<string> results = new();
             foreach (ListEntry entry in db.ListEntries.Where(e => e.ListId == listId).ToList())
             {
-                uint showId = db.Episodes.Single(e => e.EpisodeId == entry.EpisodeId && entry.SiteSection == entry.SiteSection).ShowId;
+                string showId = db.Episodes.Single(e => e.EpisodeId == entry.EpisodeId && entry.SiteSection == entry.SiteSection).ShowId;
                 string? result = UpdateShowAsync((SiteSection)entry.SiteSection, showId).Result;
                 if (result != null)
                 {
@@ -408,7 +413,7 @@ namespace MediaLife.Services
             return results.All(t => t == null);
         }
 
-        public Show? UpdateSettings(SiteSection section, uint showId, ShowSettings model)
+        public Show? UpdateSettings(SiteSection section, string showId, ShowSettings model)
         {
             Show? show = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
             if (show != null)
@@ -446,7 +451,7 @@ namespace MediaLife.Services
             return show;
         }
 
-        public ShowModel? UpdateEpisode(SiteSection section, uint showId, EpisodeModel episodeModel)
+        public ShowModel? UpdateEpisode(SiteSection section, string showId, EpisodeModel episodeModel)
         {
             Episode? episode = db.Episodes.SingleOrDefault(e => e.EpisodeId == episodeModel.Id && e.SiteSection == episodeModel.SiteSection);
             if (episode == null)
@@ -521,8 +526,7 @@ namespace MediaLife.Services
                 {
                     if (db.Episodes.SingleOrDefault(e => e.EpisodeId == episode.Id && e.SiteSection == episode.Section) == null)
                     {
-                        SiteSection section = (SiteSection)episode.Section;
-                        AddShow(section, GetShowIdFromEpisodeFromProviderAsync(section, episode.Id).Result);
+                        AddShow(episode.Section, GetShowIdFromEpisodeFromProviderAsync(episode.Section, episode.Id).Result);
                     }
 
                     db.ListEntries.Add(new()
@@ -537,7 +541,7 @@ namespace MediaLife.Services
             }
             db.SaveChanges();
 
-            return GetShow(SiteSection.Lists, listId);
+            return GetShow(SiteSection.Lists, listId.ToString());
         }
 
         public ShowModel? UpdateList(uint id, string name, List<EpisodeId> episodes)
@@ -566,7 +570,7 @@ namespace MediaLife.Services
                 db.SaveChanges();
             }
 
-            return GetShow(SiteSection.Lists, id);
+            return GetShow(SiteSection.Lists, id.ToString());
         }
 
         public bool DeleteList(uint listId)
@@ -587,7 +591,7 @@ namespace MediaLife.Services
         }
 
 
-        public List<ShowModel> Shows(SiteSection? section = null, List<uint>? showIds = null)
+        public List<ShowModel> Shows(SiteSection? section = null, List<string>? showIds = null)
         {
             return (
                 from s in db.Shows
@@ -611,7 +615,7 @@ namespace MediaLife.Services
             ).ToList();
         }
 
-        public List<ShowModel> ShowsAndLists(SiteSection section, List<uint>? showIds = null)
+        public List<ShowModel> ShowsAndLists(SiteSection section, List<string>? showIds = null)
         {
             List<ShowModel> shows = Shows(section, showIds);
 
@@ -621,7 +625,7 @@ namespace MediaLife.Services
                 where sectionListIds.Contains(l.ListId)
                 select new ShowModel
                 {
-                    Id = l.ListId,
+                    Id = l.ListId.ToString(),
                     Name = l.Name,
                     Added = l.Created,
                     IsList = true,
@@ -642,8 +646,8 @@ namespace MediaLife.Services
             ).ToList();
 
             //Remove shows where all episodes are in lists
-            List<uint> sectionEpisodesInLists = lists.SelectMany(l => l.Episodes.Where(e => e.SiteSection == section).Select(e => e.Id)).ToList();
-            shows = shows.Where(s => s.Episodes.Select(e => e.Id).Except(sectionEpisodesInLists).Count() > 0).ToList();
+            List<string> sectionEpisodesInLists = lists.SelectMany(l => l.Episodes.Where(e => e.SiteSection == section).Select(e => e.Id)).ToList();
+            shows = shows.Where(s => s.Episodes.Select(e => e.Id).Except(sectionEpisodesInLists).Any()).ToList();
 
             return shows.Concat(lists).ToList();
         }
@@ -680,6 +684,10 @@ namespace MediaLife.Services
                 if (section == SiteSection.TV)
                 {
                     return new TVMaze(db).SearchAsync(this, query).Result;
+                }
+                if (section == SiteSection.YouTube)
+                {
+                    return new YouTube(db).SearchAsync(this, query).Result;
                 }
                 if (section == SiteSection.Movies)
                 {

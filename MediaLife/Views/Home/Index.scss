@@ -43,6 +43,12 @@
     font-size: .9em;
     text-align: left;
 
+    &.round > a {
+        height: 155px;
+        border-radius: 50%;
+        background-size: cover;
+    }
+
     > a {
         width: 100%;
         background-size: 100%;
@@ -104,6 +110,10 @@
         line-height: 2em;
         border-radius: 50%;
         color: white;
+    }
+    &.round .episode-count {
+        top: 125px;
+        right: 5px;
     }
 
     .name {

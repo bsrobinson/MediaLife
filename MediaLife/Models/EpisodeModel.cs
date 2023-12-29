@@ -12,7 +12,7 @@ namespace MediaLife.Models
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class EpisodeModel
     {
-        public uint Id { get; set; }
+        public string Id { get; set; }
         public SiteSection SiteSection { get; set; }
 
         public short SeriesNumber { get; set; }
@@ -64,7 +64,7 @@ namespace MediaLife.Models
             Torrents = torrents;
         }
 
-        public Episode DBEpisode(SiteSection section, uint showId)
+        public Episode DBEpisode(SiteSection section, string showId)
         {
             return new Episode
             {

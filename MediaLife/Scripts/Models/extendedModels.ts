@@ -22,5 +22,5 @@ export interface tsListPageModel extends ListPageModel {
 }
 
 export interface tsEpisodeId extends EpisodeId {
-    showId: number,
+    showId: string,
 }

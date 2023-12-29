@@ -10,7 +10,8 @@ namespace MediaLife.Library.DAL
     [PrimaryKey(nameof(ShowId), nameof(SiteSection))]
     public class Show
     {
-        public required uint ShowId { get; set; }
+        [MaxLength(50)]
+        public required string ShowId { get; set; }
 
         [DataType("uint")]
         public required SiteSection SiteSection { get; set; }

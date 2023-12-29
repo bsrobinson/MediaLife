@@ -61,7 +61,7 @@ else if (ViewBag.PirateBayIssue != null)
             var options = new List<SelectListItem>();
             @if (Model.Context.PageType == PageType.Search)
             {
-                options.Add(new() { Text = "Relevance", Value = "searchScore" });
+                options.Add(new() { Text = "Relevance", Value = "desc_searchScore" });
             }
             options.Add(new() { Text = "Alphabetal", Value = "sortableName" });
             @if (Model.Context.PageType == PageType.Shows)

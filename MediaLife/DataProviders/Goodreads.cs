@@ -52,7 +52,7 @@ namespace MediaLife.DataProviders
                         validIds.Add(id);
                         int score = 999 - orderedIds.IndexOf(finishedTask.Result.Id);
 
-                        ShowModel? bookInDb = showsService.GetShow(SiteSection.Books, (uint)id);
+                        ShowModel? bookInDb = showsService.GetShow(SiteSection.Books, id.ToString());
                         if (bookInDb != null)
                         {
                             bookInDb.SearchScore = score;
@@ -73,9 +73,9 @@ namespace MediaLife.DataProviders
             return books;
         }
 
-        public async Task<ShowModel?> GetBookAsync(uint bookId)
+        public async Task<ShowModel?> GetBookAsync(int bookId)
         {
-            return BookToShowModel(await client.GetBookAsync((int)bookId, true));
+            return BookToShowModel(await client.GetBookAsync(bookId, true));
         }
 
         private ShowModel? BookToShowModel(Book? book, double? searchScore = null)
@@ -91,7 +91,7 @@ namespace MediaLife.DataProviders
             {
                 model = new()
                 {
-                    Id = (uint)book.Id,
+                    Id = book.Id.ToString(),
                     Name = book.Series.Name ?? book.Series.Books.First().Name,
                     SiteSection = SiteSection.Books
                 };
@@ -100,7 +100,7 @@ namespace MediaLife.DataProviders
                 {
                     model.AddEpisode(new()
                     {
-                        Id = (uint)entry.Id,
+                        Id = entry.Id.ToString(),
                         SiteSection = SiteSection.Books,
                         Name = entry.Name,
                         Number = (short)Math.Floor(entry.SeriesPosition),
@@ -115,12 +115,12 @@ namespace MediaLife.DataProviders
             {
                 model = new()
                 {
-                    Id = (uint)book.Id,
+                    Id = book.Id.ToString(),
                     Name = book.Name,
                     Poster = book.Image,
                     SiteSection = SiteSection.Books,
                     Episodes = new() { new EpisodeModel() {
-                        Id = (uint)book.Id,
+                        Id = book.Id.ToString(),
                         SiteSection = SiteSection.Books,
                         Name = book.Name,
                         SeriesNumber = 1,

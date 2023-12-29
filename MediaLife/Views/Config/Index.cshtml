@@ -45,16 +45,19 @@
             @Html.FormRowFor(m => Model.UserConfig.ClientFileThresholdPercent)
             @Html.FieldSet("Delete Watched (default when added)", new() {
                 Html.FormRowFor(m => Model.UserConfig.TVConfig.DeleteWatched, "For TV Shows"),
+                Html.FormRowFor(m => Model.UserConfig.YouTubeConfig.DeleteWatched, "For YouTube Shows"),
                 Html.FormRowFor(m => Model.UserConfig.MovieConfig.DeleteWatched, "For Movies"),
                 Html.FormRowFor(m => Model.UserConfig.BookConfig.DeleteWatched, "For Books"),
             })
             @Html.FieldSet("Download Limit (default when added)", new() {
                 @Html.FormRowFor(m => Model.UserConfig.TVConfig.DownloadLimit, "For TV Shows"),
+                @Html.FormRowFor(m => Model.UserConfig.YouTubeConfig.DownloadLimit, "For YouTube Shows"),
                 @Html.FormRowFor(m => Model.UserConfig.MovieConfig.DownloadLimit, "For Movies"),
                 @Html.FormRowFor(m => Model.UserConfig.BookConfig.DownloadLimit, "For Books"),
             })
             @Html.FieldSet("Keep Next Episode Off Cloud", new() {
                 @Html.FormRowFor(m => Model.UserConfig.TVConfig.KeepNextEpisodeOffCloud, "For TV Shows"),
+                @Html.FormRowFor(m => Model.UserConfig.YouTubeConfig.KeepNextEpisodeOffCloud, "For YouTube Shows"),
                 @Html.FormRowFor(m => Model.UserConfig.MovieConfig.KeepNextEpisodeOffCloud, "For Movies"),
                 @Html.FormRowFor(m => Model.UserConfig.BookConfig.KeepNextEpisodeOffCloud, "For Books"),
             })
@@ -69,6 +72,7 @@
         <form id="providers" class="content-page" onsubmit="page.saveForm(this); return false;">
             @Html.FieldSet("Update from Data Provider", new() {
                 @Html.FormRowFor(m => Model.UserConfig.TVConfig.UpdateFromDataProvider, "For TV Shows"),
+                @Html.FormRowFor(m => Model.UserConfig.YouTubeConfig.UpdateFromDataProvider, "For YouTube Shows"),
                 @Html.FormRowFor(m => Model.UserConfig.MovieConfig.UpdateFromDataProvider, "For Movies"),
                 @Html.FormRowFor(m => Model.UserConfig.BookConfig.UpdateFromDataProvider, "For Books"),
             })

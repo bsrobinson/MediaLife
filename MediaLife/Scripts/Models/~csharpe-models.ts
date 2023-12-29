@@ -9,6 +9,49 @@
 //** full configuration in: ../../gaspar.config.json
 //**
 
+//File: ../../Models/ClientData.cs
+
+export interface ClientData {
+    unwatchedTag: string | null;
+    files: ClientFile[];
+    torrents: ClientTorrent[];
+}
+
+export interface ClientFile {
+    fileType: SiteSection;
+    path: string | null;
+    tags: string[];
+    show: ShowModel | null;
+    episode: EpisodeModel | null;
+    valid: boolean;
+}
+
+export interface ClientTorrent {
+    hash: string;
+    percentComplete: number;
+    files: string[];
+    show: ShowModel | null;
+    episode: EpisodeModel | null;
+    torrentName: string;
+    torrentResultCount: number | null;
+    strippedSpecialChars: boolean;
+    valid: boolean;
+    destinationFolder: string;
+    destinationFileName: string;
+    videoFile: string | null;
+}
+
+export interface ClientActions {
+    error: string | null;
+    deleteTorrents: ClientTorrent[];
+    saveAndDeleteTorrents: ClientTorrent[];
+    addTorrents: ClientTorrent[];
+    downloads: ClientTorrent[];
+    deleteFiles: ClientFile[];
+    retagFiles: ClientFile[];
+    downloadFileFromCloud: EpisodeModel[];
+}
+
 //File: ../../Models/PageModels.cs
 
 export interface ListPageModel {
@@ -38,6 +81,7 @@ export interface UserConfig extends IConfiguration {
     clientUpdateEnabled: boolean;
     clientFileThresholdPercent: number;
     tvConfig: TVConfig;
+    youTubeConfig: YouTubeConfig;
     movieConfig: MovieConfig;
     bookConfig: BookConfig;
     vlcConfig: VLCConfig;
@@ -51,6 +95,9 @@ export interface SectionConfig extends IConfiguration {
 }
 
 export interface TVConfig extends SectionConfig {
+}
+
+export interface YouTubeConfig extends SectionConfig {
 }
 
 export interface MovieConfig extends SectionConfig {
@@ -93,7 +140,7 @@ export interface VLC_Meta {
 //File: ../../Models/EpisodeModel.cs
 
 export interface EpisodeModel {
-    id: number;
+    id: string;
     siteSection: SiteSection;
     seriesNumber: number;
     number: number;
@@ -118,7 +165,7 @@ export interface EpisodeModel {
 
 export interface ShowModel {
     episodeIndex: number;
-    id: number;
+    id: string;
     siteSection: SiteSection;
     name: string;
     poster: string | null;
@@ -168,7 +215,7 @@ export interface ShowSettings {
 //File: ../../Models/EpisodeId.cs
 
 export interface EpisodeId {
-    id: number;
+    id: string;
     section: SiteSection;
 }
 
@@ -182,6 +229,7 @@ export interface ShowModelContext {
 export enum SiteSection {
     Lists = 'lists',
     TV = 'tv',
+    YouTube = 'youtube',
     Movies = 'movies',
     Books = 'books',
 }
@@ -195,7 +243,7 @@ export enum PageType {
 
 export interface Torrent {
     id: number;
-    episodeId: number;
+    episodeId: string;
     siteSection: SiteSection;
     hash: string;
     name: string;
@@ -229,7 +277,7 @@ export interface PirateBay {
 //File: ../../../MediaLife.Library/DAL/Show.cs
 
 export interface Show {
-    showId: number;
+    showId: string;
     siteSection: SiteSection;
     name: string;
     poster: string | null;
@@ -271,9 +319,17 @@ export interface List {
 
 export interface ListEntry {
     listId: number;
-    episodeId: number;
+    episodeId: string;
     siteSection: SiteSection;
     rank: number;
+}
+
+//File: ../../../MediaLife.Library/DAL/LoggedPayload.cs
+
+export interface LoggedPayload {
+    id: number;
+    received: string | null;
+    reply: string | null;
 }
 
 //File: ../../../MediaLife.Library/DAL/UserAccount.cs

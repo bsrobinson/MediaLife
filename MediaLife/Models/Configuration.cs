@@ -31,6 +31,7 @@ namespace MediaLife.Models
         public ushort ClientFileThresholdPercent{ get; set; }
 
         public TVConfig TVConfig { get; set; } = new();
+        public YouTubeConfig YouTubeConfig { get; set; } = new();
         public MovieConfig MovieConfig { get; set; } = new();
         public BookConfig BookConfig { get; set; } = new();
 
@@ -41,6 +42,7 @@ namespace MediaLife.Models
             switch (section)
             {
                 case SiteSection.TV: return TVConfig;
+                case SiteSection.YouTube: return YouTubeConfig;
                 case SiteSection.Movies: return MovieConfig;
                 case SiteSection.Books: return BookConfig;
                 case SiteSection.Lists: return new SectionConfig();
@@ -72,6 +74,9 @@ namespace MediaLife.Models
 
     [ExportFor(GasparType.TypeScript)]
     public class TVConfig : SectionConfig { }
+    
+    [ExportFor(GasparType.TypeScript)]
+    public class YouTubeConfig : SectionConfig { }
 
     [ExportFor(GasparType.TypeScript)]
     public class MovieConfig : SectionConfig 

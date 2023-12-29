@@ -8,12 +8,14 @@ namespace MediaLife.Library.DAL
     [PrimaryKey(nameof(EpisodeId), nameof(SiteSection))]
     public class Episode
     {
-        public required uint EpisodeId { get; set; }
+        [MaxLength(50)]
+        public required string EpisodeId { get; set; }
 
         [DataType("uint")]
         public required SiteSection SiteSection { get; set; }
 
-        public required uint ShowId { get; set; }
+        [MaxLength(50)]
+        public required string ShowId { get; set; }
 
         public required short SeriesNumber { get; set; }
 

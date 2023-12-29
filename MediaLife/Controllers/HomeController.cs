@@ -64,8 +64,8 @@ namespace MediaLife.Controllers
             return View(nameof(Index), ViewData["jsData"]);
         }
 
-        [HttpGet("{section}/{showId:int}")]
-        public IActionResult Show(SiteSection section, uint showId)
+        [HttpGet("{section}/{showId}")]
+        public IActionResult Show(SiteSection section, string showId)
         {
             ShowModel? show = service.GetShow(section, showId);
             if (show == null)
@@ -82,7 +82,7 @@ namespace MediaLife.Controllers
 
         [ExportFor(GasparType.TypeScript)]
         [HttpPost("{section}/add/{showId}")]
-        public ActionResult<ShowModel> AddShow(SiteSection section, uint showId)
+        public ActionResult<ShowModel> AddShow(SiteSection section, string showId)
         {
             ShowModel? show = service.AddShow(section, showId);
             if (show != null)
@@ -94,7 +94,7 @@ namespace MediaLife.Controllers
 
         [ExportFor(GasparType.TypeScript)]
         [HttpDelete("{section}/remove/{showId}")]
-        public ActionResult<bool> RemoveShow(SiteSection section, uint showId)
+        public ActionResult<bool> RemoveShow(SiteSection section, string showId)
         {
             if (service.RemoveShow(section, showId))
             {
@@ -105,12 +105,11 @@ namespace MediaLife.Controllers
 
         [ExportFor(GasparType.TypeScript)]
         [HttpPost("{section}/update/{showId}")]
-        public ActionResult<ShowModel?> UpdateShow(SiteSection section, uint showId)
+        public ActionResult<ShowModel?> UpdateShow(SiteSection section, string showId)
         {
             string? updateError = service.UpdateShowAsync(section, showId).Result;
             if (updateError == null)
             {
-                // return Ok(JsonConvert.SerializeObject(service.GetShow(section, showId)));
                 ShowModel? show = service.GetShow(section, showId);
                 return show;
             }
@@ -119,7 +118,7 @@ namespace MediaLife.Controllers
 
         [ExportFor(GasparType.TypeScript)]
         [HttpGet("{section}/[action]/{episodeId:int}")]
-        public ActionResult<EpisodeModel> Episode(SiteSection section, uint episodeId)
+        public ActionResult<EpisodeModel> Episode(SiteSection section, string episodeId)
         {
             EpisodeModel? episode = service.GetEpisode(section, episodeId);
             if (episode != null)
@@ -131,7 +130,7 @@ namespace MediaLife.Controllers
 
         [ExportFor(GasparType.TypeScript)]
         [HttpPut("{section}/[action]/{showId}")]
-        public ActionResult<Show> SaveSettings(SiteSection section, uint showId, [FromBody] ShowSettings model)
+        public ActionResult<Show> SaveSettings(SiteSection section, string showId, [FromBody] ShowSettings model)
         {
             Show? show = service.UpdateSettings(section, showId, model);
             if (show != null)
@@ -144,7 +143,7 @@ namespace MediaLife.Controllers
 
         [ExportFor(GasparType.TypeScript)]
         [HttpPut("{section}/[action]/{showId}")]
-        public ActionResult<ShowModel> UpdateEpisode(SiteSection section, uint showId, [FromBody] EpisodeModel episode)
+        public ActionResult<ShowModel> UpdateEpisode(SiteSection section, string showId, [FromBody] EpisodeModel episode)
         {
             ShowModel? show = service.UpdateEpisode(section, showId, episode);
             if (show != null)

@@ -1,13 +1,12 @@
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
-using MediaLife.HtmlHelpers.Extensions;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using MediaLife.HtmlHelpers.Extensions;
 
 namespace MediaLife.HtmlHelpers
 {
@@ -72,10 +71,12 @@ namespace MediaLife.HtmlHelpers
         public ButtonColour? Colour { get; set; } = null;
         public bool Thin { get; set; } = false;
         public bool SpaceAfter { get; set; } = false;
+        public bool StackedIcon { get; set; } = false;
         public string Classes { get; set; } = "";
         public Icon? Icon { get; set; } = null;
         public Icon? IconRight { get; set; } = null;
         public string? ClickEvent { get; set; } = null;
+        public string? Url { get; set; } = null;
         public Dictionary<string, string>? HtmlAttributes = null;
     }
 
@@ -165,7 +166,7 @@ namespace MediaLife.HtmlHelpers
         {
             options ??= new();
 
-            ModelExpressionProvider expressionProvider = new ModelExpressionProvider(helper.MetadataProvider);
+            ModelExpressionProvider expressionProvider = new(helper.MetadataProvider);
             ModelExpression metadata = expressionProvider.CreateModelExpression(helper.ViewData, expression);
 
             label ??= metadata.Metadata.DisplayName ?? metadata.Metadata.Name ?? "";
@@ -355,7 +356,7 @@ namespace MediaLife.HtmlHelpers
             return helper.Button(label, options);
         }
 
-        public static IHtmlContent Button(this IHtmlHelper helper, Icon icon, string clickEvent, ButtonOptions? options = null, Dictionary<string, string>? htmlAttributes = null)
+        public static IHtmlContent Button(this IHtmlHelper helper, Icon icon, string? clickEvent, ButtonOptions? options = null, Dictionary<string, string>? htmlAttributes = null)
         {
             options ??= new();
             options.ClickEvent = clickEvent;
@@ -364,7 +365,7 @@ namespace MediaLife.HtmlHelpers
             return helper.Button("", options);
         }
         
-        public static IHtmlContent Button(this IHtmlHelper helper, string label, string clickEvent, ButtonOptions? options = null, Dictionary<string, string>? htmlAttributes = null)
+        public static IHtmlContent Button(this IHtmlHelper helper, string label, string? clickEvent, ButtonOptions? options = null, Dictionary<string, string>? htmlAttributes = null)
         {
             options ??= new();
             options.ClickEvent = clickEvent;
@@ -372,7 +373,7 @@ namespace MediaLife.HtmlHelpers
             return helper.Button(label, options);
         }
         
-        public static IHtmlContent Button(this IHtmlHelper helper, string label, Icon icon, string clickEvent, ButtonOptions? options = null, Dictionary<string, string>? htmlAttributes = null)
+        public static IHtmlContent Button(this IHtmlHelper helper, string label, Icon icon, string? clickEvent, ButtonOptions? options = null, Dictionary<string, string>? htmlAttributes = null)
         {
             options ??= new();
             options.ClickEvent = clickEvent;
@@ -389,8 +390,11 @@ namespace MediaLife.HtmlHelpers
             if (!string.IsNullOrEmpty(options.Classes)) { classNames.Add(options.Classes); }
             if (options.Thin) { classNames.Add("form-field-row-thin"); }
             if (options.SpaceAfter) { classNames.Add("form-field-row-space-after"); }
+            if (options.StackedIcon) { classNames.Add("form-field-row-stacked-icon"); }
 
-            string clickEvent = options.ClickEvent != null ? Attribute("onclick", options.ClickEvent) : "";
+            string clickEvent = "";
+            if (options.Url != null) { clickEvent = Attribute("onclick", $"location.href='{options.Url}';"); }
+            if (options.ClickEvent != null) { clickEvent = Attribute("onclick", options.ClickEvent); }
 
             string button = $"<button {Attribute("type", options.Type.DisplayName())}{Attribute("class", string.Join(" ", classNames))}{Attributes(options.HtmlAttributes)}{clickEvent}>";
             if (options.Icon != null) { button += helper.Icon(options.Icon, null, null, "left-icon"); }

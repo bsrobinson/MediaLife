@@ -32,7 +32,7 @@ namespace MediaLife.DataProviders
 
             foreach (ShowSearchResult result in await client.Search.ShowSearchAsync(query))
             {
-                ShowModel? showInDb = showsService.GetShow(SiteSection.TV, (uint)result.Show.Id);
+                ShowModel? showInDb = showsService.GetShow(SiteSection.TV, result.Show.Id.ToString());
                 if (showInDb != null)
                 {
                     showInDb.SearchScore = result.Score;
@@ -57,9 +57,9 @@ namespace MediaLife.DataProviders
             return shows;
         }
 
-        public async Task<ShowModel?> GetShowAsync(uint showId)
+        public async Task<ShowModel?> GetShowAsync(int showId)
         {
-            Show show = await client.Shows.GetShowMainInformationAsync((int)showId);
+            Show show = await client.Shows.GetShowMainInformationAsync(showId);
             return await GetShowAsync(show);
         }
 
@@ -82,7 +82,7 @@ namespace MediaLife.DataProviders
                 ShowModel model = (
                     new ShowModel
                     {
-                        Id = (uint)show.Id,
+                        Id = show.Id.ToString(),
                         Name = show.Name,
                         Poster = show.Image?.Medium,
                         Network = GetTVNetwork(show.Network, addNewTvNetworks),
@@ -92,11 +92,10 @@ namespace MediaLife.DataProviders
                             from e in episodes
                             select new EpisodeModel
                             {
-                                Id = (uint)e.Id,
+                                Id = e.Id.ToString(),
                                 SiteSection = SiteSection.TV,
                                 SeriesNumber = (short)e.Season,
                                 Number = (short)(e.Number ?? 0),
-
                                 Name = e.Name,
                                 AirDate = e.AirStamp?.UtcDateTime,
                                 Watched = null

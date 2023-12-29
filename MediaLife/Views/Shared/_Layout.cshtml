@@ -45,10 +45,11 @@
     
     string siteSection = ViewData["Section"]?.ToString() ?? "Media Life";
     string sectionUrl = ViewData["Section"]?.ToString() != null ? siteSection.ToLower() : "";
-    string icon = "🎭";
-    if (sectionUrl == "tv") { icon = "📺"; }
-    if (sectionUrl == "movies") { icon = "🎥"; }
-    if (sectionUrl == "books") { icon = "📚"; }
+    Icon icon = new("🎭");
+    if (sectionUrl == "tv") { icon = new("📺"); }
+    if (sectionUrl == "youtube") { icon = new BrandIcon("youtube-square"); }
+    if (sectionUrl == "movies") { icon = new("🎥"); }
+    if (sectionUrl == "books") { icon = new("📚"); }
 }
 <html>
 <head>
@@ -70,13 +71,14 @@
     
     <script>
         function init() {
-            @Html.Raw(localJsExists ? $"window.page = new {controller}{view}.{controller}{view}(site, {jsData});" : "")
-            if (window.site.windowResize) {
-                window.onresize = site.windowResize;
-                window.site.windowResize();
-            }
+            if (window.site.init) { window.site.init(); }
+            if (window.page && window.page.init) { window.page.init(); }
+            if (window.site.windowResize) { window.addEventListener('resize', () => site.windowResize()); }
+            if (window.page && window.page.windowResize) { window.addEventListener('resize', () => page.windowResize()); }
+            window.dispatchEvent(new Event('resize'));
         }
         window.site = new MediaLife.MediaLife();
+        @Html.Raw(localJsExists ? $"window.page = new {controller}{view}.{controller}{view}(site, {jsData});" : "")
     </script>
 
 </head>
@@ -93,7 +95,7 @@
                     <span></span>
                     <span></span>
                 </div>
-                <a href="/@sectionUrl">@icon&nbsp;&nbsp;@siteSection</a>
+                @Html.Icon(icon, siteSection, $"/{sectionUrl}")
             </div>
             <div class="header-right">
                 <form action="/@sectionUrl/search">
@@ -114,9 +116,14 @@
 
         <div id="site_menu" onclick="site.toggleSiteMenu();">
             <div class="section-buttons">
-                <a href="/tv" class="section-button"><span class="icon">📺</span><span class="label">TV</span></a>
-                <a href="/movies" class="section-button"><span class="icon">🎥</span><span class="label">Movies</span></a>
-                <a href="/books" class="section-button"><span class="icon">📚</span><span class="label">Books</span></a>
+                @Html.ButtonRow(new() {
+                    Html.Button("TV", new("📺"), null, new ButtonOptions() { Url = "/tv", StackedIcon = true }),
+                    Html.Button("YouTube", new BrandIcon("youtube"), null, new ButtonOptions() { Url = "/youtube", StackedIcon = true, Classes = "youtube" }),
+                }, new() { Justify = RowJustify.SpaceEvenly })
+                @Html.ButtonRow(new() {
+                    Html.Button("Movies", new("🎥"), null, new ButtonOptions() { Url = "/movies", StackedIcon = true }),
+                    Html.Button("Books", new("📚"), null, new ButtonOptions() { Url = "/books", StackedIcon = true }),
+                }, new() { Justify = RowJustify.SpaceEvenly })
             </div>
             @Html.Icon(new Icon("📝") { FixedWidth = true }, "Create Custom List", "site.createCustomList();", "menu-item")
             @Html.Icon(new Icon("⚙️") { FixedWidth = true }, "Settings", "/Config", "menu-item")

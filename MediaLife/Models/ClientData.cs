@@ -7,75 +7,16 @@ using Force.DeepCloner;
 using MediaLife.Extensions;
 using MediaLife.Library.DAL;
 using MediaLife.Library.Models;
+using WCKDRZR.Gaspar;
 
 namespace MediaLife.Models
 {
+    [ExportFor(GasparType.TypeScript)]
     public class ClientData
     {
         public string? UnwatchedTag { get; set; }
-
-        public List<ClientFile> Files { get; set; }
-        public List<ClientTorrent> Torrents { get; set; }
-
-        public bool Valid => HasFiles && HasTorrents;
-        private bool HasFiles = false;
-        private bool HasTorrents = false;
-
-        public ClientData(string postedData)
-        {
-            UnwatchedTag = null;
-
-            Files = new();
-            Torrents = new();
-
-            string activeGroup = "";
-            string activeSubGroup = "";
-            foreach (string line in postedData.Split("\n"))
-            {
-                if (line.StartsWith("START_GROUP:"))
-                {
-                    activeGroup = line.Substring(12);
-                    activeSubGroup = "";
-                    if (activeGroup.StartsWith("FILES:"))
-                    {
-                        activeSubGroup = activeGroup.Substring(6);
-                        activeGroup = "FILES";
-                    }
-                }
-                else
-                {
-                    if (activeGroup == "SETTINGS")
-                    {
-                        if (line.StartsWith("UnwatchedTag:")) { UnwatchedTag = line.Substring(13).Trim(); }
-                    }
-                    if (activeGroup == "FILES")
-                    {
-                        SiteSection? fileType = null;
-                        if (activeSubGroup == "TV") { fileType = SiteSection.TV; }
-                        if (activeSubGroup == "MOVIES") { fileType = SiteSection.Movies; }
-
-                        if (fileType != null)
-                        {
-                            ClientFile file = new((SiteSection)fileType, line);
-                            if (file.Valid)
-                            {
-                                Files.Add(file);
-                            }
-                            HasFiles = true;
-                        }
-                    }
-                    if (activeGroup == "TORRENTS")
-                    {
-                        ClientTorrent torrent = new(line);
-                        if (torrent.Valid)
-                        {
-                            Torrents.Add(torrent);
-                        }
-                        HasTorrents = true;
-                    }
-                }
-            }
-        }
+        public List<ClientFile> Files { get; set; } = new();
+        public List<ClientTorrent> Torrents { get; set; } = new();
 
         public void MatchEpisodes(List<ShowModel> shows)
         {
@@ -103,6 +44,7 @@ namespace MediaLife.Models
         }
     }
 
+    [ExportFor(GasparType.TypeScript)]
     public class ClientFile
     {
         public SiteSection FileType { get; set; }
@@ -114,25 +56,6 @@ namespace MediaLife.Models
         public EpisodeModel? Episode { get; set; }
 
         public bool Valid => !string.IsNullOrEmpty(Path) && Show != null && Episode != null;
-
-        
-        public ClientFile(SiteSection fileType, string line)
-        {
-            FileType = fileType;
-            Tags = new();
-
-            List<string> columns = line.Split("\t").ToList();
-            if (columns.Count > 0)
-            {
-                Path = columns[0];
-                Show = new();
-                Episode = new();
-                if (columns.Count > 1)
-                {
-                    Tags = columns[1].Split(",").ToList();
-                }
-            }
-        }
 
         public void MatchEpisode(List<ShowModel> shows)
         {
@@ -184,6 +107,23 @@ namespace MediaLife.Models
                         }
                     }
                 }
+                else if (FileType == SiteSection.YouTube)
+                {
+                    if (fileName.IsVideoFile())
+                    {
+                        foreach (ShowModel show in shows.Where(s => s.SiteSection == SiteSection.YouTube))
+                        {
+                            Episode = show.Episodes.FirstOrDefault(e => fileName.Contains(e.Id)).DeepClone();
+                            if (Episode != null)
+                            {
+                                Episode.FilePath = Path;
+                                Show = show.DeepClone();
+                                Show.Episodes = new();
+                                return;
+                            }
+                        }
+                    }
+                }
                 else if (FileType == SiteSection.Movies)
                 {
                     if (fileName.IsVideoFile())
@@ -231,6 +171,7 @@ namespace MediaLife.Models
 
     }
 
+    [ExportFor(GasparType.FrontEnd)]
     public class ClientTorrent
     {
         public string Hash { get; set; } = "";
@@ -249,24 +190,9 @@ namespace MediaLife.Models
         public string DestinationFileName => GetFileName();
         public string? VideoFile => GetVideoFile();
 
-        public ClientTorrent(string line)
-        {
-            List<string> columns = line.Split("\t", 4).ToList();
-            if (columns.Count == 4)
-            {
-                Hash = columns[0];
-                TorrentName = columns[1];
+        public ClientTorrent() { }
 
-                double.TryParse(columns[2], out double percent);
-                PercentComplete = double.IsNaN(percent) ? 0 : percent;
-
-                if (columns[3].StartsWith("FILE:"))
-                {
-                    Files = columns[3].Substring(5).Split("FILE:").ToList();
-                }
-            }
-        }
-
+        public ClientTorrent(ShowModel show, EpisodeModel episode) : this(show, episode, null, null, false) { }
         public ClientTorrent(ShowModel? show, EpisodeModel episode, PirateBayTorrent? torrent, int? torrentResultCount, bool strippedQuotes)
         {
             Show = show;
@@ -298,6 +224,11 @@ namespace MediaLife.Models
 
         public string GetFileName()
         {
+            if (Episode == null)
+            {
+                return "";
+            }
+
             string torrentName = (VideoFile == null) ? TorrentName : TorrentName.Replace("." + VideoFile.Extension(), "");
             string extension = (VideoFile == null) ? "" : "." + VideoFile.Extension();
             string? episodeName = Episode?.Name.Replace("/", "-");
@@ -307,8 +238,10 @@ namespace MediaLife.Models
             {
                 case SiteSection.TV:
                     return $"{Show?.Name} {Episode.SeriesEpisodeNumber} - {episodeName} ({torrentName}){extension}";
+                case SiteSection.YouTube:
+                    return $"{Show?.Name} - {episodeName} ({Episode.Id}){extension}";
                 case SiteSection.Movies:
-                    return $"{Episode.Number.ToString("D2")} - {Episode.Name} ({Episode.Certificate}) {year} ({torrentName}){extension}";
+                    return $"{Episode.Number:D2} - {Episode.Name} ({Episode.Certificate}) {year} ({torrentName}){extension}";
                 default:
                     throw new NotImplementedException();
             }
@@ -349,5 +282,18 @@ namespace MediaLife.Models
         {
             return Show == null || Episode == null || Episode.FilePath != null || Episode.Watched != null || Episode.Skip;
         }
+    }
+
+    [ExportFor(GasparType.TypeScript)]
+    public class ClientActions
+    {
+        public string? Error { get; set; } = null;
+        public List<ClientTorrent> DeleteTorrents { get; set; } = new();
+        public List<ClientTorrent> SaveAndDeleteTorrents { get; set; } = new();
+        public List<ClientTorrent> AddTorrents { get; set; } = new();
+        public List<ClientTorrent> Downloads { get; set; } = new();
+        public List<ClientFile> DeleteFiles { get; set; } = new();
+        public List<ClientFile> RetagFiles { get; set; } = new();
+        public List<EpisodeModel> DownloadFileFromCloud { get; set; } = new();
     }
 }

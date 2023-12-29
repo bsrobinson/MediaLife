@@ -22,14 +22,14 @@ namespace MediaLife.Extensions
         public static void LogPayloadReceived(this MySqlContext db, string receivedPayload)
         {
             LoggedPayload entry = db.LoggedPayloads.First();
-            entry.Received = string.Format("{0:F}", DateTime.Now) + "\n\n" + receivedPayload;
+            entry.Received = $"{{\"timestamp\":\"{DateTime.Now:F}\", \"payload\": {receivedPayload}}}";
             db.SaveChanges();
         }
 
         public static void LogPayloadReply(this MySqlContext db, string replyPayload)
         {
             LoggedPayload entry = db.LoggedPayloads.First();
-            entry.Reply = string.Format("{0:F}", DateTime.Now) + "\n\n" + replyPayload;
+            entry.Reply = $"{{\"timestamp\":\"{DateTime.Now:F}\", \"payload\": {replyPayload}}}";
             db.SaveChanges();
         }
     }

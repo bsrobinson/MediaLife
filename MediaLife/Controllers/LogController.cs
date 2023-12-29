@@ -43,9 +43,7 @@ namespace MediaLife.Controllers
             }
             model.SortSessions();
 
-            LoggedPayload payload = db.LoggedPayloads.First();
-            model.ReceivedPayload = payload.Received;
-            model.ReplyPayload = payload.Reply;
+            ViewData["jsData"] = db.LoggedPayloads.First();
 
             return View(model);
         }

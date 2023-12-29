@@ -10,10 +10,10 @@ namespace MediaLife.Models
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class EpisodeId
     {
-        public uint Id { get; set; }
+        public string Id { get; set; }
         public SiteSection Section { get; set; }
 
-        public EpisodeId(uint id, SiteSection section)
+        public EpisodeId(string id, SiteSection section)
         {
             Id = id;
             Section = section;

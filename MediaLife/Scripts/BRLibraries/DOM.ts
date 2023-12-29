@@ -501,9 +501,10 @@ declare global { interface HTMLFormElement {
     * @returns {object} - {} if no elements
     */
     toJson<T>(): T;
-    toJson<T>(nestDotted: boolean): T;
+    toJson<T>(camelCase: boolean): T;
+    toJson<T>(camelCase: boolean, nestDotted: boolean): T;
 } }
-HTMLFormElement.prototype.toJson = function<T>(nestDotted: boolean = true): T {
+HTMLFormElement.prototype.toJson = function<T>(camelCase: boolean = true, nestDotted: boolean = true): T {
 	var obj: Record<string, object> = {};
  	for (var i = 0; i < this.elements.length; i++) {
  		let element = this.elements[i] as HTMLFormElement;
@@ -512,9 +513,9 @@ HTMLFormElement.prototype.toJson = function<T>(nestDotted: boolean = true): T {
  			if (val == '' && this.elements[i].getAttribute('data-nullonempty') == 'true') {
  				val = null;
  			} else if (this.elements[i].getAttribute('data-type') == 'int') {
- 				val = parseInt(val);
+ 				val = val == '' ? null : parseInt(val);
  			} else if (this.elements[i].getAttribute('data-type') == 'float') {
- 				val = parseFloat(val);
+ 				val = val == '' ? null : parseFloat(val);
  			} else if (this.elements[i].getAttribute('data-type') == 'bool') {
  				val = val.toLowerCase() == 'true';
  			}
@@ -524,6 +525,8 @@ HTMLFormElement.prototype.toJson = function<T>(nestDotted: boolean = true): T {
 
             if (nestDotted) {
                 let dots = element.name.split('.');
+                for (let j = 0; j < dots.length; j++) { dots[j] = fixCase(dots[j], camelCase); }
+                
                 let working = obj;
                 for (let j = 0; j < dots.length - 1; j++) {
                     if (!working[dots[j]]) { working[dots[j]] = {} as Record<string, object>; }
@@ -531,11 +534,18 @@ HTMLFormElement.prototype.toJson = function<T>(nestDotted: boolean = true): T {
                 }
                 working[dots[dots.length - 1]] = val;
             } else {
-                obj[element.name] = val;
+                obj[fixCase(element.name, camelCase)] = val;
             }
  		}
  	}
  	return obj as T;
+}
+function fixCase(s: string, toCamelCase: boolean): string {
+    if (!toCamelCase) { return s; }
+    if (s.length > 1) {
+        s.slice(0, 1).toLocaleLowerCase() + s.slice(1);
+    }
+    return s.toLocaleLowerCase();
 }
 
 declare global { interface HTMLFormElement {
