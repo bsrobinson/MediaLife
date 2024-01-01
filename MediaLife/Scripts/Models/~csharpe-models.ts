@@ -177,6 +177,8 @@ export interface ShowModel {
     downloadAllTogether: boolean;
     downloadLimit: number | null;
     recommendedBy: string | null;
+    hideWatched: boolean;
+    hideUnplayable: boolean;
     searchScore: number;
     isList: boolean;
     sortableName: string;
@@ -204,6 +206,8 @@ export interface ShowModel {
 }
 
 export interface ShowSettings {
+    hideWatched: boolean;
+    hideUnplayable: boolean;
     recommendedBy: string | null;
     downloadLimit: number | null;
     deleteWatched: boolean;
@@ -289,6 +293,8 @@ export interface Show {
     watchFromNextPlayable: boolean;
     downloadAllTogether: boolean;
     downloadLimit: number | null;
+    hideWatched: boolean;
+    hideUnplayable: boolean;
 }
 
 //File: ../../../MediaLife.Library/DAL/User.cs

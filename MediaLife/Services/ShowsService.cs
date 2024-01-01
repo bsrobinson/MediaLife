@@ -8,6 +8,7 @@ using MediaLife.Extensions;
 using MediaLife.Library.DAL;
 using MediaLife.Library.Models;
 using MediaLife.Models;
+using Microsoft.AspNetCore;
 
 namespace MediaLife.Services
 {
@@ -85,7 +86,7 @@ namespace MediaLife.Services
                 List? list = db.Lists.SingleOrDefault(l => l.ListId.ToString() == showId);
                 if (list != null)
                 {
-                    show = new() { ShowId = showId, SiteSection = section, Name = list.Name, Added = list.Created, Updated = list.Created, DeleteWatched = false, WatchFromNextPlayable = false, DownloadAllTogether = false };
+                    show = new() { ShowId = showId, SiteSection = section, Name = list.Name, Added = list.Created, Updated = list.Created, DeleteWatched = false, WatchFromNextPlayable = false, DownloadAllTogether = false, HideWatched = false, HideUnplayable = false };
                     episodes = (
                         from e in db.Episodes
                         join l in db.ListEntries on new { e.EpisodeId, e.SiteSection } equals new { l.EpisodeId, l.SiteSection }
@@ -270,6 +271,8 @@ namespace MediaLife.Services
                         WatchFromNextPlayable = false,
                         DownloadAllTogether = false,
                         DownloadLimit = configSrv.Config.UserConfig.SectionConfig(section).DownloadLimit,
+                        HideWatched = false,
+                        HideUnplayable = false,
                     };
                     db.Shows.Add(dbShow);
 
@@ -413,6 +416,18 @@ namespace MediaLife.Services
             return results.All(t => t == null);
         }
 
+        public Show? RemoveFilters(SiteSection section, string showId)
+        {
+            Show? show = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
+            if (show != null)
+            {
+                show.HideWatched = false;
+                show.HideUnplayable = false;
+                db.SaveChanges();
+            }
+            return show;
+        }
+
         public Show? UpdateSettings(SiteSection section, string showId, ShowSettings model)
         {
             Show? show = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
@@ -423,6 +438,8 @@ namespace MediaLife.Services
                 show.WatchFromNextPlayable = model.WatchFromNextPlayable;
                 show.DownloadAllTogether = model.DownloadAllTogether;
                 show.DownloadLimit = model.DownloadLimit;
+                show.HideWatched = model.HideWatched;
+                show.HideUnplayable = model.HideUnplayable;
                 db.SaveChanges();
 
                 //Set Skip

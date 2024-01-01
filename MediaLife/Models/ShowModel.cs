@@ -56,6 +56,11 @@ namespace MediaLife.Models
         [Display(Name = "Recommended By")]
         public string? RecommendedBy { get; set; }
 
+        [Display(Name = "Hide Watched")]
+        public bool HideWatched { get; set; }
+        [Display(Name = "Hide Unplayable")]
+        public bool HideUnplayable { get; set; }
+
         public double SearchScore { get; set; }
 
         public bool IsList { get; set; } = false;
@@ -110,6 +115,8 @@ namespace MediaLife.Models
             Poster = show.Poster;
             Network = network;
             RecommendedBy = show.RecommendedBy;
+            HideWatched = show.HideWatched;
+            HideUnplayable = show.HideUnplayable;
             Added = show.Added;
             DeleteWatched = show.DeleteWatched;
             WatchFromNextPlayable = show.WatchFromNextPlayable;
@@ -161,6 +168,9 @@ namespace MediaLife.Models
     [ExportFor(GasparType.TypeScript)]
     public class ShowSettings
     {
+        public bool HideWatched { get; set; }
+        public bool HideUnplayable { get; set; }
+
         public string? RecommendedBy { get; set; }
         public int? DownloadLimit { get; set; }
         public bool DeleteWatched { get; set; }

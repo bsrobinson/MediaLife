@@ -62,7 +62,7 @@ h1 {
     opacity: 0.7;
 }
 
-#settings_menu {
+.settings_menu {
     position: fixed;
     background: white;
     border: 1px solid black;
@@ -170,6 +170,18 @@ h1 {
     display: flex;
     justify-content: space-between;
     padding: 5px;
+
+    &.no-episodes {
+        border: 0;
+        align-items: center;
+        background: #efefef;
+        flex-direction: column;
+        padding: 1rem 0;
+
+        form-field-row {
+            margin: 1rem 0 0 0;
+        }
+    }
 
     &:hover {
         background: #efefef;
@@ -326,9 +338,6 @@ h1 {
     }
     #network_in_header {
         display: block;
-    }
-    #page-content {
-        flex-direction: column;
     }
 }
 

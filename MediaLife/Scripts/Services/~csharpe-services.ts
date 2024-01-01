@@ -8,7 +8,7 @@
 //** full configuration in: ../../gaspar.config.json
 //**
 
-import { ClientData, ClientActions, User, UserAccount, Configuration, VLCStatus, SiteSection, ShowModel, EpisodeModel, ShowSettings, Show, EpisodeId, PirateBay } from "../Models/~csharpe-models";
+import { ClientData, ClientActions, User, UserAccount, Configuration, VLCStatus, SiteSection, ShowModel, EpisodeModel, Show, ShowSettings, EpisodeId, PirateBay } from "../Models/~csharpe-models";
 import { ServiceErrorHandler } from "./service-error-handler";
 
 export class ServiceResponse<T> {
@@ -164,6 +164,9 @@ export namespace MediaLifeService {
         }
         episode(section: SiteSection, episodeId: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<EpisodeModel>> {
             return new GasparServiceHelper().fetch(`/${section}/Episode/${episodeId}`, { method: 'GET' }, showError);
+        }
+        removeFilters(section: SiteSection, showId: string, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<Show>> {
+            return new GasparServiceHelper().fetch(`/${section}/RemoveFilters/${showId}`, { method: 'PUT' }, showError);
         }
         saveSettings(section: SiteSection, showId: string, model: ShowSettings, showError = ServiceErrorMessage.Generic): Promise<ServiceResponse<Show>> {
             return new GasparServiceHelper().fetch(`/${section}/SaveSettings/${showId}`, { method: 'PUT', body: JSON.stringify(model), headers: { 'Content-Type': 'application/json' } }, showError);

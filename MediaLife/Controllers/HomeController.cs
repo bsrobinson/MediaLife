@@ -130,6 +130,19 @@ namespace MediaLife.Controllers
 
         [ExportFor(GasparType.TypeScript)]
         [HttpPut("{section}/[action]/{showId}")]
+        public ActionResult<Show> RemoveFilters(SiteSection section, string showId)
+        {
+            Show? show = service.RemoveFilters(section, showId);
+            if (show != null)
+            {
+                return show;
+            }
+            return NotFound();
+
+        }
+
+        [ExportFor(GasparType.TypeScript)]
+        [HttpPut("{section}/[action]/{showId}")]
         public ActionResult<Show> SaveSettings(SiteSection section, string showId, [FromBody] ShowSettings model)
         {
             Show? show = service.UpdateSettings(section, showId, model);

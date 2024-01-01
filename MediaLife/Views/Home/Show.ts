@@ -8,6 +8,8 @@ import { EpisodeId, EpisodeModel, ShowPageModel, ShowSettings, SiteSection } fro
 import { MediaLifeService } from "../../Scripts/Services/~csharpe-services";
 import { MediaLife } from "../../Scripts/Site";
 import '../../Scripts/BRLibraries/Form';
+import { makeButton } from "../../Scripts/BRLibraries/Form";
+import { Icon } from "../../Scripts/BRLibraries/Icon";
 
 
 export class HomeShow {
@@ -16,6 +18,8 @@ export class HomeShow {
 
     activeSeries: number | null = null;
     editedList: tsShowModelForList | null = null;
+
+    removeFiltersButton: HTMLButtonElement | null = null;
 
     resized = false;
 
@@ -29,7 +33,9 @@ export class HomeShow {
         if (!lastSeries) {
             lastSeries = maxSeries;
         }
-        this.activeSeries = lastSeries;
+        if (!this.data.show.hideWatched && !this.data.show.hideUnplayable) {
+            this.activeSeries = lastSeries;
+        }
 
         if (elementOrNull('series_list')) {
             element('series_list').innerHTML = '';
@@ -119,9 +125,23 @@ export class HomeShow {
             episodes = this.data.show.episodes.filter(e => e.seriesNumber == this.activeSeries);
         }
 
+        let episodeShown = false;
         for (let i = 0; i < episodes.length; i++) {
-            element('episode_list').appendChild(this.episodeRow(episodes[i] as tsEpisodeModel) as HTMLElement);
+            if ((!this.data.show.hideWatched || episodes[i].watched == null) && (!this.data.show.hideUnplayable || episodes[i].filePath != null)) {
+                element('episode_list').appendChild(this.episodeRow(episodes[i] as tsEpisodeModel) as HTMLElement);
+                episodeShown = true;
+            }
         }
+        if (!episodeShown) {
+            if (episodes.length == 0) {
+                element('episode_list').appendElement('div', { class: 'episode-row no-episodes', html: 'No episodes' })
+            } else {
+                this.removeFiltersButton = makeButton('Remove Filters', { icon: new Icon('filter-circle-xmark'), click: () => this.removeFilters() });
+                element('episode_list').appendElement('div', { class: 'episode-row no-episodes', html: 'All episodes hidden by filters' })
+                    .appendButtonRow([ this.removeFiltersButton ], { justify: 'center' });
+            }
+        }
+
         element('episode_list').appendButton('Add to List', { classes: 'button add edit-list-show', click: () => this.startAddToListMode() });
     }
 
@@ -234,24 +254,55 @@ export class HomeShow {
         }
     }
 
+    toggleFilterMenu() {
+        if (!element('settings_menu').containsClass('hide')) {
+            this.toggleSettingsMenu();
+        }
+        let hide = !element('filter_menu').containsClass('hide');
+        element('blackout').toggleClassIfTrue('hide', hide);
+        element('filter_menu').toggleClassIfTrue('hide', hide);
+        element('showFilterButton').toggleClassIfTrue('open', !hide);
+        element('showSettingsButton').toggleClassIfTrue('open', !hide);
+    }
+
     toggleSettingsMenu() {
+        if (!element('filter_menu').containsClass('hide')) {
+            this.toggleFilterMenu();
+        }
         let hide = !element('settings_menu').containsClass('hide');
         element('blackout').toggleClassIfTrue('hide', hide);
         element('settings_menu').toggleClassIfTrue('hide', hide);
+        element('showFilterButton').toggleClassIfTrue('open', !hide);
         element('showSettingsButton').toggleClassIfTrue('open', !hide);
+    }
+
+    removeFilters() {
+        if (this.removeFiltersButton) {
+            this.removeFiltersButton.disableWithSpinIcon();
+            this.service.removeFilters(this.data.show.siteSection, this.data.show.id).then(() => {
+                location.reload();
+            });
+        }
     }
 
     saveSettings() {
 
-        this.toggleSettingsMenu();
+        if (!element('filter_menu').containsClass('hide')) {
+            this.toggleFilterMenu();
+        }
+        if (!element('settings_menu').containsClass('hide')) {
+            this.toggleSettingsMenu();
+        }
+        element<HTMLButtonElement>('showFilterButton').disableWithSpinIcon();
         element<HTMLButtonElement>('showSettingsButton').disableWithSpinIcon();
 
-        let form = element<HTMLFormElement>('settings_menu').toJson<ShowPageModel>().show as ShowSettings;
+        let form = element<HTMLFormElement>('settings_form').toJson<ShowPageModel>().show as ShowSettings;
         this.service.saveSettings(this.data.show.siteSection, this.data.show.id, form).then(() => {
-            if (form.skipUntilSeries != this.data.show.skipUntilSeries) {
+            if (form.skipUntilSeries != this.data.show.skipUntilSeries || form.hideWatched != this.data.show.hideWatched || form.hideUnplayable != this.data.show.hideUnplayable) {
                 location.reload();
             } else {
-                element<HTMLButtonElement>('showSettingsButton').enable()
+                element<HTMLButtonElement>('showFilterButton').enable();
+                element<HTMLButtonElement>('showSettingsButton').enable();
             }
         });
         
@@ -284,10 +335,19 @@ export class HomeShow {
 
 
     openNetwork() {
-        let url = this.data.show.id.slice(0, 2) == 'PL'
-            ? `https://www.youtube.com/playlist?list=${this.data.show.id}`
-            : `https://www.youtube.com/channel/${this.data.show.id}`
-        window.open(url);
+        let url: string | null = '';
+        if (this.data.siteSection == SiteSection.TV && this.data.show.network?.name) {
+            url = this.data.show.network.homepageUrl;
+        }
+        if (this.data.siteSection == SiteSection.YouTube) {
+            url = this.data.show.id.slice(0, 2) == 'PL'
+                ? `https://www.youtube.com/playlist?list=${this.data.show.id}`
+                : `https://www.youtube.com/channel/${this.data.show.id}`;
+        }
+
+        if (url) {
+            window.open(url);
+        }
     }
 
 
@@ -427,9 +487,6 @@ export class HomeShow {
         let windowHeight = windowSize().h;
         let contentTop = element('page-content').getPosition().top;
 
-        console.log(element('page-content'));
-        console.log('windowResize - ' + windowHeight + ' - ' + contentTop);
-
         if (elementOrNull('series_list_wrapper')) {
             element('series_list_wrapper').style.height = (windowHeight - contentTop - 2) + 'px';
         }
@@ -437,6 +494,7 @@ export class HomeShow {
         element('poster').style.maxHeight = (windowHeight - contentTop - 2) + 'px';
 
         if (elementOrNull('showSettingsButton')) {
+            element('filter_menu').style.top = (element('showSettingsButton').getPosition().top + element('showSettingsButton').offsetHeight + 2) + 'px';
             element('settings_menu').style.top = (element('showSettingsButton').getPosition().top + element('showSettingsButton').offsetHeight + 2) + 'px';
         }
         

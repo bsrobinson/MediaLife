@@ -40,5 +40,10 @@ namespace MediaLife.Library.DAL
         public required bool DownloadAllTogether { get; set; }
 
         public int? DownloadLimit { get; set; }
+
+
+        public required bool HideWatched { get; set; }
+
+        public required bool HideUnplayable { get; set; }
     }
 }

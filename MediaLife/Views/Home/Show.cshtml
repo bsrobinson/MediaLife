@@ -21,6 +21,7 @@
 
             @Html.Button($"Add {buttonName}", new("plus"), "page.addShow()", new() { Colour = ButtonColour.Green, Classes = $"button add {(Model.Show.Added == null ? "" : "hide")}" }, new() { { "id", "addShowButton" } })
             @Html.Button($"Remove {buttonName}", new("xmark"), "page.removeShow()", new() { Colour = ButtonColour.Red, Classes = $"button remove {(Model.Show.Added != null && Model.Show.Episodes.Count(e => e.Watched != null || e.StartedWatching != null) == 0 ? "" : "hide")}" }, new() { { "id", "removeShowButton" } })
+            @Html.Button(new Icon("filter"), "page.toggleFilterMenu()", new() { Classes = $"button settings {(Model.Show.Added != null ? "" : "hide")}" }, new() { { "id", "showFilterButton" } })
             @Html.Button(new Icon("gear"), "page.toggleSettingsMenu()", new() { Classes = $"button settings {(Model.Show.Added != null ? "" : "hide")}" }, new() { { "id", "showSettingsButton" } })
         }
         else
@@ -34,38 +35,48 @@
 </div>
 
 <div id="blackout" class="hide" onclick="page.toggleSettingsMenu()"></div>
-<form id="settings_menu" class="@(Model.ShowListOptions ? "for_list" : "") hide" onsubmit="page.saveSettings(); return false;">
-    @Html.FormRowFor(m => Model.Show.RecommendedBy, new() { Style = FormRowStyle.BlockRow, DataList = Model.Recommenders })
-    @Html.FormRowFor(m => Model.Show.DownloadLimit, new() { Style = FormRowStyle.BlockRow })
-    @Html.FormRowFor(m => Model.Show.DeleteWatched, new() { Style = FormRowStyle.BlockRow })
-    @Html.FormRowFor(m => Model.Show.WatchFromNextPlayable, new() { Style = FormRowStyle.BlockRow })
-    @Html.FormRowFor(m => Model.Show.DownloadAllTogether, new() { Style = FormRowStyle.BlockRow })
-    @if (Model.SiteSection == SiteSection.TV)
-    {
-        var seriesList = new List<SelectListItem>();
-        int? prevSeries = Model.Show.Episodes.FirstOrDefault()?.SeriesNumber;
-
-        seriesList.Add(new() { Text = "-", Value = prevSeries.ToString() });
-        foreach (EpisodeModel episode in Model.Show.Episodes)
+<form id="settings_form" onsubmit="page.saveSettings(); return false;">
+    <div id="filter_menu" class="settings_menu @(Model.ShowListOptions ? "for_list" : "") hide">
+        @Html.FormRowFor(m => Model.Show.HideWatched, new() { Style = FormRowStyle.BlockRow })
+        @Html.FormRowFor(m => Model.Show.HideUnplayable, new() { Style = FormRowStyle.BlockRow })
+        @Html.SubmitRow("Save", new() { Thin = true })
+    </div>
+    <div id="settings_menu" class="settings_menu @(Model.ShowListOptions ? "for_list" : "") hide">
+        @Html.FormRowFor(m => Model.Show.RecommendedBy, new() { Style = FormRowStyle.BlockRow, DataList = Model.Recommenders })
+        @Html.FormRowFor(m => Model.Show.DownloadLimit, new() { Style = FormRowStyle.BlockRow })
+        @Html.FormRowFor(m => Model.Show.DeleteWatched, new() { Style = FormRowStyle.BlockRow })
+        @Html.FormRowFor(m => Model.Show.WatchFromNextPlayable, new() { Style = FormRowStyle.BlockRow })
+        @Html.FormRowFor(m => Model.Show.DownloadAllTogether, new() { Style = FormRowStyle.BlockRow })
+        @if (Model.SiteSection == SiteSection.TV)
         {
-            if (prevSeries != episode.SeriesNumber)
+            var seriesList = new List<SelectListItem>();
+            int? prevSeries = Model.Show.Episodes.FirstOrDefault()?.SeriesNumber;
+
+            seriesList.Add(new() { Text = "-", Value = prevSeries.ToString() });
+            foreach (EpisodeModel episode in Model.Show.Episodes)
             {
-                seriesList.Add(new() { Text = episode.SeriesNumber.ToString(), Value = episode.SeriesNumber.ToString(), Selected = Model.Show.SkipUntilSeries == episode.SeriesNumber });
+                if (prevSeries != episode.SeriesNumber)
+                {
+                    seriesList.Add(new() { Text = episode.SeriesNumber.ToString(), Value = episode.SeriesNumber.ToString(), Selected = Model.Show.SkipUntilSeries == episode.SeriesNumber });
+                }
+                prevSeries = episode.SeriesNumber;
             }
-            prevSeries = episode.SeriesNumber;
+
+            @Html.FormRowFor(m => Model.Show.SkipUntilSeries, new() { Style = FormRowStyle.BlockRow, SelectOptions = seriesList, WithSelectHandle = true })
         }
+        @Html.SubmitRow("Save", new() { Thin = true })
 
-        @Html.FormRowFor(m => Model.Show.SkipUntilSeries, new() { Style = FormRowStyle.BlockRow, SelectOptions = seriesList, WithSelectHandle = true })
-    }
-    @Html.SubmitRow("Save", new() { Thin = true })
-
-    @Html.ButtonRow(new() {
-        Html.Button($"YouTube {(Model.Show.Id.StartsWith("PL") ? "Playlist" : "Channel")}", new() { ClickEvent = "page.openNetwork();", IconRight = new("arrow-up-right-from-square"), Colour = ButtonColour.Transparent })       
-    }, new() { Justify = RowJustify.Center })
+        @if (Model.SiteSection == SiteSection.YouTube)
+        {
+            @Html.ButtonRow(new() {
+                Html.Button($"YouTube {(Model.Show.Id.StartsWith("PL") ? "Playlist" : "Channel")}", new() { ClickEvent = "page.openNetwork();", IconRight = new("arrow-up-right-from-square"), Colour = ButtonColour.Transparent })       
+            }, new() { Justify = RowJustify.Center })
+        }
+    </div>
 </form>
 
 <div id="page-content">
-    @if (Model.SiteSection == SiteSection.TV)
+    @if (Model.SiteSection == SiteSection.TV && !Model.Show.HideWatched && !Model.Show.HideUnplayable)
     {
         <div id="series_list_wrapper"><ul id="series_list"></ul></div>
     }
@@ -80,9 +91,9 @@
     <div>
         <div id="poster" class="@posterClass"></div>
         <div id="network">
-            @if (Model.SiteSection == SiteSection.TV)
+            @if (Model.SiteSection == SiteSection.TV && Model.Show.Network != null && !string.IsNullOrEmpty(Model.Show.Network.Name))
             {
-
+                @Html.Button(Model.Show.Network.Name, new() { ClickEvent = "page.openNetwork();", IconRight = new("arrow-up-right-from-square"), Colour = ButtonColour.Transparent })
             }
             @if (Model.SiteSection == SiteSection.YouTube)
             {
