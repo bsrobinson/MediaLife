@@ -5,7 +5,7 @@
     position: relative;
     font-size: 1.2rem;
 
-    .watched-button {
+    .watched-button a {
         color: #bbb;
         width: 40px;
         height: 20px;
@@ -13,28 +13,26 @@
         cursor: pointer;
     }
 
-    &.search-page .watched-button {
+    &.search-page .watched-button a {
         width: 23px;
         min-width: 23px;
     }
 
-    &.watched .watched-button {
+    &.watched .watched-button a {
         color: #0b0;
     }
-    &.started-watching .watched-button {
+    &.started-watching .watched-button a {
         color: #f90;
     }
 
-    &.skip .watched-button > span {
+    &.skip .watched-button a {
         color: black;
     }
 
-    &.saving .watched-button > span {
+    &.saving .watched-button a {
         color: black;
         cursor: default;
         font-size: 1.6rem !important;
-        position: absolute;
-        top: -2px;
     }
 
     .watched-menu {
@@ -81,14 +79,14 @@
         }
     }
 
-    &.watched .watched-menu > a.watched, &.started-watching .watched-menu > a.started, &.skip .watched-menu > a.skip {
+    &.watched .watched-menu > .watched, &.started-watching .watched-menu > .started, &.skip .watched-menu > .skip {
         background-color: #00dd00;
         opacity: 1;
     }
 
-    &.started-watching .watched-menu > a.skip, &.watched .watched-menu > a.skip,
-    &.skip .watched-menu > a.started, &.watched .watched-menu > a.started,
-    &.skip .watched-menu > a.watched {
+    &.started-watching .watched-menu > .skip, &.watched .watched-menu > .skip,
+    &.skip .watched-menu > .started, &.watched .watched-menu > .started,
+    &.skip .watched-menu > .watched {
         display: none;
     }
 }

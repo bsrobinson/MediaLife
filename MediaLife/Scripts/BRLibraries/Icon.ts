@@ -400,8 +400,9 @@ export function makeIcon(iconObjOrName: Icon | string, options: IconElementOptio
         else {
             let href = options.click == undefined ? options.url : 'JavaScript:;';
             let events: EventAttributes = options.click == undefined ? {} : { click: options.click };
-            let link = makeElement('icon-link', { class: 'icon-wrapper' });
-            let a = link.appendElement('a', { href: href, events: events, ...outerProperties });
+            let link = makeElement('icon-link', {...outerProperties});
+            link.addClass('icon-wrapper')
+            let a = link.appendElement('a', { href: href, events: events });
             a.appendChild(iconElement);
             if (options.label) { a.appendElement('span', { class: 'label', html: options.label }); }
             return link;
