@@ -315,12 +315,21 @@ namespace MediaLife.Services
                 }
             }
 
-            //Offline next episode
             ConfigService configSrv = new(db);
             foreach (ShowModel show in shows)
             {
-                if (configSrv.Config.UserConfig.SectionConfig(show.SiteSection).KeepNextEpisodeOffCloud)
+                if (show.KeepAllDownloaded) 
                 {
+                    //Keep all offline
+                    foreach (EpisodeModel episode in show.Episodes.Where(e => e.inCloud == true))
+                    {
+                        episodes.Add(episode);
+                        db.Log(SessionId, $"Request Download from Cloud (next episode): {episode.FilePath}");
+                    }
+                }
+                else if (configSrv.Config.UserConfig.SectionConfig(show.SiteSection).KeepNextEpisodeOffCloud)
+                {
+                    //Offline next episode
                     EpisodeModel? nextEpisodeWithFile = show.Unwatched.FirstOrDefault(e => e.FilePath != null);
                     if (nextEpisodeWithFile?.inCloud == true && nextEpisodeWithFile.FilePath != null)
                     {
@@ -329,6 +338,7 @@ namespace MediaLife.Services
                     }
                 }
             }
+
 
             return episodes;
         }

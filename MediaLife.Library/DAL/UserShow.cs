@@ -27,5 +27,7 @@ namespace MediaLife.Library.DAL
         public required bool DownloadAllTogether { get; set; }
 
         public int? DownloadLimit { get; set; }
+
+        public required bool KeepAllDownloaded { get; set; }
     }
 }

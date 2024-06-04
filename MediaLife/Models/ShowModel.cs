@@ -52,6 +52,8 @@ namespace MediaLife.Models
         public bool DownloadAllTogether { get; set; }
         [Display(Name = "Download Limit")]
         public int? DownloadLimit { get; set; }
+        [Display(Name = "Keep All Downloaded")]
+        public bool KeepAllDownloaded { get; set; }
 
         [Display(Name = "Recommended By")]
         public string? RecommendedBy { get; set; }
@@ -121,6 +123,7 @@ namespace MediaLife.Models
             DeleteWatched = show.DeleteWatched;
             WatchFromNextPlayable = show.WatchFromNextPlayable;
             DownloadAllTogether = show.DownloadAllTogether;
+            KeepAllDownloaded = show.KeepAllDownloaded;
             DownloadLimit = show.DownloadLimit;
         }
 
@@ -176,6 +179,7 @@ namespace MediaLife.Models
         public bool DeleteWatched { get; set; }
         public bool WatchFromNextPlayable { get; set; }
         public bool DownloadAllTogether { get; set; }
+        public bool KeepAllDownloaded { get; set; }
         public short SkipUntilSeries { get; set; }
     }
 

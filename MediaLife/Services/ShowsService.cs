@@ -86,7 +86,7 @@ namespace MediaLife.Services
                 List? list = db.Lists.SingleOrDefault(l => l.ListId.ToString() == showId);
                 if (list != null)
                 {
-                    show = new() { ShowId = showId, SiteSection = section, Name = list.Name, Added = list.Created, Updated = list.Created, DeleteWatched = false, WatchFromNextPlayable = false, DownloadAllTogether = false, HideWatched = false, HideUnplayable = false };
+                    show = new() { ShowId = showId, SiteSection = section, Name = list.Name, Added = list.Created, Updated = list.Created, DeleteWatched = false, WatchFromNextPlayable = false, DownloadAllTogether = false, KeepAllDownloaded = false, HideWatched = false, HideUnplayable = false };
                     episodes = (
                         from e in db.Episodes
                         join l in db.ListEntries on new { e.EpisodeId, e.SiteSection } equals new { l.EpisodeId, l.SiteSection }
@@ -271,6 +271,7 @@ namespace MediaLife.Services
                         WatchFromNextPlayable = false,
                         DownloadAllTogether = false,
                         DownloadLimit = configSrv.Config.UserConfig.SectionConfig(section).DownloadLimit,
+                        KeepAllDownloaded = false,
                         HideWatched = false,
                         HideUnplayable = false,
                     };
@@ -438,6 +439,7 @@ namespace MediaLife.Services
                 show.WatchFromNextPlayable = model.WatchFromNextPlayable;
                 show.DownloadAllTogether = model.DownloadAllTogether;
                 show.DownloadLimit = model.DownloadLimit;
+                show.KeepAllDownloaded = model.KeepAllDownloaded;
                 show.HideWatched = model.HideWatched;
                 show.HideUnplayable = model.HideUnplayable;
                 db.SaveChanges();
