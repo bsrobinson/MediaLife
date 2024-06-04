@@ -26,13 +26,16 @@ function exec(command: string) {
 
 function getFilesInFolder(section: SiteSection, folder: string): ClientFile[] {
 
+	console.log(`Getting file in ${folder}`)
+
 	let spotlightFiles = convertTagLines(section, exec(`/usr/local/bin/tag --find '*' '${folder}' -t`));
 	spotlightFiles.push(...convertTagLines(section, exec(`/usr/local/bin/tag --find '' '${folder}' -t`)));
 	
-	let findFiles = convertFindLines(section, exec(`find '${folder}' -type f`));
+	let findFiles = convertFindLines(section, exec(`/usr/bin/find '${folder}' -type f`));
 	
 	if (spotlightFiles.length > findFiles.length) {
 	
+		console.log(`Spotlight files: ${spotlightFiles.length}`)
 		return spotlightFiles;
 	
 	} else {
@@ -43,6 +46,7 @@ function getFilesInFolder(section: SiteSection, folder: string): ClientFile[] {
 				file.tags = exec(`/usr/local/bin/tag -l -N '${file.path.replace(/'/g, `'\\''`)}'`).trim().split(',');
 			}
 		});
+		console.log(`Spotlight count was ${spotlightFiles.length}; so sending find Files: ${findFiles.length}`)
 		return findFiles;
 	}
 }
@@ -217,7 +221,7 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 			console.log(`${clientActions.downloadFileFromCloud.length} x downloadFileFromCloud`);
 			clientActions.downloadFileFromCloud.forEach(file => {
 				console.log(`  • ${file.filePath}`);
-				exec(`brctl download "${file.filePath}"`);
+				exec(`/usr/bin/brctl download "${file.filePath}"`);
 			});
 
 		}
