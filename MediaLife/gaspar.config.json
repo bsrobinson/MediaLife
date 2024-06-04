@@ -24,7 +24,7 @@
 				"Location": "./Scripts/Services/~csharpe-services.ts",
 				"ModelPath": "../Models/~csharpe-models",
 				"ErrorHandlerPath": "./service-error-handler",
-				"DefaultErrorMessage": "Generic"
+				"DefaultErrorMessage": "None"
 			}
 		],
 		"ServiceName": "MediaLife"
