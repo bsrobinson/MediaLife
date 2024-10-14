@@ -89,7 +89,7 @@ namespace MediaLife.Services
 
                 foreach (ShowModel show in shows)
                 {
-                    if (show.Episodes.Count(e => e.HasTorrests) == 0)
+                    if (show.Episodes.Count(e => e.HasTorrents) == 0)
                     {
                         List<EpisodeModel> missingFiles = show.Unwatched.Where(e => e.FilePath == null).ToList();
                         if (missingFiles.Count > 0 && (show.DownloadLimit == null || show.UnwatchedCount - missingFiles.Count < show.DownloadLimit))
@@ -321,7 +321,7 @@ namespace MediaLife.Services
                 if (show.KeepAllDownloaded) 
                 {
                     //Keep all offline
-                    foreach (EpisodeModel episode in show.Episodes.Where(e => e.inCloud == true))
+                    foreach (EpisodeModel episode in show.Episodes.Where(e => e.InCloud == true))
                     {
                         episodes.Add(episode);
                         db.Log(SessionId, $"Request Download from Cloud (next episode): {episode.FilePath}");
@@ -331,7 +331,7 @@ namespace MediaLife.Services
                 {
                     //Offline next episode
                     EpisodeModel? nextEpisodeWithFile = show.Unwatched.FirstOrDefault(e => e.FilePath != null);
-                    if (nextEpisodeWithFile?.inCloud == true && nextEpisodeWithFile.FilePath != null)
+                    if (nextEpisodeWithFile?.InCloud == true && nextEpisodeWithFile.FilePath != null)
                     {
                         episodes.Add(nextEpisodeWithFile);
                         db.Log(SessionId, $"Request Download from Cloud (next episode): {nextEpisodeWithFile.FilePath}");
@@ -363,14 +363,18 @@ namespace MediaLife.Services
                     if (dbEpisode != null)
                     {
                         //Add client file paths
-                        if (dbEpisode.FilePath != file.Episode.FilePath)
+                        if (dbEpisode.FilePath != file.Episode.FilePath || dbEpisode.InCloud != file.Episode.InCloud)
                         {
-                            db.Episodes.Single(e => e.EpisodeId == dbEpisode.Id && e.SiteSection == file.FileType).FilePath = file.Episode.FilePath;
+                            Episode thisDbEpisode = db.Episodes.Single(e => e.EpisodeId == dbEpisode.Id && e.SiteSection == file.FileType);
+                            thisDbEpisode.FilePath = file.Episode.FilePath;
+                            thisDbEpisode.InCloud = file.InCloud;
+
                             dbEpisode.FilePath = file.Episode.FilePath;
+                            dbEpisode.InCloud = file.Episode.InCloud;
                         }
 
                         //Remove completed download requests
-                        if (dbEpisode.inCloud == false && dbEpisode.RequestDownload)
+                        if (dbEpisode.InCloud == false && dbEpisode.RequestDownload)
                         {
                             db.Episodes.Single(e => e.EpisodeId == dbEpisode.Id && e.SiteSection == dbEpisode.SiteSection).RequestDownload = false;
                         }

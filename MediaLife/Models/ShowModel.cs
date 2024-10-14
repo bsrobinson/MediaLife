@@ -77,7 +77,7 @@ namespace MediaLife.Models
 
         public List<EpisodeId> EpisodeIds => (from e in Episodes select new EpisodeId(e.Id, e.SiteSection)).ToList();
 
-        internal List<EpisodeModel> Unwatched => Episodes.Where(e => !e.Skip && e.Watched == null && (e.AirDate <= DateTime.Now || e.HasTorrests || e.FilePath != null || Episodes.Any(e2 => e2.AirDate > DateTime.Now && e2.Watched != null))).ToList();
+        internal List<EpisodeModel> Unwatched => Episodes.Where(e => !e.Skip && e.Watched == null && (e.AirDate <= DateTime.Now || e.HasTorrents || e.FilePath != null || Episodes.Any(e2 => e2.AirDate > DateTime.Now && e2.Watched != null))).ToList();
         private List<EpisodeModel> Playable => Unwatched.Where(e => e.FilePath != null).ToList();
         private EpisodeModel? ActivelyWatching => Unwatched.FirstOrDefault(e => e.StartedWatching != null);
 
@@ -107,6 +107,7 @@ namespace MediaLife.Models
 
         public ShowModel()
         {
+            Id = "";
             Name = "";
         }
         public ShowModel(Show show, TvNetwork? network) : this()

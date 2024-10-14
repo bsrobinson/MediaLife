@@ -24,7 +24,7 @@ namespace MediaLife.Models
             {
                 Files[i].MatchEpisode(shows);
 
-                //remove invaild file and duplicates
+                //remove invalid file and duplicates
                 if (!Files[i].Valid || Files.Count(f => f.Show?.SiteSection == Files[i]?.Show?.SiteSection && f.Show?.Id == Files[i]?.Show?.Id && f.Episode?.Id == Files[i]?.Episode?.Id) > 1)
                 {
                     Files.RemoveAt(i);
@@ -50,7 +50,8 @@ namespace MediaLife.Models
         public SiteSection FileType { get; set; }
 
         public string? Path { get; set; }
-        public List<string> Tags { get; set; }
+        public List<string> Tags { get; set; } = new();
+        public bool InCloud { get; set; }
 
         public ShowModel? Show { get; set; }
         public EpisodeModel? Episode { get; set; }
@@ -72,13 +73,13 @@ namespace MediaLife.Models
                         Match seriesEpisodeNumber = new Regex(@"S\d{2,4}E\d{2}", RegexOptions.IgnoreCase).Match(fileName);
                         if (seriesEpisodeNumber.Success)
                         {
-                            List<string> cleansedfileNames = new() {
+                            List<string> cleansedFileNames = new() {
                                 fileName.Trim(),
                                 fileName.Replace(".", " ").Trim(),
                                 fileName.Replace("-", " ").Trim(),
                                 fileName.Replace(".", "").Replace("-", "").Trim()
                             };
-                            IEnumerable<ShowModel> matchingShows = shows.Where(s => cleansedfileNames.Any(n => n.StartsWith(s.Name, true, CultureInfo.CurrentCulture) && s.SiteSection == SiteSection.TV));
+                            IEnumerable<ShowModel> matchingShows = shows.Where(s => cleansedFileNames.Any(n => n.StartsWith(s.Name, true, CultureInfo.CurrentCulture) && s.SiteSection == SiteSection.TV));
                             
                             if (matchingShows.Count() >= 1)
                             {
@@ -100,6 +101,7 @@ namespace MediaLife.Models
                                     if (Episode != null)
                                     {
                                         Episode.FilePath = Path;
+                                        Episode.InCloud = InCloud;
                                     }
                                 }
                                 Show.Episodes = new();
@@ -117,6 +119,7 @@ namespace MediaLife.Models
                             if (Episode != null)
                             {
                                 Episode.FilePath = Path;
+                                Episode.InCloud = InCloud;
                                 Show = show.DeepClone();
                                 Show.Episodes = new();
                                 return;
@@ -134,6 +137,7 @@ namespace MediaLife.Models
                             if (Episode != null)
                             {
                                 Episode.FilePath = Path;
+                                Episode.InCloud = InCloud;
                                 Show = show.DeepClone();
                                 Show.Episodes = new();
                                 return;
@@ -293,7 +297,7 @@ namespace MediaLife.Models
         public List<ClientTorrent> AddTorrents { get; set; } = new();
         public List<ClientTorrent> Downloads { get; set; } = new();
         public List<ClientFile> DeleteFiles { get; set; } = new();
-        public List<ClientFile> RetagFiles { get; set; } = new();
+        public List<ClientFile> ReTagFiles { get; set; } = new();
         public List<EpisodeModel> DownloadFileFromCloud { get; set; } = new();
     }
 }

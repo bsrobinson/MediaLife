@@ -44,6 +44,8 @@ namespace MediaLife.Library.DAL
         [MaxLength(1024)]
         public string? FilePath { get; set; }
 
+        public required bool InCloud { get; set; }
+
         public required bool RequestDownload { get; set; }
 
     }

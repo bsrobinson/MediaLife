@@ -28,18 +28,19 @@ namespace MediaLife.Models
         public bool Skip { get; set; }
 
         public string? FilePath { get; set; }
+        public bool InCloud { get; set; }
         public bool RequestDownload { get; set; }
         public List<Torrent> Torrents { get; set; }
 
         public List<List> InLists { get; set; } = new();
 
-        public bool HasTorrests => Torrents.Count > 0;
+        public bool HasTorrents => Torrents.Count > 0;
         public string SeriesEpisodeNumber => "S" + SeriesNumber.ToString("D2") + "E" + Number.ToString("D2");
 
-        public bool? inCloud => string.IsNullOrEmpty(FilePath) ? null : FilePath.EndsWith(".icloud");
 
         public EpisodeModel()
         {
+            Id = "";
             Torrents = new();
         }
         public EpisodeModel(Episode episode) : this()
@@ -57,6 +58,7 @@ namespace MediaLife.Models
             StartedWatching = episode.StartedWatching;
             Skip = episode.Skip;
             FilePath = episode.FilePath;
+            InCloud = episode.InCloud;
             RequestDownload = episode.RequestDownload;
         }
         public EpisodeModel(Episode episode, List<Torrent> torrents) : this(episode)
@@ -79,6 +81,7 @@ namespace MediaLife.Models
                 Certificate = Certificate,
                 Author = Author,
                 Skip = Skip,
+                InCloud = InCloud,
                 RequestDownload = RequestDownload,
             };
         }

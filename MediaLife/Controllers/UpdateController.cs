@@ -40,14 +40,12 @@ namespace MediaLife.Controllers
 {
     public class UpdateController : Controller
     {
-        private MySqlContext db;
         private ShowsService showSrv;
         private ClientService clientSrv;
         private ConfigService configSrv;
 
         public UpdateController(MySqlContext context)
         {
-            db = context;
             Guid sessionId = Guid.NewGuid();
             showSrv = new(context, sessionId);
             clientSrv = new(context, sessionId);
@@ -97,7 +95,7 @@ namespace MediaLife.Controllers
                         clientActions.AddTorrents.AddRange(clientSrv.TorrentsToAdd(dbData, ref clientData));
                         clientActions.Downloads.AddRange(clientSrv.FilesToDownload(dbData));
                         clientActions.DeleteFiles.AddRange(clientSrv.FilesToDelete(ref clientData));
-                        clientActions.RetagFiles.AddRange(clientSrv.FilesToReTag(clientData));
+                        clientActions.ReTagFiles.AddRange(clientSrv.FilesToReTag(clientData));
                         clientActions.DownloadFileFromCloud.AddRange(clientSrv.FilesToDownloadFromCloud(dbData, clientData));
 
                         clientSrv.LogClientData(clientData, "Processed");

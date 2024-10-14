@@ -21,6 +21,7 @@ export interface ClientFile {
     fileType: SiteSection;
     path: string | null;
     tags: string[];
+    inCloud: boolean;
     show: ShowModel | null;
     episode: EpisodeModel | null;
     valid: boolean;
@@ -48,7 +49,7 @@ export interface ClientActions {
     addTorrents: ClientTorrent[];
     downloads: ClientTorrent[];
     deleteFiles: ClientFile[];
-    retagFiles: ClientFile[];
+    reTagFiles: ClientFile[];
     downloadFileFromCloud: EpisodeModel[];
 }
 
@@ -153,12 +154,12 @@ export interface EpisodeModel {
     startedWatching: string | null;
     skip: boolean;
     filePath: string | null;
+    inCloud: boolean;
     requestDownload: boolean;
     torrents: Torrent[];
     inLists: List[];
-    hasTorrests: boolean;
+    hasTorrents: boolean;
     seriesEpisodeNumber: string;
-    inCloud: boolean | null;
 }
 
 //File: ../../MediaLife/Models/ShowModel.cs

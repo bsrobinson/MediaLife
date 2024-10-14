@@ -43,7 +43,7 @@ export class EpisodeFileIcon {
         this.node.removeClass('faded');
         this.node.style.fontSize = '';
 
-        if (episode.hasTorrests) {
+        if (episode.hasTorrents) {
             this.node.changeIcon('download');
             this.node.title = episode.torrents.map(t => t.hash).join('\n');
         }

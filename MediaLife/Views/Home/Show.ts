@@ -149,7 +149,7 @@ export class HomeShow {
 
         let all = this.activeSeries === null;
         let airDate = episode.airDate ? new Date(episode.airDate) : null;
-        let available = episode.hasTorrests || episode.filePath;
+        let available = episode.hasTorrents || episode.filePath;
 
         let row = elementOrNull('episode_row' + episode.id);
         if (row) {

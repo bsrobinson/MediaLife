@@ -26,39 +26,28 @@ function exec(command: string) {
 
 function getFilesInFolder(section: SiteSection, folder: string): ClientFile[] {
 
-	console.log(`Getting file in ${folder}`)
-
-	let spotlightFiles = convertTagLines(section, exec(`/usr/local/bin/tag --find '*' '${folder}' -t`));
-	spotlightFiles.push(...convertTagLines(section, exec(`/usr/local/bin/tag --find '' '${folder}' -t`)));
+	console.log(`Getting files in ${folder}`)
 	
 	let findFiles = convertFindLines(section, exec(`/usr/bin/find '${folder}' -type f`));
 	
-	if (spotlightFiles.length > findFiles.length) {
-	
-		console.log(`Spotlight files: ${spotlightFiles.length}`)
-		return spotlightFiles;
-	
-	} else {
-	
-		// Problem with spotlight (machine is prob indexing), use this slower find method
-		findFiles.forEach(file => {
-			if (file.path) {
-				file.tags = exec(`/usr/local/bin/tag -l -N '${file.path.replace(/'/g, `'\\''`)}'`).trim().split(',');
-			}
-		});
-		console.log(`Spotlight count was ${spotlightFiles.length}; so sending find Files: ${findFiles.length}`)
-		return findFiles;
-	}
+	findFiles.forEach(file => {
+		if (file.path) {
+			file.tags = exec(`/opt/homebrew/bin/tag -l -N '${file.path.replace(/'/g, `'\\''`)}'`).trim().split(',');
+			file.inCloud = exec(`/bin/ls -lO '${file.path.replace(/'/g, `'\\''`)}'`).includes('dataless');
+		}
+	});
+	console.log(`Found files: ${findFiles.length}`)
+	return findFiles;
 }
 
 function getTorrents(): ClientTorrent[] {
 
 	let torrents: ClientTorrent[] = [];
 
-	exec('/usr/local/bin/transmission-remote -l').split('\n').forEach(line => {	
+	exec('/opt/homebrew/bin/transmission-remote -l').split('\n').forEach(line => {	
 		let id = line.trim().split(' ')[0];
 		if (id) {
-			let info = exec(`/usr/local/bin/transmission-remote -t ${id} -i`)
+			let info = exec(`/opt/homebrew/bin/transmission-remote -t ${id} -i`)
 			if (info) {
 
 				if ((info.match(/\n.*?Labels: (.*)\n/) || [])[1] == torrentLabel) {
@@ -73,7 +62,7 @@ function getTorrents(): ClientTorrent[] {
 					} as ClientTorrent;
 
 					let namePos = 0;
-					exec(`/usr/local/bin/transmission-remote -t "${id}" -f`).split('\n').forEach(fileLine => {
+					exec(`/opt/homebrew/bin/transmission-remote -t "${id}" -f`).split('\n').forEach(fileLine => {
 						if (fileLine && namePos > 0) {
 							torrent.files.push(fileLine.slice(namePos))
 						}
@@ -150,7 +139,7 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 			console.log(`${clientActions.deleteTorrents.length} x deleteTorrents`);
 			clientActions.deleteTorrents.forEach(torrent => {
 				console.log(`  • ${torrent.show?.name} - ${torrent.episode?.seriesEpisodeNumber} ${torrent.episode?.name}`);
-				exec(`/usr/local/bin/transmission-remote -t "${torrent.hash}" -rad > /dev/null`)
+				exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -rad > /dev/null`)
 			});
 
 
@@ -160,7 +149,7 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 				if (torrent.show?.siteSection == SiteSection.TV) { root = tvFolder; }
 				if (torrent.show?.siteSection == SiteSection.Movies) { root = moviesFolder; }
 				if (root) {
-					let info = exec(`/usr/local/bin/transmission-remote -t ${torrent.hash} -i`);
+					let info = exec(`/opt/homebrew/bin/transmission-remote -t ${torrent.hash} -i`);
 					if (info) {
 						console.log(`  • ${torrent.show?.name} - ${torrent.episode?.seriesEpisodeNumber} ${torrent.episode?.name}`);
 					
@@ -175,8 +164,8 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 							destFile = '';
 						}
 						exec(`mkdir -p "${destFolder}" && cp -R "${source}" "${destFolder}/${destFile}"`);
-						exec(`/usr/local/bin/tag -a "Orange,${unwatchedTag}" "${destFolder}/${destFile}"`);
-						exec(`/usr/local/bin/transmission-remote -t "${torrent.hash}" -rad > /dev/null`);
+						exec(`/opt/homebrew/bin/tag -a "Orange,${unwatchedTag}" "${destFolder}/${destFile}"`);
+						exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -rad > /dev/null`);
 					}
 				}
 			});
@@ -185,8 +174,8 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 			console.log(`${clientActions.addTorrents.length} x addTorrents`);
 			clientActions.addTorrents.forEach(torrent => {
 				console.log(`  • ${torrent.show?.name} - ${torrent.episode?.seriesEpisodeNumber} ${torrent.episode?.name}`);
-				exec(`/usr/local/bin/transmission-remote -a "magnet:?xt=urn:btih:${torrent.hash}&dn=${torrent.torrentName}" > /dev/null`);
-				exec(`/usr/local/bin/transmission-remote -t "${torrent.hash}" -L "${torrentLabel}" > /dev/null`);
+				exec(`/opt/homebrew/bin/transmission-remote -a "magnet:?xt=urn:btih:${torrent.hash}&dn=${torrent.torrentName}" > /dev/null`);
+				exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -L "${torrentLabel}" > /dev/null`);
 			});
 
 			
@@ -195,7 +184,7 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 			clientActions.downloads.slice(0, 10).forEach(torrent => {
 				if (torrent.episode?.siteSection == SiteSection.YouTube) {
 					console.log(`  • ${torrent.show?.name} - ${torrent.episode?.seriesEpisodeNumber} ${torrent.episode?.name}`);
-					exec(`/usr/local/bin/yt-dlp -o "${youtubeFolder}${torrent.destinationFolder}/${torrent.destinationFileName}.mp4" -f mp4 "https://www.youtube.com/watch?v=${torrent.episode.id}" > /dev/null`);
+					exec(`/opt/homebrew/bin/yt-dlp -o "${youtubeFolder}${torrent.destinationFolder}/${torrent.destinationFileName}.mp4" -f mp4 "https://www.youtube.com/watch?v=${torrent.episode.id}" > /dev/null`);
 				}
 			});
 
@@ -209,11 +198,11 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 			});
 
 			
-			console.log(`${clientActions.retagFiles.length} x retagFiles`);
-			clientActions.retagFiles.forEach(file => {
+			console.log(`${clientActions.reTagFiles.length} x reTagFiles`);
+			clientActions.reTagFiles.forEach(file => {
 				if (file.path) {
 					console.log(`  • ${file.show?.name} - ${file.episode?.seriesEpisodeNumber} ${file.episode?.name}`);
-					exec(`/usr/local/bin/tag -s "${file.tags.join(',')}" "${file.path}"`);
+					exec(`/opt/homebrew/bin/tag -s "${file.tags.join(',')}" "${file.path}"`);
 				}
 			});
 
