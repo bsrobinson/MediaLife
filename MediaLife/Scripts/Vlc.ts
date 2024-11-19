@@ -18,9 +18,12 @@ export class VLCClient {
     loadTime = new Date();
     timeAtLoad = 0;
 
+    controlsInMenu = true;
+
     constructor() {
         this.callServer();
         this.initialising = true
+        this.controlsInMenu = localStorage.getItem('vlc-in-menu') == 'true'
     }
 
     open(episodeObj: EpisodeObject) {
@@ -167,7 +170,9 @@ export class VLCClient {
 
             if (this.status && (this.status.state != 'stopped' || this.status.show)) {
 
-                element('content').addClass('vlc-open');
+                element('content').toggleClassIfTrue('vlc-open', !this.controlsInMenu);
+                element('vlc_player').toggleClassIfTrue('in-menu', this.controlsInMenu);
+
                 element('vlc_player').removeClass('hide');
                 element('vlc_player').removeClass('info-only');
                 element('vlc_player').toggleClassIfTrue('playing', this.status.state == 'playing');
@@ -231,7 +236,9 @@ export class VLCClient {
 
     showInfo(message: string, posterImageUrl: string | null = null, posterUrl: string | null = null) {
 
-        element('content').addClass('vlc-open');
+        element('content').toggleClassIfTrue('vlc-open', !this.controlsInMenu);
+        element('vlc_player').toggleClassIfTrue('in-menu', this.controlsInMenu);
+
         element('vlc_player').removeClass('hide');
         element('vlc_player').addClass('info-only');
         element('vlc_playing_title').innerHTML = message;
@@ -280,6 +287,22 @@ export class VLCClient {
         returnString += mStr + ':' + sStr;
 
         return returnString;
+    }
+
+    moveToMenu() {
+        this.controlsInMenu = true;
+        localStorage.setItem('vlc-in-menu', 'true');
+        if (!element('vlc_player').containsClass('menu-open')) {
+            window.site.toggleSiteMenu()
+            setTimeout(window.site.toggleSiteMenu, 300)
+        }
+        element('vlc_player').addClass('in-menu');
+    }
+
+    moveOutOfMenu() {
+        this.controlsInMenu = false;
+        localStorage.removeItem('vlc-in-menu');
+        element('vlc_player').removeClass('in-menu');
     }
 
 }

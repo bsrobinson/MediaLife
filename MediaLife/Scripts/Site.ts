@@ -39,6 +39,7 @@ export class MediaLife {
     toggleSiteMenu() {
         element('burger_menu').toggleClass('open');
         element('site_menu').toggleClass('open');
+        element('vlc_player').toggleClass('menu-open');
     }
 
     toggleUserMenu() {
