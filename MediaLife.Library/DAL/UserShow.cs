@@ -29,5 +29,7 @@ namespace MediaLife.Library.DAL
         public int? DownloadLimit { get; set; }
 
         public required bool KeepAllDownloaded { get; set; }
+
+        public required bool ShowEpisodesAsThumbnails { get; set; }
     }
 }

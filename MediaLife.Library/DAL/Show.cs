@@ -43,6 +43,8 @@ namespace MediaLife.Library.DAL
 
         public required bool KeepAllDownloaded { get; set; }
 
+        public required bool ShowEpisodesAsThumbnails { get; set;}
+
 
         public required bool HideWatched { get; set; }
 

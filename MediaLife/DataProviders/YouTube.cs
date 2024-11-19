@@ -136,6 +136,7 @@ namespace MediaLife.DataProviders
                 SeriesNumber = 1,
                 Number = 0,
                 Name = v.Title,
+                Poster = v.Thumbnails.FirstOrDefault()?.Url,
                 AirDate = DateTime.Now, //ensure counted
             }).OrderBy(s => s.AirDate).ToList();
 

@@ -154,6 +154,13 @@ h1 {
 
 #episode_list {
     overflow: auto;
+
+    &.thumbnails {
+        display: grid;
+        width: 100%;  
+        grid-template-columns: repeat(auto-fill, 200px);
+        justify-content: space-around;
+    }
 }
 .episode-row:last-child {
     margin-bottom: 20px;
@@ -237,6 +244,75 @@ h1 {
         text-align: center;
         height: 20px;
         width: 40px;
+    }
+}
+
+.episode-thumbnail {
+    position: relative;
+    width: 194px;
+    display: inline-block;
+    margin: 0px 8px 6px 8px;
+    white-space: nowrap;
+    text-decoration: none;
+    color: black;
+    font-size: .9em;
+    text-align: left;
+
+    > a {
+        width: 100%;
+        background-size: 100%;
+        background-repeat: no-repeat;
+        background-position: center;
+        height: 108px;
+        border: 1px solid white;
+        margin-bottom: 5px;
+        background-color: #ccc;
+        text-decoration: none;
+        color: #666;
+        font-size: 40px;
+        white-space: break-spaces;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-around;
+        align-content: space-around;
+        text-align: center;
+        overflow: hidden;
+        position: relative;
+        
+        &:hover {
+            border: 1px dotted black;
+        }
+    }
+
+    .name-row {
+        display: flex;
+        gap: 0.5rem;
+        
+        .number {
+            color: #666;
+        }
+        
+        .name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: black;
+        }
+
+        .icons {
+            display: flex;
+
+            .episode-file-icon {
+                max-width: 30px;
+            }
+            .episode-watch-icon a {
+                width: 24px;
+            }
+        }
+    }
+
+    &.future {
+        opacity: 0.4;
     }
 }
 
@@ -344,7 +420,7 @@ h1 {
 &#content.vlc-open {
     padding-bottom: 0px;
 
-    .episode-row:nth-last-child(2), #content.vlc-open .button.add:last-child {
+    .episode-row:nth-last-child(2), .episode-thumbnail:nth-last-child(2), #content.vlc-open .button.add:last-child {
         margin-bottom: 180px !important;
     }
     &.edit-list .episode-row:nth-last-child(2) {

@@ -86,7 +86,7 @@ namespace MediaLife.Services
                 List? list = db.Lists.SingleOrDefault(l => l.ListId.ToString() == showId);
                 if (list != null)
                 {
-                    show = new() { ShowId = showId, SiteSection = section, Name = list.Name, Added = list.Created, Updated = list.Created, DeleteWatched = false, WatchFromNextPlayable = false, DownloadAllTogether = false, KeepAllDownloaded = false, HideWatched = false, HideUnplayable = false };
+                    show = new() { ShowId = showId, SiteSection = section, Name = list.Name, Added = list.Created, Updated = list.Created, DeleteWatched = false, WatchFromNextPlayable = false, DownloadAllTogether = false, KeepAllDownloaded = false, ShowEpisodesAsThumbnails = false, HideWatched = false, HideUnplayable = false };
                     episodes = (
                         from e in db.Episodes
                         join l in db.ListEntries on new { e.EpisodeId, e.SiteSection } equals new { l.EpisodeId, l.SiteSection }
@@ -272,6 +272,7 @@ namespace MediaLife.Services
                         DownloadAllTogether = false,
                         DownloadLimit = configSrv.Config.UserConfig.SectionConfig(section).DownloadLimit,
                         KeepAllDownloaded = false,
+                        ShowEpisodesAsThumbnails = false,
                         HideWatched = false,
                         HideUnplayable = false,
                     };
@@ -440,6 +441,7 @@ namespace MediaLife.Services
                 show.DownloadAllTogether = model.DownloadAllTogether;
                 show.DownloadLimit = model.DownloadLimit;
                 show.KeepAllDownloaded = model.KeepAllDownloaded;
+                show.ShowEpisodesAsThumbnails = model.ShowEpisodesAsThumbnails;
                 show.HideWatched = model.HideWatched;
                 show.HideUnplayable = model.HideUnplayable;
                 db.SaveChanges();

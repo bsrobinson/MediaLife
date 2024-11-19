@@ -1,4 +1,4 @@
-import { element, elementOrNull, firstOfClass, makeElement } from "../../Scripts/BRLibraries/DOM";
+import { element, elementOrNull, elementsOfClass, firstOfClass, firstOfClassOrNull, makeElement } from "../../Scripts/BRLibraries/DOM";
 import { windowSize } from "../../Scripts/BRLibraries/WindowSize";
 import { EpisodeFileIcon } from "../../Scripts/EpisodeFileIcon";
 import { EpisodeObject } from "../../Scripts/EpisodeObject";
@@ -71,32 +71,35 @@ export class HomeShow {
 
     drawPoster() {
 
-        element('poster').innerHTML = '';
-        element('poster').style.backgroundImage = '';
+        if (!this.data.show.showEpisodesAsThumbnails) {
 
-        if (this.data.show.episodePosters.length == 1) {
+            element('poster').innerHTML = '';
+            element('poster').style.backgroundImage = '';
 
-            element('poster').style.backgroundImage = "url('" + this.data.show.episodePosters[0] + "')";
+            if (this.data.show.episodePosters.length == 1 && this.data.siteSection == SiteSection.Movies) {
 
-        } else if (this.data.show.episodePosters.length > 1) {
+                element('poster').style.backgroundImage = "url('" + this.data.show.episodePosters[0] + "')";
 
-            for (let i = 0; i < this.data.show.episodePosters.length; i++) {
-                element('poster').appendElement('div', { class: 'mini-poster', style: `background-image:url('${this.data.show.episodePosters[i]}')` })
-            }
+            } else if (this.data.show.episodePosters.length > 1 && this.data.siteSection == SiteSection.Movies) {
 
-        } else if (this.data.show.poster) {
+                for (let i = 0; i < this.data.show.episodePosters.length; i++) {
+                    element('poster').appendElement('div', { class: 'mini-poster', style: `background-image:url('${this.data.show.episodePosters[i]}')` })
+                }
 
-            element('poster').style.backgroundImage = "url('" + this.data.show.poster + "')";
+            } else if (this.data.show.poster) {
 
-        } else {
+                element('poster').style.backgroundImage = "url('" + this.data.show.poster + "')";
 
-            element('poster').innerHTML = this.data.show.name;
+            } else {
 
-            element('poster').style.fontSize = '';
-            let fontSize = 40;
-            while (element('poster').scrollHeight > element('poster').clientHeight || element('poster').scrollWidth > element('poster').clientWidth) {
-                fontSize--;
-                element('poster').style.fontSize = fontSize + 'px';
+                element('poster').innerHTML = this.data.show.name;
+
+                element('poster').style.fontSize = '';
+                let fontSize = 40;
+                while (element('poster').scrollHeight > element('poster').clientHeight || element('poster').scrollWidth > element('poster').clientWidth) {
+                    fontSize--;
+                    element('poster').style.fontSize = fontSize + 'px';
+                }
             }
         }
     }
@@ -128,7 +131,11 @@ export class HomeShow {
         let episodeShown = false;
         for (let i = 0; i < episodes.length; i++) {
             if ((!this.data.show.hideWatched || episodes[i].watched == null) && (!this.data.show.hideUnplayable || episodes[i].filePath != null)) {
-                element('episode_list').appendChild(this.episodeRow(episodes[i] as tsEpisodeModel) as HTMLElement);
+                if (this.data.show.showEpisodesAsThumbnails) {
+                    element('episode_list').appendChild(this.episodeThumbnail(episodes[i] as tsEpisodeModel) as HTMLElement);
+                } else {
+                    element('episode_list').appendChild(this.episodeRow(episodes[i] as tsEpisodeModel) as HTMLElement);
+                }
                 episodeShown = true;
             }
         }
@@ -204,6 +211,61 @@ export class HomeShow {
         }
 
         return row;
+    }
+
+    episodeThumbnail(episode: tsEpisodeModel) {
+
+        let airDate = episode.airDate ? new Date(episode.airDate) : null;
+        let available = episode.hasTorrents || episode.filePath;
+
+        let thumbnail = elementOrNull('episode_row' + episode.id);
+        if (thumbnail) {
+            thumbnail.innerHTML = '';
+        } else {
+            thumbnail = makeElement<HTMLElement>('div', { id: 'episode_row' + episode.id });
+        }
+        
+        let image = thumbnail.appendElement('a', { href: `JavaScript:;`, events: { click: () => {
+            let fileIcon = firstOfClassOrNull('episode-file-icon', element(`episode_row${episode.id}`))
+            if (fileIcon) {
+                fileIcon.click();
+            }
+        } } });
+        if (episode.poster) {
+
+            image.style.backgroundImage = "url('" + episode.poster + "')";
+
+        } else {
+
+            image.innerHTML = episode.name
+
+            // fit text, where there is no poster
+            setTimeout(() => {
+                let fontSize = 40;
+                while (image.scrollHeight > image.clientHeight || image.scrollWidth > image.clientWidth) {
+                    fontSize--;
+                    image.style.fontSize = fontSize + 'px';
+                }
+            });
+        }
+
+        thumbnail.className = 'episode-thumbnail' + ((airDate == null || airDate > new Date()) && !available ? ' future' + (episode.watched ? '-but-watched' : '') : '');
+
+        let nameRow = thumbnail.appendElement('div', { class: 'name-row' });
+        if (this.data.siteSection != SiteSection.YouTube) {
+            nameRow.appendElement('span', { class: 'number', html: 'S' + episode.seriesNumber + ': ' + episode.number });
+        }
+        nameRow.appendElement('span', { class: 'name', html: episode.name });
+
+        let icons = nameRow.appendElement('div', { class: 'icons' });
+
+        if (!episode.obj) {
+            episode.obj = new EpisodeObject(this.data.show as tsShowModel, episode);
+        }
+        icons.appendChild(new EpisodeFileIcon(episode.obj, 'edit-list-hide add-to-list-hide').node);
+        icons.appendChild(new EpisodeWatchIcon(episode.obj, 'edit-list-hide add-to-list-hide').node);
+        
+        return thumbnail;
     }
 
     hoverEpisode(event: Event) {

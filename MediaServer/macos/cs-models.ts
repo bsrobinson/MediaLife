@@ -178,6 +178,7 @@ export interface ShowModel {
     downloadAllTogether: boolean;
     downloadLimit: number | null;
     keepAllDownloaded: boolean;
+    showEpisodesAsThumbnails: boolean;
     recommendedBy: string | null;
     hideWatched: boolean;
     hideUnplayable: boolean;
@@ -216,6 +217,7 @@ export interface ShowSettings {
     watchFromNextPlayable: boolean;
     downloadAllTogether: boolean;
     keepAllDownloaded: boolean;
+    showEpisodesAsThumbnails: boolean;
     skipUntilSeries: number;
 }
 
@@ -297,6 +299,7 @@ export interface Show {
     downloadAllTogether: boolean;
     downloadLimit: number | null;
     keepAllDownloaded: boolean;
+    showEpisodesAsThumbnails: boolean;
     hideWatched: boolean;
     hideUnplayable: boolean;
 }

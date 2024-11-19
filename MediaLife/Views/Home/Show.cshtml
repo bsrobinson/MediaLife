@@ -48,6 +48,7 @@
         @Html.FormRowFor(m => Model.Show.WatchFromNextPlayable, new() { Style = FormRowStyle.BlockRow })
         @Html.FormRowFor(m => Model.Show.DownloadAllTogether, new() { Style = FormRowStyle.BlockRow })
         @Html.FormRowFor(m => Model.Show.KeepAllDownloaded, new() { Style = FormRowStyle.BlockRow })
+        @Html.FormRowFor(m => Model.Show.ShowEpisodesAsThumbnails, new() { Style = FormRowStyle.BlockRow })
         @if (Model.SiteSection == SiteSection.TV)
         {
             var seriesList = new List<SelectListItem>();
@@ -88,18 +89,21 @@
             posterClass = Model.Show.Id.StartsWith("PL") ? "wide" : "round";
         }
     }
-    <div id="episode_list"></div>
-    <div>
-        <div id="poster" class="@posterClass"></div>
-        <div id="network">
-            @if (Model.SiteSection == SiteSection.TV && Model.Show.Network != null && !string.IsNullOrEmpty(Model.Show.Network.Name))
-            {
-                @Html.Button(Model.Show.Network.Name, new() { ClickEvent = "page.openNetwork();", IconRight = new("arrow-up-right-from-square"), Colour = ButtonColour.Transparent })
-            }
-            @if (Model.SiteSection == SiteSection.YouTube)
-            {
-                @Html.Button($"YouTube {(Model.Show.Id.StartsWith("PL") ? "Playlist" : "Channel")}", new() { ClickEvent = "page.openNetwork();", IconRight = new("arrow-up-right-from-square"), Colour = ButtonColour.Transparent })
-            }
+    <div id="episode_list" class="@(Model.Show.ShowEpisodesAsThumbnails ? "thumbnails" : "")"></div>
+    @if (!Model.Show.ShowEpisodesAsThumbnails)
+    {
+        <div>
+            <div id="poster" class="@posterClass"></div>
+            <div id="network">
+                @if (Model.SiteSection == SiteSection.TV && Model.Show.Network != null && !string.IsNullOrEmpty(Model.Show.Network.Name))
+                {
+                    @Html.Button(Model.Show.Network.Name, new() { ClickEvent = "page.openNetwork();", IconRight = new("arrow-up-right-from-square"), Colour = ButtonColour.Transparent })
+                }
+                @if (Model.SiteSection == SiteSection.YouTube)
+                {
+                    @Html.Button($"YouTube {(Model.Show.Id.StartsWith("PL") ? "Playlist" : "Channel")}", new() { ClickEvent = "page.openNetwork();", IconRight = new("arrow-up-right-from-square"), Colour = ButtonColour.Transparent })
+                }
+            </div>
         </div>
-    </div>
+    }
 </div>

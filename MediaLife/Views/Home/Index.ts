@@ -154,11 +154,11 @@ export class HomeIndex {
             poster.appendElement('div', { class: 'name', html: this.data.context.siteSection != SiteSection.TV ? show.posterName : show.name });
             poster.appendChild(this.episodeRow(show));
 
-            if (show.episodePosters.length == 1) {
+            if (show.episodePosters.length == 1 && show.siteSection == SiteSection.Movies) {
 
                 image.style.backgroundImage = "url('" + show.episodePosters[0] + "')";
 
-            } else if (show.episodePosters.length > 1) {
+            } else if (show.episodePosters.length > 1 && show.siteSection == SiteSection.Movies) {
 
                 for (let i = 0; i < show.episodePosters.length; i++) {
                     image.appendElement('div', { class: 'mini-poster', style: `background-image:url('${show.episodePosters[i]}')` })
