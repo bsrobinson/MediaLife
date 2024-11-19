@@ -215,6 +215,7 @@ export class HomeShow {
 
     episodeThumbnail(episode: tsEpisodeModel) {
 
+        let all = this.activeSeries === null;
         let airDate = episode.airDate ? new Date(episode.airDate) : null;
         let available = episode.hasTorrents || episode.filePath;
 
@@ -253,7 +254,7 @@ export class HomeShow {
 
         let nameRow = thumbnail.appendElement('div', { class: 'name-row' });
         if (this.data.siteSection != SiteSection.YouTube) {
-            nameRow.appendElement('span', { class: 'number', html: 'S' + episode.seriesNumber + ': ' + episode.number });
+            nameRow.appendElement('span', { class: 'number', html: (all ? 'S' + episode.seriesNumber + ': ' : '') + episode.number });
         }
         nameRow.appendElement('span', { class: 'name', html: episode.name });
 

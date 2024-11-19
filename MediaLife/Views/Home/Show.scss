@@ -159,6 +159,7 @@ h1 {
         display: grid;
         width: 100%;  
         grid-template-columns: repeat(auto-fill, 200px);
+        grid-template-rows: repeat(auto-fit, 144px);
         justify-content: space-around;
         height: auto !important;
     }
@@ -289,6 +290,7 @@ h1 {
     .name-row {
         display: flex;
         gap: 0.5rem;
+        justify-content: space-between;
         
         .number {
             color: #666;
@@ -298,6 +300,7 @@ h1 {
             overflow: hidden;
             text-overflow: ellipsis;
             color: black;
+            flex-grow: 1;
         }
 
         .icons {
