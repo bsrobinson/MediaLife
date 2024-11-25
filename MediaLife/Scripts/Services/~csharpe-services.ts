@@ -77,7 +77,7 @@ export namespace MediaLifeService {
 
     export class UpdateController {
         runUpdate(clientData: ClientData, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ClientActions>> {
-            return new GasparServiceHelper().fetch(`/Update/client`, { method: 'POST', body: JSON.stringify(clientData), headers: { 'Content-Type': 'application/json' } }, showError);
+            return new GasparServiceHelper().fetch(`/Update/client`, { method: 'POST', credentials: 'include', body: JSON.stringify(clientData), headers: { 'Content-Type': 'application/json' } }, showError);
         }
     }
     
@@ -85,22 +85,22 @@ export namespace MediaLifeService {
 
     export class UsersApiController {
         getUsers(showError = ServiceErrorMessage.None): Promise<ServiceResponse<User[]>> {
-            return new GasparServiceHelper().fetch(`/UsersApi/GetUsers`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/UsersApi/GetUsers`, { method: 'GET', credentials: 'include' }, showError);
         }
         getAccounts(showError = ServiceErrorMessage.None): Promise<ServiceResponse<UserAccount[]>> {
-            return new GasparServiceHelper().fetch(`/UsersApi/GetAccounts`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/UsersApi/GetAccounts`, { method: 'GET', credentials: 'include' }, showError);
         }
         addAccount(username: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<boolean>> {
-            return new GasparServiceHelper().fetch(`/UsersApi/AddAccount?username=${username || ""}`, { method: 'POST' }, showError);
+            return new GasparServiceHelper().fetch(`/UsersApi/AddAccount?username=${username || ""}`, { method: 'POST', credentials: 'include' }, showError);
         }
         renameAccount(accountId: number, name: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<UserAccount>> {
-            return new GasparServiceHelper().fetch(`/UsersApi/RenameAccount/${accountId}?name=${name || ""}`, { method: 'POST' }, showError);
+            return new GasparServiceHelper().fetch(`/UsersApi/RenameAccount/${accountId}?name=${name || ""}`, { method: 'POST', credentials: 'include' }, showError);
         }
         addUser(accountId: number, username: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<User>> {
-            return new GasparServiceHelper().fetch(`/UsersApi/AddUser/${accountId}?username=${username || ""}`, { method: 'POST' }, showError);
+            return new GasparServiceHelper().fetch(`/UsersApi/AddUser/${accountId}?username=${username || ""}`, { method: 'POST', credentials: 'include' }, showError);
         }
         editUser(userModel: User, showError = ServiceErrorMessage.None): Promise<ServiceResponse<User>> {
-            return new GasparServiceHelper().fetch(`/UsersApi/EditUser`, { method: 'POST', body: JSON.stringify(userModel), headers: { 'Content-Type': 'application/json' } }, showError);
+            return new GasparServiceHelper().fetch(`/UsersApi/EditUser`, { method: 'POST', credentials: 'include', body: JSON.stringify(userModel), headers: { 'Content-Type': 'application/json' } }, showError);
         }
     }
     
@@ -108,7 +108,7 @@ export namespace MediaLifeService {
 
     export class ConfigController {
         update(config: Record<string, string>, showError = ServiceErrorMessage.None): Promise<ServiceResponse<Configuration>> {
-            return new GasparServiceHelper().fetch(`/Config`, { method: 'POST', body: JSON.stringify(config), headers: { 'Content-Type': 'application/json' } }, showError);
+            return new GasparServiceHelper().fetch(`/Config`, { method: 'POST', credentials: 'include', body: JSON.stringify(config), headers: { 'Content-Type': 'application/json' } }, showError);
         }
     }
     
@@ -116,28 +116,28 @@ export namespace MediaLifeService {
 
     export class VLCController {
         status(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
-            return new GasparServiceHelper().fetch(`/VLC`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/VLC`, { method: 'GET', credentials: 'include' }, showError);
         }
         open(path: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
-            return new GasparServiceHelper().fetch(`/VLC/Open?path=${path || ""}`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/VLC/Open?path=${path || ""}`, { method: 'GET', credentials: 'include' }, showError);
         }
         play(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
-            return new GasparServiceHelper().fetch(`/VLC/Play`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/VLC/Play`, { method: 'GET', credentials: 'include' }, showError);
         }
         pause(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
-            return new GasparServiceHelper().fetch(`/VLC/Pause`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/VLC/Pause`, { method: 'GET', credentials: 'include' }, showError);
         }
         fullscreen(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
-            return new GasparServiceHelper().fetch(`/VLC/Fullscreen`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/VLC/Fullscreen`, { method: 'GET', credentials: 'include' }, showError);
         }
         skip(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
-            return new GasparServiceHelper().fetch(`/VLC/Skip`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/VLC/Skip`, { method: 'GET', credentials: 'include' }, showError);
         }
         skipBack(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
-            return new GasparServiceHelper().fetch(`/VLC/SkipBack`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/VLC/SkipBack`, { method: 'GET', credentials: 'include' }, showError);
         }
         seekTo(percent: number, showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
-            return new GasparServiceHelper().fetch(`/VLC/SeekTo/${percent}`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/VLC/SeekTo/${percent}`, { method: 'GET', credentials: 'include' }, showError);
         }
     }
     
@@ -145,49 +145,49 @@ export namespace MediaLifeService {
 
     export class HomeController {
         watching(section: SiteSection, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel[]>> {
-            return new GasparServiceHelper().fetch(`/${section}/watching`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/${section}/watching`, { method: 'GET', credentials: 'include' }, showError);
         }
         notStarted(section: SiteSection, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel[]>> {
-            return new GasparServiceHelper().fetch(`/${section}/notstarted`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/${section}/notstarted`, { method: 'GET', credentials: 'include' }, showError);
         }
         allShows(section: SiteSection, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel[]>> {
-            return new GasparServiceHelper().fetch(`/${section}/all`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/${section}/all`, { method: 'GET', credentials: 'include' }, showError);
         }
         addShow(section: SiteSection, showId: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel>> {
-            return new GasparServiceHelper().fetch(`/${section}/add/${showId}`, { method: 'POST' }, showError);
+            return new GasparServiceHelper().fetch(`/${section}/add/${showId}`, { method: 'POST', credentials: 'include' }, showError);
         }
         removeShow(section: SiteSection, showId: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<boolean>> {
-            return new GasparServiceHelper().fetch(`/${section}/remove/${showId}`, { method: 'DELETE' }, showError);
+            return new GasparServiceHelper().fetch(`/${section}/remove/${showId}`, { method: 'DELETE', credentials: 'include' }, showError);
         }
         updateShow(section: SiteSection, showId: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel | null>> {
-            return new GasparServiceHelper().fetch(`/${section}/update/${showId}`, { method: 'POST' }, showError);
+            return new GasparServiceHelper().fetch(`/${section}/update/${showId}`, { method: 'POST', credentials: 'include' }, showError);
         }
         episode(section: SiteSection, episodeId: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<EpisodeModel>> {
-            return new GasparServiceHelper().fetch(`/${section}/Episode/${episodeId}`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/${section}/Episode/${episodeId}`, { method: 'GET', credentials: 'include' }, showError);
         }
         removeFilters(section: SiteSection, showId: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<Show>> {
-            return new GasparServiceHelper().fetch(`/${section}/RemoveFilters/${showId}`, { method: 'PUT' }, showError);
+            return new GasparServiceHelper().fetch(`/${section}/RemoveFilters/${showId}`, { method: 'PUT', credentials: 'include' }, showError);
         }
         saveSettings(section: SiteSection, showId: string, model: ShowSettings, showError = ServiceErrorMessage.None): Promise<ServiceResponse<Show>> {
-            return new GasparServiceHelper().fetch(`/${section}/SaveSettings/${showId}`, { method: 'PUT', body: JSON.stringify(model), headers: { 'Content-Type': 'application/json' } }, showError);
+            return new GasparServiceHelper().fetch(`/${section}/SaveSettings/${showId}`, { method: 'PUT', credentials: 'include', body: JSON.stringify(model), headers: { 'Content-Type': 'application/json' } }, showError);
         }
         updateEpisode(section: SiteSection, showId: string, episode: EpisodeModel, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel>> {
-            return new GasparServiceHelper().fetch(`/${section}/UpdateEpisode/${showId}`, { method: 'PUT', body: JSON.stringify(episode), headers: { 'Content-Type': 'application/json' } }, showError);
+            return new GasparServiceHelper().fetch(`/${section}/UpdateEpisode/${showId}`, { method: 'PUT', credentials: 'include', body: JSON.stringify(episode), headers: { 'Content-Type': 'application/json' } }, showError);
         }
         addTorrentHash(episode: EpisodeModel, hash: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<EpisodeModel>> {
-            return new GasparServiceHelper().fetch(`/AddTorrentHash/${hash}`, { method: 'POST', body: JSON.stringify(episode), headers: { 'Content-Type': 'application/json' } }, showError);
+            return new GasparServiceHelper().fetch(`/AddTorrentHash/${hash}`, { method: 'POST', credentials: 'include', body: JSON.stringify(episode), headers: { 'Content-Type': 'application/json' } }, showError);
         }
         createList(name: string, episodes: EpisodeId[], showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel | null>> {
-            return new GasparServiceHelper().fetch(`/CreateList/${name}`, { method: 'PUT', body: JSON.stringify(episodes), headers: { 'Content-Type': 'application/json' } }, showError);
+            return new GasparServiceHelper().fetch(`/CreateList/${name}`, { method: 'PUT', credentials: 'include', body: JSON.stringify(episodes), headers: { 'Content-Type': 'application/json' } }, showError);
         }
         addToList(listId: number, episodes: EpisodeId[], showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel>> {
-            return new GasparServiceHelper().fetch(`/AddToList/${listId}`, { method: 'PUT', body: JSON.stringify(episodes), headers: { 'Content-Type': 'application/json' } }, showError);
+            return new GasparServiceHelper().fetch(`/AddToList/${listId}`, { method: 'PUT', credentials: 'include', body: JSON.stringify(episodes), headers: { 'Content-Type': 'application/json' } }, showError);
         }
         updateList(id: number, name: string, episodes: EpisodeId[], showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel | null>> {
-            return new GasparServiceHelper().fetch(`/UpdateList/${id}/${name}`, { method: 'PUT', body: JSON.stringify(episodes), headers: { 'Content-Type': 'application/json' } }, showError);
+            return new GasparServiceHelper().fetch(`/UpdateList/${id}/${name}`, { method: 'PUT', credentials: 'include', body: JSON.stringify(episodes), headers: { 'Content-Type': 'application/json' } }, showError);
         }
         deleteList(id: number, showError = ServiceErrorMessage.None): Promise<ServiceResponse<boolean>> {
-            return new GasparServiceHelper().fetch(`/DeleteList/${id}`, { method: 'DELETE' }, showError);
+            return new GasparServiceHelper().fetch(`/DeleteList/${id}`, { method: 'DELETE', credentials: 'include' }, showError);
         }
     }
     
@@ -195,10 +195,10 @@ export namespace MediaLifeService {
 
     export class LoginController {
         createFirstUser(user: User, showError = ServiceErrorMessage.None): Promise<ServiceResponse<User>> {
-            return new GasparServiceHelper().fetch(`/Login/CreateFirstUser`, { method: 'POST', body: JSON.stringify(user), headers: { 'Content-Type': 'application/json' } }, showError);
+            return new GasparServiceHelper().fetch(`/Login/CreateFirstUser`, { method: 'POST', credentials: 'include', body: JSON.stringify(user), headers: { 'Content-Type': 'application/json' } }, showError);
         }
         resetPassKey(showError = ServiceErrorMessage.None): Promise<ServiceResponse<string[]>> {
-            return new GasparServiceHelper().fetch(`/Login/ResetPassKey`, { method: 'POST' }, showError);
+            return new GasparServiceHelper().fetch(`/Login/ResetPassKey`, { method: 'POST', credentials: 'include' }, showError);
         }
     }
     
@@ -206,19 +206,19 @@ export namespace MediaLifeService {
 
     export class PirateBayApiController {
         get(showError = ServiceErrorMessage.None): Promise<ServiceResponse<PirateBay[]>> {
-            return new GasparServiceHelper().fetch(`/PirateBayApi`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/PirateBayApi`, { method: 'GET', credentials: 'include' }, showError);
         }
         add(newUrl: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<PirateBay>> {
-            return new GasparServiceHelper().fetch(`/PirateBayApi`, { method: 'POST', body: JSON.stringify(newUrl), headers: { 'Content-Type': 'application/json' } }, showError);
+            return new GasparServiceHelper().fetch(`/PirateBayApi`, { method: 'POST', credentials: 'include', body: JSON.stringify(newUrl), headers: { 'Content-Type': 'application/json' } }, showError);
         }
         activate(id: number, showError = ServiceErrorMessage.None): Promise<ServiceResponse<boolean>> {
-            return new GasparServiceHelper().fetch(`/PirateBayApi/${id}`, { method: 'PUT' }, showError);
+            return new GasparServiceHelper().fetch(`/PirateBayApi/${id}`, { method: 'PUT', credentials: 'include' }, showError);
         }
         delete(id: number, showError = ServiceErrorMessage.None): Promise<ServiceResponse<PirateBay>> {
-            return new GasparServiceHelper().fetch(`/PirateBayApi/${id}`, { method: 'DELETE' }, showError);
+            return new GasparServiceHelper().fetch(`/PirateBayApi/${id}`, { method: 'DELETE' , credentials: 'include'}, showError);
         }
         test(id: number, showError = ServiceErrorMessage.None): Promise<ServiceResponse<boolean>> {
-            return new GasparServiceHelper().fetch(`/PirateBayApi/Test/${id}`, { method: 'GET' }, showError);
+            return new GasparServiceHelper().fetch(`/PirateBayApi/Test/${id}`, { method: 'GET', credentials: 'include' }, showError);
         }
     }
     

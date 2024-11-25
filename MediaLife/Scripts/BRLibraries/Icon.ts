@@ -364,8 +364,8 @@ HTMLElement.prototype.changeIcon = function (iconObjOrName: Icon | string): void
         if (icon) { iconElement = icon; }
     }
     if (iconElement.tagName.toLowerCase() == 'icon') {
-        [...iconElement.classList].filter(c => c.slice(0, 3) == 'fa-').forEach(c => iconElement.removeClass(c));
-        [...iconElement.style].filter(s => s.slice(0, 5) == '--fa-').forEach(s => iconElement.style.removeProperty(s));
+        Array.prototype.slice.call(iconElement.classList).filter(c => c.slice(0, 3) == 'fa-').forEach(c => iconElement.removeClass(c));
+        Array.prototype.slice.call(iconElement.style).filter(s => s.slice(0, 5) == '--fa-').forEach(s => iconElement.style.removeProperty(s));
 
         let icon = getIcon(iconObjOrName);
         iconElement.className = [iconElement.className, icon.classes()].join(' ');

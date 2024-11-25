@@ -3,8 +3,13 @@
 		"strict": true,
 		"noImplicitAny": true,
 		"module": "es6",
-		"target": "es6",
+		"target": "es5",
 		"rootDir": "./",
-		"sourceMap": true
+		"sourceMap": true,
+		"downlevelIteration": true,
+		"lib": [
+			"es2017",
+			"dom"
+		]
 	}
 }

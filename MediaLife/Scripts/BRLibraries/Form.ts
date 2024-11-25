@@ -420,7 +420,7 @@ HTMLButtonElement.prototype.enable = function (): void {
     this.restoreIcons();
 }
 HTMLButtonElement.prototype.restoreIcons = function (): void {
-    [...this.getElementsByClassName('temporary-icon')].forEach(icon => {
+    Array.prototype.slice.call(this.getElementsByClassName('temporary-icon')).forEach(icon => {
         icon.remove();
     });
     this.removeClass('show-temporary-icons');

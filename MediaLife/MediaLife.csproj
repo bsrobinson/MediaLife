@@ -4,6 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <RootNamespace>MediaLife</RootNamespace>
         <nullable>enable</nullable>
+        <RunGaspar>false</RunGaspar>
     </PropertyGroup>
 
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug' And !Exists('../node_modules')">

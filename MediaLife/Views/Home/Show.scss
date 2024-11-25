@@ -24,7 +24,9 @@ h1 {
     .buttons {
         margin: 0.2em 0 0.2em auto;
         display: flex;
-        gap: 1rem;
+        button {
+            margin-left: 1rem;
+        }
     }
 }
 

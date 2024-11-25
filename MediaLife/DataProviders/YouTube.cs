@@ -136,7 +136,7 @@ namespace MediaLife.DataProviders
                 SeriesNumber = 1,
                 Number = 0,
                 Name = v.Title,
-                Poster = v.Thumbnails.FirstOrDefault()?.Url,
+                Poster = StripQuery(v.Thumbnails.FirstOrDefault()?.Url),
                 AirDate = DateTime.Now, //ensure counted
             }).OrderBy(s => s.AirDate).ToList();
 
@@ -149,6 +149,20 @@ namespace MediaLife.DataProviders
             }
 
             return episodes;
+        }
+
+        private string? StripQuery(string? url)
+        {
+            if (url != null)
+            {
+                int queryPos = url.IndexOf('?');
+                if (queryPos > 0)
+                {
+                    url = url[..queryPos];
+                }
+            }
+
+            return url;
         }
     }
 }
