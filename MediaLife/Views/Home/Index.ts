@@ -150,7 +150,7 @@ export class HomeIndex {
         } else {
 
             poster = element(toElement).appendElement('div', { id: 'show_' + show.id, class: 'poster' });
-            let image = poster.appendElement('a', { href: `/${show.isList ? 'lists' : this.data.context.siteSection}/${show.id}` });
+            let image = poster.appendElement('a', { href: 'JavaScript:;', events: { click: () => { location.href =  `/${show.isList ? 'lists' : this.data.context.siteSection}/${show.id}`; } } });
             poster.appendElement('div', { class: 'name', html: this.data.context.siteSection != SiteSection.TV ? show.posterName : show.name });
             poster.appendChild(this.episodeRow(show));
 
