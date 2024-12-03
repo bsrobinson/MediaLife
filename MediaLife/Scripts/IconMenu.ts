@@ -28,8 +28,6 @@ export class IconMenu {
             this.parentNode.onmouseenter = () => this.menuButtonEnter();
             this.parentNode.onmouseleave = () => this.menuButtonLeave();
             button.ontouchstart = (e: Event) => this.touchStart(e);
-            button.ontouchend = (e: Event) => this.touchEnd(e);
-            button.ontouchmove = (e: Event) => this.touchEnd(e);
 
             this.menuNode = this.parentNode.appendElement('div', {
                 class: 'watched-menu',
@@ -138,21 +136,7 @@ export class IconMenu {
 
     touchStart(e: Event) {
         this.absorbEvent(e);
-        this.touchTimer = setTimeout(() => {
-            this.touchTimer = null;
-            for (const [key, value] of Object.entries(window.iconMenus)) {
-                value.closeTouchMenu();
-            }
             this.parentNode.addClass('touch-menu-open');
-        }, 500);
-    }
-
-    touchEnd(e: Event) {
-        this.absorbEvent(e);
-        if (this.touchTimer) {
-            clearTimeout(this.touchTimer);
-            (this.parentNode.getElementsByClassName('watched')[0] as HTMLElement).click();
-        }
     }
 
     closeTouchMenu() {

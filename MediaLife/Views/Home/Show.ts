@@ -263,8 +263,8 @@ export class HomeShow {
         if (!episode.obj) {
             episode.obj = new EpisodeObject(this.data.show as tsShowModel, episode);
         }
-        icons.appendChild(new EpisodeFileIcon(episode.obj, 'edit-list-hide add-to-list-hide').node);
-        icons.appendChild(new EpisodeWatchIcon(episode.obj, 'edit-list-hide add-to-list-hide').node);
+        icons.appendChild(new EpisodeFileIcon(episode.obj, 'search-page').node);
+        icons.appendChild(new EpisodeWatchIcon(episode.obj, 'search-page').node);
         
         return thumbnail;
     }
