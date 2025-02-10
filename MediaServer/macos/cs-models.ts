@@ -92,6 +92,7 @@ export interface SectionConfig extends IConfiguration {
     updateFromDataProvider: boolean;
     deleteWatched: boolean;
     downloadLimit: number | null;
+    downloadSeriesOffset: number | null;
     keepNextEpisodeOffCloud: boolean;
 }
 
@@ -177,6 +178,7 @@ export interface ShowModel {
     watchFromNextPlayable: boolean;
     downloadAllTogether: boolean;
     downloadLimit: number | null;
+    downloadSeriesOffset: number | null;
     keepAllDownloaded: boolean;
     showEpisodesAsThumbnails: boolean;
     recommendedBy: string | null;
@@ -213,6 +215,7 @@ export interface ShowSettings {
     hideUnplayable: boolean;
     recommendedBy: string | null;
     downloadLimit: number | null;
+    downloadSeriesOffset: number | null;
     deleteWatched: boolean;
     watchFromNextPlayable: boolean;
     downloadAllTogether: boolean;
@@ -298,6 +301,7 @@ export interface Show {
     watchFromNextPlayable: boolean;
     downloadAllTogether: boolean;
     downloadLimit: number | null;
+    downloadSeriesOffset: number | null;
     keepAllDownloaded: boolean;
     showEpisodesAsThumbnails: boolean;
     hideWatched: boolean;

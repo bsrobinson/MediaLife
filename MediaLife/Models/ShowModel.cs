@@ -52,6 +52,8 @@ namespace MediaLife.Models
         public bool DownloadAllTogether { get; set; }
         [Display(Name = "Download Limit")]
         public int? DownloadLimit { get; set; }
+        [Display(Name = "Download Series Offset")]
+        public int? DownloadSeriesOffset { get; set; }
         [Display(Name = "Keep All Downloaded")]
         public bool KeepAllDownloaded { get; set; }
         [Display(Name = "Show Thumbnails")]
@@ -129,6 +131,7 @@ namespace MediaLife.Models
             KeepAllDownloaded = show.KeepAllDownloaded;
             ShowEpisodesAsThumbnails = show.ShowEpisodesAsThumbnails;
             DownloadLimit = show.DownloadLimit;
+            DownloadSeriesOffset = show.DownloadSeriesOffset;
         }
 
         public void AddEpisode(EpisodeModel episode)
@@ -180,6 +183,7 @@ namespace MediaLife.Models
 
         public string? RecommendedBy { get; set; }
         public int? DownloadLimit { get; set; }
+        public int? DownloadSeriesOffset { get; set; }
         public bool DeleteWatched { get; set; }
         public bool WatchFromNextPlayable { get; set; }
         public bool DownloadAllTogether { get; set; }

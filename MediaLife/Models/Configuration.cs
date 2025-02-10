@@ -67,6 +67,10 @@ namespace MediaLife.Models
         [DefaultValue(null)]
         public ushort? DownloadLimit { get; set; }
 
+        ///<summary>When downloading, offset the series number to match common different number</summary>
+        [DefaultValue(null)]
+        public ushort? DownloadSeriesOffset { get; set; }
+
         ///<summary>Automatically request next episodes from the cloud</summary>
         [DefaultValue(false)]
         public bool KeepNextEpisodeOffCloud { get; set; }

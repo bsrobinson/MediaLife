@@ -271,6 +271,7 @@ namespace MediaLife.Services
                         WatchFromNextPlayable = false,
                         DownloadAllTogether = false,
                         DownloadLimit = configSrv.Config.UserConfig.SectionConfig(section).DownloadLimit,
+                        DownloadSeriesOffset = null,
                         KeepAllDownloaded = false,
                         ShowEpisodesAsThumbnails = false,
                         HideWatched = false,
@@ -440,6 +441,7 @@ namespace MediaLife.Services
                 show.WatchFromNextPlayable = model.WatchFromNextPlayable;
                 show.DownloadAllTogether = model.DownloadAllTogether;
                 show.DownloadLimit = model.DownloadLimit;
+                show.DownloadSeriesOffset = model.DownloadSeriesOffset;
                 show.KeepAllDownloaded = model.KeepAllDownloaded;
                 show.ShowEpisodesAsThumbnails = model.ShowEpisodesAsThumbnails;
                 show.HideWatched = model.HideWatched;

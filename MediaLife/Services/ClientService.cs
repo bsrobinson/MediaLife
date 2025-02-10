@@ -223,7 +223,7 @@ namespace MediaLife.Services
                     switch (episode.SiteSection)
                     {
                         case SiteSection.TV:
-                            search = showName + " " + (episode.Number == 0 ? episodeName : episode.SeriesEpisodeNumber);
+                            search = showName + " " + (episode.Number == 0 ? episodeName : episode.SeriesEpisodeNumberWithOffset(show.DownloadSeriesOffset));
                             break;
                         case SiteSection.Movies:
                             if (episode.AirDate != null)

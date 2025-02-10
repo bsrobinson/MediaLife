@@ -37,6 +37,8 @@ namespace MediaLife.Models
         public bool HasTorrents => Torrents.Count > 0;
         public string SeriesEpisodeNumber => "S" + SeriesNumber.ToString("D2") + "E" + Number.ToString("D2");
 
+        public string SeriesEpisodeNumberWithOffset(int? offset) => "S" + (SeriesNumber + (offset ?? 0)).ToString("D2") + "E" + Number.ToString("D2");
+
 
         public EpisodeModel()
         {
