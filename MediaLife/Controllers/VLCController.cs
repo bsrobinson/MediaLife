@@ -12,6 +12,7 @@ using MediaLife.Models;
 using MediaLife.Serializers;
 using MediaLife.Services;
 using WCKDRZR.Gaspar;
+using System.Web;
 
 namespace MediaLife.Controllers
 {
@@ -38,7 +39,7 @@ namespace MediaLife.Controllers
         public ActionResult<VLCStatus?> Open([FromQuery] string path)
         {
             StatusPage("command=pl_empty");
-            StatusPage("command=in_play&input=" + path);
+            StatusPage("command=in_play&input=" + HttpUtility.UrlEncode(path.Replace("+", "␚")).Replace("+", " ").Replace("␚", "+"));
             return StatusPage();
         }
 
