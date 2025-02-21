@@ -95,7 +95,7 @@ namespace MediaLife.Models
                                     }
                                     else
                                     {
-                                        Episode = Show.Episodes.FirstOrDefault(e => e.SeriesNumber == seriesNumber && fileName.Contains(e.Name) && e.SiteSection == SiteSection.TV).DeepClone();
+                                        Episode = Show.Episodes.FirstOrDefault(e => e.SeriesNumber == seriesNumber && fileName.ToLower().Contains(e.Name.ToLower()) && e.SiteSection == SiteSection.TV).DeepClone();
                                     }
 
                                     if (Episode != null)
