@@ -89,18 +89,20 @@ namespace MediaLife.Services
 
                 foreach (ShowModel show in shows)
                 {
-                    if (show.Episodes.Count(e => e.HasTorrents) == 0)
+                    List<EpisodeModel> missingFiles = show.Unwatched.Where(e => e.FilePath == null).ToList();
+                    if (missingFiles.Count > 0 && (show.DownloadLimit == null || show.UnwatchedCount - missingFiles.Count < show.DownloadLimit))
                     {
-                        List<EpisodeModel> missingFiles = show.Unwatched.Where(e => e.FilePath == null).ToList();
-                        if (missingFiles.Count > 0 && (show.DownloadLimit == null || show.UnwatchedCount - missingFiles.Count < show.DownloadLimit))
+                        if (missingFiles.First().HasTorrents == false)
                         {
                             torrentTasks.Add(SearchForTorrent(piratebay, show, missingFiles.First()));
-                            if (show.DownloadAllTogether)
+                        }
+                        if (show.DownloadAllTogether)
+                        {
+                            Console.WriteLine($"DownloadAllTogether = {show.Name}");
+
+                            foreach (EpisodeModel episode in missingFiles.Skip(1))
                             {
-                                foreach (EpisodeModel episode in missingFiles.Skip(1))
-                                {
-                                    torrentTasks.Add(SearchForTorrent(piratebay, show, episode));
-                                }
+                                torrentTasks.Add(SearchForTorrent(piratebay, show, episode));
                             }
                         }
                     }
