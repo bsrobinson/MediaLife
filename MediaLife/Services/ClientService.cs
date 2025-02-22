@@ -133,10 +133,17 @@ namespace MediaLife.Services
 
                         if (torrent.Show != null && !string.IsNullOrEmpty(torrent.Hash))
                         {
-                            db.Torrents.Add(torrent.DbTorrent());
-                            clientData.Torrents.Add(torrent);
-                            returnTorrents.Add(torrent);
-                            db.Log(SessionId, $"Request Add Torrent: {torrent.Hash} - {torrent.TorrentName}");
+                            if (db.Torrents.FirstOrDefault(t => t.Hash == torrent.Hash) == null)
+                            {
+                                db.Torrents.Add(torrent.DbTorrent());
+                                clientData.Torrents.Add(torrent);
+                                returnTorrents.Add(torrent);
+                                db.Log(SessionId, $"Request Add Torrent: {torrent.Hash} - {torrent.TorrentName}");
+                            }
+                            else
+                            {
+                                db.Log(SessionId, $"Cannot Add Torrent (duplicate): {torrent.Hash} - {torrent.TorrentName}");
+                            }
                         }
 
                         if (torrent.TorrentResultCount != null)
