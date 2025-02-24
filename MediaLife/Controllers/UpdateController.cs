@@ -99,9 +99,10 @@ namespace MediaLife.Controllers
                         clientActions.DownloadFileFromCloud.AddRange(clientSrv.FilesToDownloadFromCloud(dbData, clientData));
 
                         clientSrv.LogClientData(clientData, "Processed");
-
-
+                        
                         clientSrv.LogReplyPayload(JsonSerializer.Serialize(clientActions));
+
+                        clientSrv.LogDone();
 
                         return clientActions;
                     }

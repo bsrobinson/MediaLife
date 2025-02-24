@@ -47,6 +47,10 @@ namespace MediaLife.Services
         {
             db.LogPayloadReply(payload);
         }
+        public void LogDone()
+        {
+            db.Log(SessionId, "Done");
+        }
 
 
         public List<ClientTorrent> TorrentsToDelete(ref ClientData clientData)
@@ -98,8 +102,6 @@ namespace MediaLife.Services
                         }
                         if (show.DownloadAllTogether)
                         {
-                            Console.WriteLine($"DownloadAllTogether = {show.Name}");
-
                             foreach (EpisodeModel episode in missingFiles.Skip(1))
                             {
                                 torrentTasks.Add(SearchForTorrent(piratebay, show, episode));

@@ -36,6 +36,7 @@ namespace MediaLife.Models
 
         public DateTime StartTimeStamp => Entries.Min(e => e.TimeStamp);
         public bool HasError => Entries.Any(e => e.Error);
+        public bool IsDone => Entries.Any(e => e.Message == "Done");
 
         public LogSession()
         {

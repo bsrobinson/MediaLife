@@ -1,0 +1,40 @@
+﻿@model LogModel
+@{
+    ViewData["Title"] = "Log";
+}
+
+<ul class="tabs">
+    <li id="logTab" class="active"><a href="JavaScript:;" onclick="page.switchTab('log')">Log</a></li>
+    <li id="receivedTab"><a href="JavaScript:;" onclick="page.switchTab('received')">Received</a></li>
+    <li id="replyTab"><a href="JavaScript:;" onclick="page.switchTab('reply')">Reply</a></li>
+</ul>
+
+<div id="logPage">
+    @foreach (LogSession session in Model.Sessions)
+    {
+        <div class="row">
+            <div class="group-header @(!session.IsDone ? "incomplete" : "") @(session.HasError ? "error" : "")" onclick="page.toggleGroup(event)">
+                <span class="closed-flag">▶︎</span>
+                <span class="open-flag">▼</span>
+                <span>@session.StartTimeStamp.ToRelativeDate()</span>
+                <span>@session.SessionId @(session.IsDone || session.HasError ? "" : "(incomplete)")</span>
+            </div>
+
+            <div class="details">
+                @foreach (LogEntry entry in session.Entries)
+                {
+                    <div class="detail-row @(entry.Error ? "error" : "")">
+                        <span class="time">@entry.TimeStamp.ToString("HH:mm:ss")</span><span>@entry.Message</span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<div id="receivedPage" class="hide">
+    @Html.ButtonRow(new() { Html.Button("Replay Payload", "page.replayPayload(this)") })
+    <pre id="receivedPageContent" class="pre"></pre>
+</div>
+
+<pre id="replyPage" class="hide pre"></pre>
