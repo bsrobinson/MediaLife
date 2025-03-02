@@ -76,7 +76,7 @@ namespace MediaLife.Controllers
 
                     _ = showSrv.UpdateLastUpdatedAsync().Result;
 
-                    List<ShowModel> dbData = showSrv.Shows();
+                    List<ShowModel> dbData = showSrv.AnonShows();
                     List<EpisodeModel> dbEpisodes = dbData.SelectMany(s => s.Episodes).ToList();
 
                     clientData.MatchEpisodes(dbData);

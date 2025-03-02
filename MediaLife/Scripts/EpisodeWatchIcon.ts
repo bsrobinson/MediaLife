@@ -2,7 +2,7 @@
 import { EpisodeFileIcon } from "./EpisodeFileIcon";
 import { EpisodeObject } from "./EpisodeObject";
 import { IconMenu } from "./IconMenu";
-import { SiteSection } from "./Models/~csharpe-models";
+import { SiteSection, UserWatchedStatus } from "./Models/~csharpe-models";
 import { MediaLifeService } from "./Services/~csharpe-services";
 import './BRLibraries/Icon';
 import { FadeAnimation, Icon, IconStyle, SolidIcon, makeIcon } from "./BRLibraries/Icon";
@@ -46,16 +46,17 @@ export class EpisodeWatchIcon {
                 click: () => this.iconClick() 
             });
 
-            this.iconMenu = new IconMenu(
-                thisId,
-                this.node,
-                this.watchButtonNode,
-                [
-                    makeIcon('ban', { label: 'Skip', class: 'skip', click: () => this.toggleSkip() }),
-                    makeIcon('stopwatch', { label: 'Started', class: 'started', click: () => this.toggleStarted() }),
-                    makeIcon('eye', { label: this.watchedString, class: 'watched', click: () => this.toggleWatched() }),
-                ]
-            );
+            let multiUser = episode.users.filter(u => u.hasAdded).length > 1
+            let buttons = [
+                makeIcon('ban', { label: 'Skip', class: 'skip', click: () => this.toggleSkip() }),
+                makeIcon('stopwatch', { label: 'Started', class: 'started', click: () => this.toggleStarted() }),
+                makeIcon('eye', { label: multiUser ? 'Alone' : this.watchedString, class: 'watched-alone', click: () => this.toggleWatchedAlone() }),
+            ]
+            if (multiUser) {
+                buttons.push(makeIcon('eye', { label: 'Together', class: 'watched-together', click: () => this.toggleWatchedTogether() }))
+            }
+
+            this.iconMenu = new IconMenu(thisId, this.node, this.watchButtonNode, buttons);
             this.updateClass();
         }
 
@@ -71,46 +72,57 @@ export class EpisodeWatchIcon {
 
         this.node.removeClass('saving')
         this.watchButtonNode.changeIcon(new SolidIcon('eye'));
-
-        this.node.toggleClassIfTrue('watched', episode.watched != null);
-        this.node.toggleClassIfTrue('started-watching', episode.watched == null && episode.startedWatching != null);
+        
+        Object.values(UserWatchedStatus).forEach(s => {
+            if (typeof s == 'string') {
+                this.node.removeClass(`watch_status_${s}`)
+            }
+        })
+        this.node.addClass(`watch_status_${UserWatchedStatus[episode.userWatchedStatus]}`)
         this.node.toggleClassIfTrue('skip', episode.skip);
 
         if (episode.skip) {
             this.watchButtonNode.changeIcon(new SolidIcon('ban'));
         }
 
-        this.watchButtonNode.title = '';
-        if (episode.startedWatching) {
-            this.watchButtonNode.title = 'Started ' + this.watchingString + ': ' + new Date(episode.startedWatching).format('j M Y');
-            if (episode.watched) { this.watchButtonNode.title += '\n'; }
+        let titleLines: string[] = []
+        if (episode.userStartedWatching) {
+            titleLines.push(`Started ${this.watchingString}: ${new Date(episode.userStartedWatching).format('j M Y')}`)
         }
-        if (episode.watched) {
-            this.watchButtonNode.title += this.watchedString + ': ' + new Date(episode.watched).format('j M Y');
+        if (episode.userWatched) {
+            titleLines.push(`${this.watchedString}: ${new Date(episode.userWatched).format('j M Y')}`);
         }
-        if (!episode.watched && !episode.startedWatching) {
-            if (episode.skip) {
-                this.watchButtonNode.title = 'Remove skip';
-            } else {
-                this.watchButtonNode.title = 'Mark as ' + this.watchedString.toLowerCase();
+        episode.users.forEach(u => {
+            if (!u.me && u.watched) {
+                titleLines.push(`${u.name} ${this.watchedString}: ${new Date(u.watched).format('j M Y')}`)
             }
-        }
+        })
+        this.watchButtonNode.title = titleLines.join('\n')
     }
 
     iconClick() {
         if (this.episodeObj.episode.skip) {
             this.toggleSkip();
         } else {
-            this.toggleWatched();
+            this.toggleWatchedTogether();
         }
     }
 
-    toggleWatched() {
+    toggleWatchedAlone() {
         this.iconMenu.closeTouchMenu();
         if (!this.episodeObj.anySaving()) {
             this.node.addClass('saving');
             this.watchButtonNode.changeIcon(new Icon('ellipsis', { animation: new FadeAnimation() }))
-            this.episodeObj.toggleWatched(() => this.updateClass());
+            this.episodeObj.toggleWatchedAlone(() => this.updateClass());
+        }
+    }
+
+    toggleWatchedTogether() {
+        this.iconMenu.closeTouchMenu();
+        if (!this.episodeObj.anySaving()) {
+            this.node.addClass('saving');
+            this.watchButtonNode.changeIcon(new Icon('ellipsis', { animation: new FadeAnimation() }))
+            this.episodeObj.toggleWatchedTogether(() => this.updateClass());
         }
     }
 
@@ -133,7 +145,7 @@ export class EpisodeWatchIcon {
     }
 
     setPlaying(nextFileIcon: EpisodeFileIcon | null) {
-        if (!this.episodeObj.anySaving() && !this.episodeObj.episode.startedWatching) {
+        if (!this.episodeObj.anySaving() && !this.episodeObj.episode.userHasStartedWatching) {
 
             this.node.addClass('saving');
             this.watchButtonNode.changeIcon(new Icon('ellipsis', { animation: new FadeAnimation() }))
@@ -151,13 +163,13 @@ export class EpisodeWatchIcon {
 
         var otherStarted = [];
         for (const [key, value] of Object.entries(window.episodeWatchIcons)) {
-            if (value.episodeObj.show.id == this.episodeObj.show.id && value.episodeObj.episode.id != this.episodeObj.episode.id && value.episodeObj.episode.startedWatching && !value.episodeObj.episode.watched) {
+            if (value.episodeObj.show.id == this.episodeObj.show.id && value.episodeObj.episode.id != this.episodeObj.episode.id && value.episodeObj.episode.userStartedWatching && !value.episodeObj.episode.userWatched) {
                 otherStarted.push(value);
             }
         }
         if (otherStarted.length > 0 && confirm('Mark other started episodes of ' + this.episodeObj.show.name + ' as watched?')) {
             for (var i = 0; i < otherStarted.length; i++) {
-                otherStarted[i].toggleWatched();
+                otherStarted[i].toggleWatchedTogether();
             }
         }
     }

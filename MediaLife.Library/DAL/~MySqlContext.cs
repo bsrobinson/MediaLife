@@ -18,6 +18,7 @@ namespace MediaLife.Library.DAL
         public virtual DbSet<TvNetwork> TvNetworks { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserAccount> UserAccounts { get; set; }
+        public virtual DbSet<UserEpisode> UserEpisodes { get; set; }
         public virtual DbSet<UserShow> UserShows { get; set; }
 
 	}

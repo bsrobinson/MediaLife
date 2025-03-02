@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MediaLife.DataProviders;
@@ -8,7 +10,7 @@ using MediaLife.Extensions;
 using MediaLife.Library.DAL;
 using MediaLife.Library.Models;
 using MediaLife.Models;
-using Microsoft.AspNetCore;
+using Newtonsoft.Json;
 
 namespace MediaLife.Services
 {
@@ -76,29 +78,34 @@ namespace MediaLife.Services
             return issue;
         }
 
-        public ShowModel? GetShow(SiteSection section, string showId)
+        public ShowModel? GetShow(SiteSection section, string showId, User? user = null)
         {
             Show? show = null;
             List<EpisodeModel>? episodes = null;
+            List<UserShow> showUsers = db.UserShows.Where(u => u.ShowId == showId).ToList();
+            UserShow? userShow = showUsers.FirstOrDefault(u => u.UserId == user?.UserId);
 
             if (section == SiteSection.Lists)
             {
                 List? list = db.Lists.SingleOrDefault(l => l.ListId.ToString() == showId);
                 if (list != null)
                 {
-                    show = new() { ShowId = showId, SiteSection = section, Name = list.Name, Added = list.Created, Updated = list.Created, DeleteWatched = false, WatchFromNextPlayable = false, DownloadAllTogether = false, KeepAllDownloaded = false, ShowEpisodesAsThumbnails = false, HideWatched = false, HideUnplayable = false };
+                    uint UserId = user?.UserId ?? 0;
+                    show = new() { ShowId = showId, SiteSection = section, Name = list.Name, Updated = list.Created, DeleteWatched = false, DownloadAllTogether = false, KeepAllDownloaded = false };
                     episodes = (
                         from e in db.Episodes
+                        join userEp in db.UserEpisodes on new { e.EpisodeId, e.SiteSection, UserId } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
                         join l in db.ListEntries on new { e.EpisodeId, e.SiteSection } equals new { l.EpisodeId, l.SiteSection }
                         where l.ListId.ToString() == showId
-                        select new EpisodeModel(e)
+                        where userEp == null || userEp.UserId == UserId
+                        select new EpisodeModel(e, userEp)
                         {
                             Number = (short)l.Rank,
                             Torrents = (
                                 from t in db.Torrents
                                 where t.EpisodeId == e.EpisodeId && t.SiteSection == e.SiteSection
                                 select t
-                            ).ToList()
+                            ).ToList(),
                         }
                     ).ToList();
                 }
@@ -118,12 +125,15 @@ namespace MediaLife.Services
                 }
                 else if (section != SiteSection.TV && section != SiteSection.YouTube) { throw new NotImplementedException(); }
 
+                uint UserId = user?.UserId ?? 0;
                 show = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
                 episodes = (
                     from e in db.Episodes
+                    join userEp in db.UserEpisodes on new { e.EpisodeId, e.SiteSection, UserId } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
                     where e.ShowId == showId && e.SiteSection == section
+                    where userEp == null || userEp.UserId == UserId
                     orderby e.AirDate ?? DateTime.MaxValue, e.Number
-                    select new EpisodeModel(e)
+                    select new EpisodeModel(e, userEp)
                     {
                         Torrents = (
                             from t in db.Torrents
@@ -151,7 +161,30 @@ namespace MediaLife.Services
 
             if (show != null && episodes != null)
             {
-                return new ShowModel(show, db.TvNetworks.SingleOrDefault(n => n.NetworkId == show.NetworkId))
+                TvNetwork? network =  db.TvNetworks.SingleOrDefault(n => n.NetworkId == show.NetworkId);
+                List<ShowUserModel>? users = null;
+                if (user != null)
+                {
+                    users = (
+                        from u in db.Users
+                        where u.AccountId == user.AccountId
+                        select new ShowUserModel()
+                        {
+                            Id = u.UserId,
+                            Name = u.Name,
+                            Me = u.UserId == user.UserId,
+                            HasAdded = showUsers.Select(su => su.UserId).Contains(u.UserId),
+                        }
+                    ).ToList();
+
+                    List<UserEpisode> userEpisodes = db.UserEpisodes.ToList();
+                    foreach (EpisodeModel episode in episodes)
+                    {
+                        episode.Users = users.Select(u => new EpisodeUserModel(u, userEpisodes.FirstOrDefault(uEp => uEp.EpisodeId == episode.Id && uEp.SiteSection == episode.SiteSection && uEp.UserId == u.Id))).ToList();
+                    }
+                }
+
+                return new ShowModel(show, userShow, network, users)
                 {
                     Episodes = episodes
                 };
@@ -199,7 +232,7 @@ namespace MediaLife.Services
             Episode? episode = db.Episodes.FirstOrDefault(e => e.FilePath != null && e.FilePath.EndsWith(filename));
             if (episode != null)
             {
-                ShowModel? show = GetShow((SiteSection)episode.SiteSection, episode.ShowId);
+                ShowModel? show = GetShow(episode.SiteSection, episode.ShowId);
                 if (show != null)
                 {
                     show.EpisodeIndex = show.Episodes.FindIndex(e => e.Id == episode.EpisodeId);
@@ -209,12 +242,13 @@ namespace MediaLife.Services
             return null;
         }
 
-        public EpisodeModel? GetEpisode(SiteSection section, string episodeId)
+        public EpisodeModel? GetEpisode(SiteSection section, string episodeId, User user)
         {
             Episode? episode = db.Episodes.FirstOrDefault(e => e.EpisodeId == episodeId && e.SiteSection == section);
             if (episode != null)
             {
-                return new EpisodeModel(episode, Torrents(section, episodeId));
+                UserEpisode? userEpisode = db.UserEpisodes.FirstOrDefault(u => u.EpisodeId == episodeId && u.SiteSection == section && u.UserId == user.UserId);
+                return new EpisodeModel(episode, userEpisode, Torrents(section, episodeId));
             }
             return null;
         }
@@ -224,9 +258,9 @@ namespace MediaLife.Services
             return db.Torrents.Where(t => t.EpisodeId == episodeId && t.SiteSection == section).ToList();
         }
 
-        public List<string> Recommenders()
+        public List<string> Recommenders(User user)
         {
-            List<string> names = db.Shows.Where(s => s.RecommendedBy != null).Select(s => s.RecommendedBy!).Distinct().ToList();
+            List<string> names = db.UserShows.Where(s => s.UserId == user.UserId && s.RecommendedBy != null).Select(s => s.RecommendedBy!).Distinct().ToList();
             names.Sort();
             return names;
         }
@@ -236,18 +270,20 @@ namespace MediaLife.Services
             return db.ListEntries.Where(l => show.Episodes.Select(e => e.Id).Contains(l.EpisodeId)).Count() > 0;
         }
 
-        public ShowModel? AddShow(SiteSection section, string showId)
+        public ShowModel? AddShow(SiteSection section, string showId, User user, uint? addForUserId = null)
         {
             Show? dbShow = db.Shows.SingleOrDefault(s => s.ShowId == showId);
-            if (dbShow == null)
-            {
-                ShowModel? showModel = GetShowFromProviderAsync(section, showId).Result;
+
+            ShowModel? showModel = dbShow == null
+                ? GetShowFromProviderAsync(section, showId).Result
+                : GetShow(section, showId, user);
                 
-                if (showModel != null)
+            if (showModel != null)
+            {   
+                if (dbShow == null)
                 {
-                    ConfigService configSrv = new(db);
-                    bool deleteWatched = configSrv.Config.UserConfig.SectionConfig(section).DeleteWatched;
-                    
+                    SectionConfig sectionConfig = new ConfigService(db).Config.UserConfig.SectionConfig(section);
+
                     string showName = showModel.Name;
                     int inc = 2;
                     while (db.Shows.SingleOrDefault(s => s.Name.ToLower() == showName.ToLower() && s.SiteSection == section) != null)
@@ -265,17 +301,12 @@ namespace MediaLife.Services
                         Name = showModel.Name,
                         Poster = showModel.Poster,
                         NetworkId = showModel.Network?.NetworkId,
-                        Added = DateTime.Now,
                         Updated = DateTime.Now,
-                        DeleteWatched = deleteWatched,
-                        WatchFromNextPlayable = false,
-                        DownloadAllTogether = false,
-                        DownloadLimit = configSrv.Config.UserConfig.SectionConfig(section).DownloadLimit,
+                        DeleteWatched = sectionConfig.DeleteWatched,
                         DownloadSeriesOffset = null,
+                        DownloadAllTogether = false,
+                        DownloadLimit = sectionConfig.DownloadLimit,
                         KeepAllDownloaded = false,
-                        ShowEpisodesAsThumbnails = false,
-                        HideWatched = false,
-                        HideUnplayable = false,
                     };
                     db.Shows.Add(dbShow);
 
@@ -284,24 +315,52 @@ namespace MediaLife.Services
                         db.Episodes.Add(episode.DBEpisode(section, showId));
                     }
                     db.SaveChanges();
-
-                    return showModel;
                 }
+         
+                UserShow dbUserShow = new()
+                {
+                    UserId = addForUserId ?? user.UserId,
+                    ShowId = showId,
+                    SiteSection = section,
+                    Added = DateTime.Now,
+                    WatchFromNextPlayable = false,
+                    ShowEpisodesAsThumbnails = false,
+                    HideWatched = false,
+                    HideUnplayable = false,
+                };
+                db.UserShows.Add(dbUserShow);
+                db.SaveChanges();
+
+                List<User> accountUsers = db.Users.Where(u => u.AccountId == user.AccountId).ToList();
+                showModel.Users = accountUsers.Select(u => new ShowUserModel()
+                {
+                    Id = u.UserId,
+                    Name = u.Name,
+                    Me = u.UserId == user.UserId,
+                    HasAdded = db.UserShows.Any(us => us.ShowId == showId && us.UserId == u.UserId),
+                }).ToList();
+
+                return showModel;
             }
+
             return null;
         }
 
-        public bool RemoveShow(SiteSection section, string showId)
+        public bool RemoveShow(SiteSection section, string showId, User user)
         {
             Show? dbShow = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
             if (dbShow != null)
             {
+                List<uint> accountUserIds = db.Users.Where(u => u.AccountId == user.AccountId).Select(u => u.UserId).ToList();
+                List<UserShow> userShows = db.UserShows.Where(u => u.ShowId == showId && u.SiteSection == section && accountUserIds.Contains(u.UserId)).ToList();
+
                 List<Episode> episodes = db.Episodes.Where(e => e.ShowId == showId && e.SiteSection == section).ToList();
-                if (episodes.Count(e => e.Watched != null) == 0)
+                if (!db.UserEpisodes.Any(u => episodes.Select(e => e.EpisodeId).Contains(u.EpisodeId) && u.SiteSection == section && accountUserIds.Contains(u.UserId)))
                 {
                     if (db.ListEntries.Where(l => episodes.Select(e => e.EpisodeId).Contains(l.EpisodeId)).Count() == 0)
                     {
                         db.Episodes.RemoveRange(episodes);
+                        db.UserShows.RemoveRange(userShows);
                         db.Shows.Remove(dbShow);
                         db.SaveChanges();
 
@@ -354,9 +413,14 @@ namespace MediaLife.Services
                     List<Episode> episodesToDelete = new List<Episode>();
                     foreach (Episode episode in dbEpisodes)
                     {
-                        if (episode.Watched == null && showModel.Episodes.SingleOrDefault(e => e.Id == episode.EpisodeId && e.SiteSection == section) == null)
+                        if (showModel.Episodes.SingleOrDefault(e => e.Id == episode.EpisodeId && e.SiteSection == section) == null)
                         {
-                            episodesToDelete.Add(episode);
+                            //Unless watched
+                            UserEpisode? userEpisode = db.UserEpisodes.FirstOrDefault(u => u.EpisodeId == episode.EpisodeId && u.SiteSection == section);
+                            if (userEpisode == null)
+                            {
+                                episodesToDelete.Add(episode);
+                            }
                         }
                     }
                     db.Episodes.RemoveRange(episodesToDelete);
@@ -419,37 +483,32 @@ namespace MediaLife.Services
             return results.All(t => t == null);
         }
 
-        public Show? RemoveFilters(SiteSection section, string showId)
+        public UserShow? RemoveFilters(SiteSection section, string showId, User user)
         {
-            Show? show = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
-            if (show != null)
+            UserShow? userShow = db.UserShows.SingleOrDefault(s => s.ShowId == showId && s.UserId == user.UserId && s.SiteSection == section);
+            if (userShow != null)
             {
-                show.HideWatched = false;
-                show.HideUnplayable = false;
+                userShow.HideWatched = false;
+                userShow.HideUnplayable = false;
                 db.SaveChanges();
             }
-            return show;
+            return userShow;
         }
 
-        public Show? UpdateSettings(SiteSection section, string showId, ShowSettings model)
+        public Show? UpdateSettings(SiteSection section, string showId, ShowSettings model, User user)
         {
             Show? show = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
+            ShowModel? showModel = GetShow(section, showId);
             if (show != null)
             {
-                show.RecommendedBy = model.RecommendedBy;
+                show.DownloadSeriesOffset = model.DownloadSeriesOffset;
                 show.DeleteWatched = model.DeleteWatched;
-                show.WatchFromNextPlayable = model.WatchFromNextPlayable;
                 show.DownloadAllTogether = model.DownloadAllTogether;
                 show.DownloadLimit = model.DownloadLimit;
-                show.DownloadSeriesOffset = model.DownloadSeriesOffset;
                 show.KeepAllDownloaded = model.KeepAllDownloaded;
-                show.ShowEpisodesAsThumbnails = model.ShowEpisodesAsThumbnails;
-                show.HideWatched = model.HideWatched;
-                show.HideUnplayable = model.HideUnplayable;
                 db.SaveChanges();
 
                 //Set Skip
-                ShowModel? showModel = GetShow(section, showId);
                 if (showModel != null && showModel.SkipUntilSeries != model.SkipUntilSeries)
                 {
                     bool newSkipValue = true;
@@ -459,7 +518,7 @@ namespace MediaLife.Services
                         {
                             newSkipValue = false;
                         }
-                        if (episode.StartedWatching == null && episode.Watched == null)
+                        if (episode.UserStartedWatching == null && episode.UserHasWatched == false)
                         {
                             Episode? dbEpisode = db.Episodes.SingleOrDefault(e => e.EpisodeId == episode.Id && e.SiteSection == section);
                             if (dbEpisode != null)
@@ -471,35 +530,104 @@ namespace MediaLife.Services
                     db.SaveChanges();
                 }
             }
+
+            List<UserShow> userShows = db.UserShows.Where(s => s.ShowId == showId && s.SiteSection == section).ToList();
+            UserShow? userShow = userShows.FirstOrDefault(s => s.UserId == user.UserId);
+            if (userShow != null)
+            {
+                userShow.RecommendedBy = model.RecommendedBy;
+                userShow.WatchFromNextPlayable = model.WatchFromNextPlayable;
+                userShow.ShowEpisodesAsThumbnails = model.ShowEpisodesAsThumbnails;
+                userShow.HideWatched = model.HideWatched;
+                userShow.HideUnplayable = model.HideUnplayable;
+                db.SaveChanges();
+            }
+
+            if (model.Users.Any(u => u.HasAdded))
+            {
+                foreach (ShowUserModel userModel in model.Users)
+                {
+                    if (userModel.HasAdded && !userShows.Any(s => s.UserId == userModel.Id))
+                    {
+                        AddShow(section, showId, user, userModel.Id);
+                    }
+                    if (!userModel.HasAdded)
+                    {
+                        UserShow? userShowToRemove = userShows.FirstOrDefault(s => s.UserId == userModel.Id);
+                        if (userShowToRemove != null)
+                        {
+                            foreach (EpisodeModel episode in showModel?.Episodes ?? [])
+                            {
+                                UserEpisode? userEpisodeToRemove = db.UserEpisodes.FirstOrDefault(e => e.UserId == userModel.Id && e.EpisodeId == episode.Id && e.SiteSection == section);
+                                if (userEpisodeToRemove != null)
+                                {
+                                    db.UserEpisodes.Remove(userEpisodeToRemove);
+                                }
+                            }
+                            db.UserShows.Remove(userShowToRemove);
+                            db.SaveChanges();
+                        }
+                    }
+                }
+            }
+
             return show;
         }
 
-        public ShowModel? UpdateEpisode(SiteSection section, string showId, EpisodeModel episodeModel)
+        public ShowModel? UpdateEpisode(SiteSection section, string showId, User user, EpisodeModel episodeModel, bool updateAllUsers)
         {
             Episode? episode = db.Episodes.SingleOrDefault(e => e.EpisodeId == episodeModel.Id && e.SiteSection == episodeModel.SiteSection);
             if (episode == null)
             {
-                if (AddShow(section, showId) != null)
+                if (AddShow(section, showId, user) != null)
                 {
                     episode = db.Episodes.SingleOrDefault(e => e.EpisodeId == episodeModel.Id && e.SiteSection == episodeModel.SiteSection);
                 }
             }
             if (episode != null)
             {
-                episode.Watched = episodeModel.Watched;
-                episode.StartedWatching = episodeModel.StartedWatching;
+                foreach (EpisodeUserModel userModel in episodeModel.Users)
+                {
+                    if (userModel.Me || (updateAllUsers && userModel.HasAdded))
+                    {
+                        UserEpisode? userEpisode = db.UserEpisodes.FirstOrDefault(u => u.EpisodeId == episodeModel.Id && u.SiteSection == episodeModel.SiteSection && u.UserId == userModel.Id);
+                        if (userEpisode == null && (episodeModel.UserHasWatched || episodeModel.UserStartedWatching != null))
+                        {
+                            db.UserEpisodes.Add(new()
+                            {
+                                EpisodeId = episodeModel.Id,
+                                SiteSection = episodeModel.SiteSection,
+                                UserId = userModel.Id,
+                                Watched = userModel.Watched,
+                                StartedWatching = episodeModel.UserStartedWatching,
+                            });
+                        }
+                        if (userEpisode != null)
+                        {
+                            if (episodeModel.UserHasWatched == false && episodeModel.UserStartedWatching == null)
+                            {
+                                db.UserEpisodes.Remove(userEpisode);
+                            }
+                            else
+                            {
+                                userEpisode.Watched = userModel.Watched;
+                                userEpisode.StartedWatching = episodeModel.UserStartedWatching;
+                            }
+                        }
+                    }
+                }
                 episode.Skip = episodeModel.Skip;
                 episode.RequestDownload = episodeModel.RequestDownload;
 
                 db.SaveChanges();
 
-                return GetShow(section, showId);
+                return GetShow(section, showId, user);
             }
             return null;
         }
 
 
-        public EpisodeModel? AddTorrentHash(EpisodeModel episode, string hash)
+        public EpisodeModel? AddTorrentHash(EpisodeModel episode, string hash, User user)
         {
             if (Regex.IsMatch(hash, "^[a-zA-Z0-9]{40}$"))
             {
@@ -517,7 +645,8 @@ namespace MediaLife.Services
                         LastPercentage = 0,
                     });
                     db.SaveChanges();
-                    return GetEpisode(episode.SiteSection, episode.Id);
+                    
+                    return GetEpisode(episode.SiteSection, episode.Id, user);
                 }
             }
 
@@ -525,7 +654,7 @@ namespace MediaLife.Services
         }
 
 
-        public ShowModel? CreateList(string name, List<EpisodeId> episodes)
+        public ShowModel? CreateList(string name, User user, List<EpisodeId> episodes)
         {
             List newList = new List
             {
@@ -535,10 +664,10 @@ namespace MediaLife.Services
             db.Lists.Add(newList);
             db.SaveChanges();
 
-            return AddToList(newList.ListId, episodes);
+            return AddToList(newList.ListId, user, episodes);
         }
 
-        public ShowModel? AddToList(uint listId, List<EpisodeId> episodes)
+        public ShowModel? AddToList(uint listId, User user, List<EpisodeId> episodes)
         {
             List<ListEntry> listEntries = db.ListEntries.Where(e => e.ListId == listId).ToList();
             short rankCounter = (short)(listEntries.Count + 1);
@@ -549,7 +678,7 @@ namespace MediaLife.Services
                 {
                     if (db.Episodes.SingleOrDefault(e => e.EpisodeId == episode.Id && e.SiteSection == episode.Section) == null)
                     {
-                        AddShow(episode.Section, GetShowIdFromEpisodeFromProviderAsync(episode.Section, episode.Id).Result);
+                        AddShow(episode.Section, GetShowIdFromEpisodeFromProviderAsync(episode.Section, episode.Id).Result, user);
                     }
 
                     db.ListEntries.Add(new()
@@ -614,18 +743,60 @@ namespace MediaLife.Services
         }
 
 
-        public List<ShowModel> Shows(SiteSection? section = null, List<string>? showIds = null)
+        public List<ShowModel> AnonShows(SiteSection? section = null, List<string>? showIds = null)
         {
+            List<UserShow> userShows = db.UserShows.ToList();
+            List<User> users = db.Users.ToList();
             return (
                 from s in db.Shows
                 where section == null || s.SiteSection == section
                 where showIds == null || showIds.Contains(s.ShowId)
-                select new ShowModel(s, null)
+                select new ShowModel(s, null, users, userShows)
                 {
                     Episodes = (
                         from e in db.Episodes
                         where e.ShowId == s.ShowId && e.SiteSection == s.SiteSection
-                        select new EpisodeModel(e)
+                        select new EpisodeModel(e, null)
+                        {
+                            Torrents = (
+                                from t in db.Torrents
+                                where t.EpisodeId == e.EpisodeId && t.SiteSection == e.SiteSection
+                                select t
+                            ).ToList(),
+                            Users = (
+                                from uEp in db.UserEpisodes
+                                join u in db.Users on uEp.UserId equals u.UserId
+                                where uEp.EpisodeId == e.EpisodeId && uEp.SiteSection == e.SiteSection
+                                select new EpisodeUserModel(new()
+                                {
+                                    Id = u.UserId,
+                                    Name = u.Name,
+                                    HasAdded = true,
+                                }, uEp)
+                            ).ToList()
+                        }
+                    ).ToList()
+                }
+            ).ToList();
+        }
+
+        public List<ShowModel> UsersShows(User user, SiteSection section, List<string> showIds)
+        {
+            List<UserShow> userShows = db.UserShows.ToList();
+            List<User> accountUsers = db.Users.Where(u => u.AccountId == user.AccountId).ToList();
+            return (
+                from s in db.Shows
+                join u in db.UserShows on new { s.ShowId, s.SiteSection, user.UserId } equals new { u.ShowId, u.SiteSection, u.UserId }
+                where s.SiteSection == section
+                where showIds.Contains(s.ShowId)
+                select new ShowModel(s, u, accountUsers, userShows)
+                {
+                    Episodes = (
+                        from e in db.Episodes
+                        join userEp in db.UserEpisodes on new { e.EpisodeId, e.SiteSection, user.UserId } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
+                        where e.ShowId == s.ShowId && e.SiteSection == s.SiteSection
+                        where user == null || userEp == null || userEp.UserId == user.UserId
+                        select new EpisodeModel(e, userEp)
                         {
                             Torrents = (
                                 from t in db.Torrents
@@ -638,9 +809,9 @@ namespace MediaLife.Services
             ).ToList();
         }
 
-        public List<ShowModel> ShowsAndLists(SiteSection section, List<string>? showIds = null)
+        public List<ShowModel> ShowsAndLists(User user, SiteSection section, List<string>? showIds = null)
         {
-            List<ShowModel> shows = Shows(section, showIds);
+            List<ShowModel> shows = UsersShows(user, section, showIds ?? []);
 
             List<uint> sectionListIds = db.ListEntries.Where(e => e.SiteSection == section).Select(e => e.ListId).Distinct().ToList();
             List<ShowModel> lists = (
@@ -650,13 +821,15 @@ namespace MediaLife.Services
                 {
                     Id = l.ListId.ToString(),
                     Name = l.Name,
-                    Added = l.Created,
+                    IsAdded = true,
                     IsList = true,
                     Episodes = (
                         from entry in db.ListEntries
                         join e in db.Episodes on new { entry.EpisodeId, entry.SiteSection } equals new { e.EpisodeId, e.SiteSection }
+                        join userEp in db.UserEpisodes on new { e.EpisodeId, e.SiteSection, user.UserId } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
                         where entry.ListId == l.ListId
-                        select new EpisodeModel(e)
+                        where user == null || userEp == null || userEp.UserId == user.UserId
+                        select new EpisodeModel(e, userEp)
                         {
                             Torrents = (
                                 from t in db.Torrents
@@ -675,27 +848,29 @@ namespace MediaLife.Services
             return shows.Concat(lists).ToList();
         }
 
-        public List<ShowModel> CurrentlyWatching(SiteSection section)
+        public List<ShowModel> CurrentlyWatching(User user, SiteSection section)
         {
-            return Shows(section, (
+            return UsersShows(user, section, (
                 from e in db.Episodes
+                join userEp in db.UserEpisodes on new { e.EpisodeId, e.SiteSection, user.UserId  } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
                 where e.SiteSection == section
                 where e.AirDate != null && e.AirDate < DateTime.Now && !e.Skip
-                group e by e.ShowId into grp
-                where grp.Count() > grp.Count(g => g.Watched != null)
-                where grp.Count(g => g.Watched != null) > 0
+                group new { e, userEp } by e.ShowId into grp
+                where grp.Count() > grp.Count(g => g.userEp != null && g.userEp.Watched != null)
+                where grp.Count(g => g.userEp != null) > 0
                 select grp.Key
             ).ToList());
         }
 
-        public List<ShowModel> NotStarted(SiteSection section)
+        public List<ShowModel> NotStarted(User user, SiteSection section)
         {
-            return Shows(section, (
+            return UsersShows(user, section, (
                 from e in db.Episodes
+                join userEp in db.UserEpisodes on new { e.EpisodeId, e.SiteSection, user.UserId } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
                 where e.SiteSection == section
                 where !e.Skip
+                where userEp == null
                 group e by e.ShowId into grp
-                where grp.Count(g => g.Watched != null) == 0 && grp.Count(g => g.StartedWatching != null) == 0
                 select grp.Key
             ).ToList());
         }

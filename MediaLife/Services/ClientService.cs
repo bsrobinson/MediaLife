@@ -94,7 +94,7 @@ namespace MediaLife.Services
                 foreach (ShowModel show in shows)
                 {
                     List<EpisodeModel> missingFiles = show.Unwatched.Where(e => e.FilePath == null).ToList();
-                    if (missingFiles.Count > 0 && (show.DownloadLimit == null || show.UnwatchedCount - missingFiles.Count < show.DownloadLimit))
+                    if (missingFiles.Count > 0 && (show.DownloadLimit == null || show.Unwatched.Count - missingFiles.Count < show.DownloadLimit))
                     {
                         if (missingFiles.First().HasTorrents == false)
                         {
@@ -195,7 +195,7 @@ namespace MediaLife.Services
             foreach (ShowModel show in shows)
             {
                 List<EpisodeModel> missingFiles = show.Unwatched.Where(e => e.FilePath == null && e.SiteSection == SiteSection.YouTube).ToList();
-                if (missingFiles.Count > 0 && (show.DownloadLimit == null || show.UnwatchedCount - missingFiles.Count < show.DownloadLimit))
+                if (missingFiles.Count > 0 && (show.DownloadLimit == null || show.Unwatched.Count - missingFiles.Count < show.DownloadLimit))
                 {
                     downloadFiles.Add(new(show, missingFiles.First()));
 
@@ -349,7 +349,6 @@ namespace MediaLife.Services
                     }
                 }
             }
-
 
             return episodes;
         }

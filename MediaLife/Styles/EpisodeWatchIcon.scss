@@ -18,11 +18,16 @@
         min-width: 23px;
     }
 
-    &.watched .watched-button a {
+    &.watch_status_IWatched .watched-button a,
+    &.watch_status_MyShowEveryoneWatched .watched-button a {
         color: #0b0;
     }
-    &.started-watching .watched-button a {
+    &.watch_status_MyShowIStartedWatching .watched-button a {
         color: #f90;
+    }
+    &.watch_status_MyShowSomeWatched .watched-button a,
+    &.watch_status_SomeWatched .watched-button a {
+        color: #9e9;
     }
 
     &.skip .watched-button a {
@@ -69,6 +74,7 @@
         font-size: initial;
         opacity: .6;
         cursor: pointer;
+        white-space: nowrap;
         
         > span {
             font-size: 16px;
@@ -77,16 +83,24 @@
         &:hover {
             background-color: #ccc;
         }
-    }
+    }    
 
-    &.watched .watched-menu > .watched, &.started-watching .watched-menu > .started, &.skip .watched-menu > .skip {
+    &.watch_status_IWatched .watched-menu > .watched-alone,
+    &.watch_status_MyShowEveryoneWatched .watched-menu > .watched-together,
+    &.watch_status_MyShowIStartedWatching .watched-menu > .started,
+    &.skip .watched-menu > .skip {
         background-color: #00dd00;
         opacity: 1;
     }
 
-    &.started-watching .watched-menu > .skip, &.watched .watched-menu > .skip,
-    &.skip .watched-menu > .started, &.watched .watched-menu > .started,
-    &.skip .watched-menu > .watched {
+    &.watch_status_MyShowIStartedWatching .watched-menu > .skip,
+    &.watch_status_IWatched .watched-menu > .skip,
+    &.watch_status_MyShowEveryoneWatched .watched-menu > .skip,
+    &.skip .watched-menu > .started,
+    &.watch_status_IWatched .watched-menu > .started,
+    &.watch_status_MyShowEveryoneWatched .watched-menu > .started,
+    &.skip .watched-menu > .watched-alone,
+    &.skip .watched-menu > .watched-together {
         display: none;
     }
 }

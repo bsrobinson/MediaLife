@@ -151,16 +151,36 @@ export interface EpisodeModel {
     certificate: string | null;
     author: string | null;
     airDate: string | null;
-    watched: string | null;
-    startedWatching: string | null;
+    userWatched: string | null;
+    userStartedWatching: string | null;
     skip: boolean;
+    userHasWatched: boolean;
+    userHasStartedWatching: boolean;
+    watchStatus: WatchedStatus;
+    userWatchedStatus: UserWatchedStatus;
     filePath: string | null;
     inCloud: boolean;
     requestDownload: boolean;
     torrents: Torrent[];
+    users: EpisodeUserModel[];
+    me: EpisodeUserModel | null;
     inLists: List[];
     hasTorrents: boolean;
     seriesEpisodeNumber: string;
+}
+
+export enum UserWatchedStatus {
+    IWatched = 0,
+    MyShowEveryoneWatched = 1,
+    MyShowIStartedWatching = 2,
+    MyShowSomeWatched = 3,
+    SomeWatched = 4,
+    Unwatched = 5,
+}
+
+export enum WatchedStatus {
+    EveryoneWatched = 0,
+    Unwatched = 1,
 }
 
 //File: ../../MediaLife/Models/ShowModel.cs
@@ -173,7 +193,8 @@ export interface ShowModel {
     poster: string | null;
     network: TvNetwork | null;
     episodes: EpisodeModel[];
-    added: string | null;
+    isAdded: boolean;
+    userAdded: string | null;
     deleteWatched: boolean;
     watchFromNextPlayable: boolean;
     downloadAllTogether: boolean;
@@ -191,23 +212,26 @@ export interface ShowModel {
     showAuthor: string | null;
     episodePosters: string[];
     episodeIds: EpisodeId[];
+    userUnwatched: EpisodeModel[];
     unwatched: EpisodeModel[];
     nextEpisode: EpisodeModel | null;
     episodeAfterNext: EpisodeModel | null;
     episodeCount: number;
-    unwatchedCount: number;
+    userUnwatchedCount: number;
     watchedCount: number;
     nextEpisodePlayableSort: number;
     firstAirDate: string | null;
     lastAirDate: string | null;
     startedAiring: boolean;
     started: boolean;
-    complete: boolean;
+    userComplete: boolean;
     unSkipped: EpisodeModel[];
     skipUntilSeries: number | null;
     lastWatched: string | null;
     latestEpisode: string | null;
     watchedRecently: boolean;
+    users: ShowUserModel[];
+    activeUserNames: string;
 }
 
 export interface ShowSettings {
@@ -222,6 +246,20 @@ export interface ShowSettings {
     keepAllDownloaded: boolean;
     showEpisodesAsThumbnails: boolean;
     skipUntilSeries: number;
+    users: ShowUserModel[];
+}
+
+//File: ../../MediaLife/Models/ShowUserModel.cs
+
+export interface ShowUserModel {
+    id: number;
+    name: string;
+    me: boolean;
+    hasAdded: boolean;
+}
+
+export interface EpisodeUserModel extends ShowUserModel {
+    watched: string | null;
 }
 
 //File: ../../MediaLife/Models/EpisodeId.cs
@@ -264,6 +302,20 @@ export interface Torrent {
     manuallyAdded: boolean;
 }
 
+//File: ../../MediaLife.Library/DAL/UserShow.cs
+
+export interface UserShow {
+    userId: number;
+    showId: string;
+    siteSection: SiteSection;
+    added: string;
+    recommendedBy: string | null;
+    watchFromNextPlayable: boolean;
+    showEpisodesAsThumbnails: boolean;
+    hideWatched: boolean;
+    hideUnplayable: boolean;
+}
+
 //File: ../../MediaLife.Library/DAL/TvNetwork.cs
 
 export interface TvNetwork {
@@ -272,6 +324,16 @@ export interface TvNetwork {
     countryCode: string | null;
     homepageUrl: string | null;
     searchUrl: string | null;
+}
+
+//File: ../../MediaLife.Library/DAL/UserEpisode.cs
+
+export interface UserEpisode {
+    userId: number;
+    episodeId: string;
+    siteSection: SiteSection;
+    watched: string | null;
+    startedWatching: string | null;
 }
 
 //File: ../../MediaLife.Library/DAL/PirateBay.cs
@@ -295,17 +357,11 @@ export interface Show {
     poster: string | null;
     networkId: number | null;
     updated: string;
-    added: string;
-    recommendedBy: string | null;
     deleteWatched: boolean;
-    watchFromNextPlayable: boolean;
     downloadAllTogether: boolean;
-    downloadLimit: number | null;
     downloadSeriesOffset: number | null;
+    downloadLimit: number | null;
     keepAllDownloaded: boolean;
-    showEpisodesAsThumbnails: boolean;
-    hideWatched: boolean;
-    hideUnplayable: boolean;
 }
 
 //File: ../../MediaLife.Library/DAL/User.cs

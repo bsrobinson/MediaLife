@@ -17,6 +17,10 @@ else if (ViewBag.PirateBayIssue != null)
     <script>site.showSnackBar('@ViewBag.PirateBayIssue <br /><a href="/PirateBay">Click Here to Fix</a>', true);</script>
 }
 
+<div class="watchingWithRow">
+    @Html.FormRow("watchingWithSelect", "", new() { Style = FormRowStyle.InlineBorderHover, Icon = new Icon("eye"), SelectOptions = [new SelectListItem("All shows", "")], ChangeEvent="page.changeWatchingWith()" })
+</div>
+
 <div id="default_sections" class="hide">
     <div id="watching_header" class="section-header">
         <h2>@(Model.Context.SiteSection == SiteSection.Books ? "Reading" : "Watching")</h2>
@@ -41,7 +45,7 @@ else if (ViewBag.PirateBayIssue != null)
     <div id="notStarted_header" class="section-header">
         <h2>Not Started</h2>
         @Html.FormRow("notStarted_sort_select", null, new() { SelectOptions = new() {
-            new() { Text = "Added", Value = "desc_added" },
+            new() { Text = "Added", Value = "desc_userAdded" },
             new() { Text = "Alphabetal", Value = "sortableName" },
             new() { Text = "Playable", Value = "nextEpisodePlayableSort" },
             new() { Text = "Recommended By", Value = "group_recommendedBy" },
@@ -67,7 +71,7 @@ else if (ViewBag.PirateBayIssue != null)
             @if (Model.Context.PageType == PageType.Shows)
             {
                 options.Add(new() { Text = "Recommended By", Value = "group_recommendedBy" });
-                options.Add(new() { Text = "Added", Value = "desc_added" });
+                options.Add(new() { Text = "Added", Value = "desc_userAdded" });
                 options.Add(new() { Text = "Last Watched", Value = "desc_lastWatched" });
             }
         }

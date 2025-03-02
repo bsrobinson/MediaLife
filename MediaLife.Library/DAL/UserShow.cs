@@ -2,15 +2,18 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using MediaLife.Library.Models;
 using Microsoft.EntityFrameworkCore;
+using WCKDRZR.Gaspar;
 
 namespace MediaLife.Library.DAL
 {
-    [PrimaryKey(nameof(UserId), nameof(ShowId))]
+    [ExportFor(GasparType.TypeScript)]
+    [PrimaryKey(nameof(UserId), nameof(ShowId), nameof(SiteSection))]
     public class UserShow
     {
         public uint UserId { get; set; }
 
-        public uint ShowId { get; set; }
+        [MaxLength(50)]
+        public required string ShowId { get; set; }
 
         [DataType("uint")]
         public required SiteSection SiteSection { get; set; }
@@ -20,16 +23,12 @@ namespace MediaLife.Library.DAL
         [MaxLength(100)]
         public string? RecommendedBy { get; set; }
 
-        public required bool DeleteWatched { get; set; }
-
         public required bool WatchFromNextPlayable { get; set; }
 
-        public required bool DownloadAllTogether { get; set; }
-
-        public int? DownloadLimit { get; set; }
-
-        public required bool KeepAllDownloaded { get; set; }
-
         public required bool ShowEpisodesAsThumbnails { get; set; }
+
+        public required bool HideWatched { get; set; }
+
+        public required bool HideUnplayable { get; set; }
     }
 }

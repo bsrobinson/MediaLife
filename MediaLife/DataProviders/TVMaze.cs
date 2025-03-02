@@ -86,7 +86,7 @@ namespace MediaLife.DataProviders
                         Name = show.Name,
                         Poster = show.Image?.Medium,
                         Network = GetTVNetwork(show.Network, addNewTvNetworks),
-                        Added = null,
+                        IsAdded = false,
                         SiteSection = SiteSection.TV,
                         Episodes = (
                             from e in episodes
@@ -97,8 +97,7 @@ namespace MediaLife.DataProviders
                                 SeriesNumber = (short)e.Season,
                                 Number = (short)(e.Number ?? 0),
                                 Name = e.Name,
-                                AirDate = e.AirStamp?.UtcDateTime,
-                                Watched = null
+                                AirDate = e.AirStamp?.UtcDateTime
                             }
                         ).OrderBy(s => s.AirDate).ToList()
                     }

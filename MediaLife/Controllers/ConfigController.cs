@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace MediaLife.Controllers
 {
-    [Authenticate]
+    [Authorised]
     public class ConfigController : Controller
     {
         private ConfigService configSrv;

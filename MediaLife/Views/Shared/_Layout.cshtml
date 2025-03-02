@@ -137,6 +137,14 @@
             @Html.Icon(new Icon("link") { FixedWidth = true }, "Copy Login Link", "site.copyLoginLink()", "row indent")
             @Html.Icon(new Icon("retweet") { FixedWidth = true }, "Reset Pass Key", "site.resetPasskey()", "row indent")
             <hr />
+            @if (User.Identity is ApplicationUser applicationUser)
+            {
+                foreach (User user in applicationUser.OtherAccountUsers)
+                {
+                    @Html.Icon(new Icon("people-arrows") { FixedWidth = true }, "Switch to " + user.Name, $"site.switchUser('{user.Password}')", "row")
+                }
+            }
+            <hr />
             @Html.Icon(new Icon("right-from-bracket") { FixedWidth = true }, "Logout", "/Logout", "row")
         </div>
     }
@@ -149,7 +157,10 @@
     <div id="content" class="@(controller)@(view)">
 
         <div id="snack_bar" class="snack-bar hide">
-            <span id="snack_bar_message"></span>
+            <div>
+                <a href="JavaScript:;" onclick="site.closeSnackBar()">@Html.Icon("xmark")</a>
+                <span id="snack_bar_message"></span>
+            </div>
         </div>
         
         @RenderBody()

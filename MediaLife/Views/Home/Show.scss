@@ -53,6 +53,13 @@ h1 {
     }
 }
 
+#showUserButton {
+    background-color: white;
+    .label {
+        font-size: 1rem;
+    }
+}
+
 #blackout {
     position: fixed;
     height: 110vh;
@@ -80,6 +87,14 @@ h1 {
     .form-field-row-buttons {
         margin: 0;
         margin-top: 1rem;
+    }
+
+    &.narrow {
+        width: 170px;
+
+        form-field-row {
+            --label-width: 74px;
+        }
     }
 }
 

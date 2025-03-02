@@ -1,5 +1,6 @@
 ﻿import { tsEpisodeModel, tsShowModel } from "./Models/extendedModels";
 import { MediaLifeService } from "./Services/~csharpe-services";
+import { EpisodeUserModel, UserWatchedStatus } from "./Models/~csharpe-models";
 
 export class EpisodeObject {
 
@@ -8,20 +9,47 @@ export class EpisodeObject {
     constructor(public show: tsShowModel, public episode: tsEpisodeModel) {
     }
 
-    toggleWatched(callback: () => void) {
+    toggleWatchedAlone(callback: () => void) {
+        this.fixEpisodeUsers()
+        let me = this.episode.users.find(u => u.me)
+        if (me) {
+            this.episode.watchedSaving = true;
+            this.updateEpisode({
+                ...this.episode,
+                me: null,
+                users: this.episode.users.map(u => ({
+                    ...u,
+                    watched: this.episode.userWatchedStatus == UserWatchedStatus.IWatched ? null : (u.me ? new Date().formatForJson() : null)
+                }))
+            }, this.episode.userWatchedStatus == UserWatchedStatus.MyShowEveryoneWatched, callback);
+        }
+    }
+
+    toggleWatchedTogether(callback: () => void) {
+        this.fixEpisodeUsers()
         this.episode.watchedSaving = true;
         this.updateEpisode({
             ...this.episode,
-            watched: this.episode.watched ? null : new Date().formatForJson()
-        }, callback);
+            me: null,
+            users: this.episode.users.map(u => ({
+                ...u,
+                watched: this.episode.userWatchedStatus == UserWatchedStatus.MyShowEveryoneWatched ? null : new Date().formatForJson()
+            }))
+        }, true, callback);
+    }
+
+    fixEpisodeUsers() {
+        if (this.episode.users.length == 0 || (this.episode.users.length == 1 && this.episode.users[0].id == 0)) {
+            this.episode.users = this.show.users as EpisodeUserModel[]
+        }
     }
 
     toggleStartedWatching(callback: () => void) {
         this.episode.watchedSaving = true;
         this.updateEpisode({
             ...this.episode,
-            startedWatching: this.episode.startedWatching ? null : new Date().formatForJson()
-        }, callback);
+            userStartedWatching: this.episode.userHasStartedWatching ? null : new Date().formatForJson()
+        }, false, callback);
     }
 
     toggleSkip(callback: () => void) {
@@ -29,7 +57,7 @@ export class EpisodeObject {
         this.updateEpisode({
             ...this.episode,
             skip: !this.episode.skip
-        }, callback);
+        }, false, callback);
     }
 
     toggleRequestDownload(callback: () => void) {
@@ -37,7 +65,7 @@ export class EpisodeObject {
         this.updateEpisode({
             ...this.episode,
             requestDownload: !this.episode.requestDownload
-        }, callback);
+        }, false, callback);
     }
 
     anySaving() {
@@ -58,22 +86,28 @@ export class EpisodeObject {
         });
     }
 
-    updateEpisode(updatedEpisode: tsEpisodeModel, callback: () => void) {
+    updateEpisode(updatedEpisode: tsEpisodeModel, updateAllUsers: boolean, callback: () => void) {
         updatedEpisode.siteSection = this.episode.siteSection;
         delete updatedEpisode.obj;
-        this.service.updateEpisode(this.show.siteSection, this.show.id, updatedEpisode).then(response => {
+        this.service.updateEpisode(this.show.siteSection, updateAllUsers, this.show.id, updatedEpisode).then(response => {
             if (response.data) {
                 let ep = response.data.episodes.find(e => e.id == this.episode.id);
                 if (ep) {
-                    this.episode.watched = ep.watched;
-                    this.episode.startedWatching = ep.startedWatching;
+                    this.episode.userWatched = ep.userWatched;
+                    this.episode.userHasWatched = ep.userHasWatched;
+                    this.episode.userStartedWatching = ep.userStartedWatching;
+                    this.episode.userHasStartedWatching = ep.userHasStartedWatching;
+                    this.episode.watchStatus = ep.watchStatus;
+                    this.episode.userWatchedStatus = ep.userWatchedStatus;
                     this.episode.skip = ep.skip;
                     this.episode.requestDownload = ep.requestDownload;
+                    this.episode.me = ep.me;
+                    this.episode.users = ep.users
                     
                     this.show.episodePosters = response.data.episodePosters;
                     this.show.nextEpisode = response.data.nextEpisode;
                     this.show.episodeAfterNext = response.data.episodeAfterNext;
-                    this.show.unwatchedCount = response.data.unwatchedCount
+                    this.show.userUnwatchedCount = response.data.userUnwatchedCount
                 }
             }
             this.savingDone();

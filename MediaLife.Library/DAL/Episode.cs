@@ -37,10 +37,6 @@ namespace MediaLife.Library.DAL
 
         public required bool Skip { get; set; }
 
-        public DateTime? Watched { get; set; }
-
-        public DateTime? StartedWatching { get; set; }
-
         [MaxLength(1024)]
         public string? FilePath { get; set; }
 

@@ -1,5 +1,5 @@
 ﻿import { MediaLife } from '../../Scripts/Site'
-import { element, makeElement } from '../../Scripts/BRLibraries/DOM'
+import { element, elementOrNull, makeElement } from '../../Scripts/BRLibraries/DOM'
 import { PageType, SiteSection } from '../../Scripts/Models/~csharpe-models';
 import { MediaLifeService } from '../../Scripts/Services/~csharpe-services';
 import { tsEpisodeId, tsEpisodeModel, tsListPageModel, tsShowModel } from '../../Scripts/Models/extendedModels';
@@ -18,6 +18,8 @@ export class HomeIndex {
         notStarted: tsShowModel[],
         allShows: tsShowModel[],
     } = { watching: [], notWatchedRecently: [], notStarted: [], allShows: [] };
+
+    allShowsLoaded = false
 
     constructor(private site: MediaLife, private data: tsListPageModel) {
     }
@@ -57,6 +59,7 @@ export class HomeIndex {
 
                             this.service.allShows(this.data.context.siteSection).then(response => {
                                 if (response.data) {
+                                    this.allShowsLoaded = true
                                     this.addShowsToLists(response.data as tsShowModel[]);
                                 }
                             });
@@ -72,18 +75,43 @@ export class HomeIndex {
         if (!this.data.shows) { this.data.shows = []; }
         this.data.shows = this.data.shows.concat(shows.filter(s => this.data.shows.find(m => m.id == s.id) == null));
 
-        shows.forEach(show => {
-            if (this.showLists.watching.find(s => s.id == show.id) == null && show.started && !show.complete && show.watchedRecently) {
-                this.showLists.watching.push(show);
-            }
-            else if (this.showLists.notWatchedRecently.find(s => s.id == show.id) == null && show.started && !show.complete && !show.watchedRecently) {
-                this.showLists.notWatchedRecently.push(show);
-            }
-            else if (this.showLists.notStarted.find(s => s.id == show.id) == null && (!show.startedAiring || (!show.started && !show.complete))) {
-                this.showLists.notStarted.push(show);
-            }
-            if (this.showLists.allShows.find(s => s.id == show.id) == null) {
-                this.showLists.allShows.push(show);
+        this.updateShowLists()
+        this.updateWatchingWithMenu()
+    }
+
+    changeWatchingWith() {
+        let value = element<HTMLSelectElement>('watchingWithSelect').value
+        if (value == '') {
+            localStorage.removeItem('watching-with')
+        } else {
+            localStorage.setItem('watching-with', element<HTMLSelectElement>('watchingWithSelect').value);
+        }
+        this.updateShowLists()
+    }
+
+    updateShowLists() {
+
+        this.showLists = { watching: [], notWatchedRecently: [], notStarted: [], allShows: [] };
+
+        this.data.shows.forEach(show => {
+
+            let watchingWithIds = localStorage.getItem('watching-with') ?? '';
+            
+            if (this.data.context.pageType == PageType.Search || show.skellington || watchingWithIds == '' || show.users.map(u => u.id).sort().join(',') == watchingWithIds) {
+
+                if (this.showLists.watching.find(s => s.id == show.id) == null && show.started && !show.userComplete && show.watchedRecently) {
+                    this.showLists.watching.push(show);
+                }
+                else if (this.showLists.notWatchedRecently.find(s => s.id == show.id) == null && show.started && !show.userComplete && !show.watchedRecently) {
+                    this.showLists.notWatchedRecently.push(show);
+                }
+                else if (this.showLists.notStarted.find(s => s.id == show.id) == null && (!show.startedAiring || (!show.started && !show.userComplete))) {
+                    this.showLists.notStarted.push(show);
+                }
+                if (this.showLists.allShows.find(s => s.id == show.id) == null) {
+                    this.showLists.allShows.push(show);
+                }
+
             }
         });
         this.sortWatching();
@@ -93,10 +121,54 @@ export class HomeIndex {
         if (this.showLists.watching.length == 0 && this.showLists.notWatchedRecently.length == 0 && this.showLists.notStarted.length == 0) {
             this.showAllShows();
         } else {
-            element('watching_header').style.display = this.showLists.watching.length == 0 ? 'none' : 'flex';
-            element('notWatchedRecently_header').style.display = this.showLists.notWatchedRecently.length == 0 ? 'none' : 'flex';
-            element('notStarted_header').style.display = this.showLists.notStarted.length == 0 ? 'none' : 'flex';
-            element('default_sections').removeClass('hide');
+            if (elementOrNull('watching_header')) { element('watching_header').style.display = this.showLists.watching.length == 0 ? 'none' : 'flex'; }
+            if (elementOrNull('notWatchedRecently_header')) { element('notWatchedRecently_header').style.display = this.showLists.notWatchedRecently.length == 0 ? 'none' : 'flex'; }
+            if (elementOrNull('notStarted_header')) { element('notStarted_header').style.display = this.showLists.notStarted.length == 0 ? 'none' : 'flex'; }
+            if (elementOrNull('default_sections')) { element('default_sections').removeClass('hide'); }
+        }
+    }
+
+    updateWatchingWithMenu() {
+
+        let watchingWithIds = localStorage.getItem('watching-with') ?? '';
+        let watchingWithIdsInMenu = watchingWithIds == ''
+
+        let watchingWithOptions: HTMLOptionElement[] = [
+            new Option('All shows', '')
+        ]
+
+        let showUsers = this.data.shows.filter(s => !s.skellington).map(s => s.users)
+        if (showUsers.length > 0) {
+
+            let myId = showUsers[0].find(u => u.me)?.id
+            if (myId) {
+
+                watchingWithOptions.push(new Option('Watching alone', myId.toString()))
+                if (watchingWithIds == myId.toString()) { watchingWithIdsInMenu = true }
+
+                showUsers.forEach(s => {
+                    let names = s.filter(u => !u.me).map(u => u.name).join(', ').replace(new RegExp(', ([^,]*)$'), ' & $1');
+                    let value = s.map(u => u.id).sort().join(',')
+                    if (names != '' && !watchingWithOptions.some(o => o.value == value)) {
+                        watchingWithOptions.push(new Option('Watching with ' + names, value))
+                        if (watchingWithIds == value) { watchingWithIdsInMenu = true }
+                    }
+                })
+            }
+        }
+
+        let watchingWithSelect = element<HTMLSelectElement>('watchingWithSelect')
+        
+        watchingWithSelect.empty()
+        watchingWithOptions.forEach(o => watchingWithSelect.add(o))
+
+        element('formfieldrow_watchingWithSelect').toggleClassIfTrue('hide', watchingWithOptions.length <= 2)
+        
+        if (watchingWithIdsInMenu) {
+            watchingWithSelect.setValue(watchingWithIds, false)
+        } else if (this.allShowsLoaded) {
+            localStorage.removeItem('watching-with')
+            location.reload()
         }
     }
 
@@ -107,32 +179,34 @@ export class HomeIndex {
 
     sortList(list: ('watching' | 'notWatchedRecently' | 'notStarted' | 'allShows')) {
 
-        let sortSelect = element<HTMLSelectElement>(list + '_sort_select');
-        let option = sortSelect.options[sortSelect.selectedIndex];
-        let order = option.value;
+        let sortSelect = elementOrNull<HTMLSelectElement>(list + '_sort_select');
+        if (sortSelect) {
+            let option = sortSelect.options[sortSelect.selectedIndex];
+            let order = option.value;
 
-        let decending = order.slice(0, 5) == 'desc_';
-        if (decending) { order = order.slice(5); }
+            let decending = order.slice(0, 5) == 'desc_';
+            if (decending) { order = order.slice(5); }
 
-        let headers = order.slice(0, 6) == 'group_';
-        if (headers) { order = order.slice(6); }
+            let headers = order.slice(0, 6) == 'group_';
+            if (headers) { order = order.slice(6); }
 
-        this.showLists[list].sort((a, b) => {
-            let sortA = a[order]?.toString() || (decending ? '0' : 'zzz');
-            if (typeof sortA == 'string') { sortA = sortA.toLowerCase(); }
-            let sortB = b[order]?.toString() || (decending ? '0' : 'zzz');
-            if (typeof sortB == 'string') { sortB = sortB.toLowerCase(); }
-            return decending ? (sortA < sortB ? 1 : -1) : (sortA > sortB ? 1 : -1);
-        });
+            this.showLists[list].sort((a, b) => {
+                let sortA = a[order]?.toString() || (decending ? '0' : 'zzz');
+                if (typeof sortA == 'string') { sortA = sortA.toLowerCase(); }
+                let sortB = b[order]?.toString() || (decending ? '0' : 'zzz');
+                if (typeof sortB == 'string') { sortB = sortB.toLowerCase(); }
+                return decending ? (sortA < sortB ? 1 : -1) : (sortA > sortB ? 1 : -1);
+            });
 
-        element(list + '_posters').innerHTML = '';
-        let previousValue = '';
-        for (let i = 0; i < this.showLists[list].length; i++) {
-            if (headers && previousValue != this.showLists[list][i][order]) {
-                element(list + '_posters').appendElement('div', { class: 'sort-header', html: this.showLists[list][i][order] });
+            element(list + '_posters').innerHTML = '';
+            let previousValue = '';
+            for (let i = 0; i < this.showLists[list].length; i++) {
+                if (headers && previousValue != this.showLists[list][i][order]) {
+                    element(list + '_posters').appendElement('div', { class: 'sort-header', html: this.showLists[list][i][order] });
+                }
+                this.addPoster(list + '_posters', this.showLists[list][i]);
+                previousValue = this.showLists[list][i][order];
             }
-            this.addPoster(list + '_posters', this.showLists[list][i]);
-            previousValue = this.showLists[list][i][order];
         }
     }
 
@@ -194,7 +268,7 @@ export class HomeIndex {
 
         let episodeContent = row.appendElement('span', { class: 'add-to-list-hide' });
         let ep = show.nextEpisode as tsEpisodeModel;
-        if (show.unwatchedCount == 0) {
+        if (show.userUnwatchedCount == 0) {
             if (show.startedAiring) {
                 episodeContent.appendIcon('check', { label: 'All ' + (this.data.context.siteSection == SiteSection.Books ? 'read' : 'watched') });
             } else if (show.firstAirDate != null) {
@@ -213,7 +287,7 @@ export class HomeIndex {
                 new EpisodeWatchIcon(new EpisodeObject(show, show.episodeAfterNext as tsEpisodeModel));
             }
 
-            row.appendElement('div', { class: 'episode-count', html: show.unwatchedCount.toString() });
+            row.appendElement('div', { class: 'episode-count', html: show.userUnwatchedCount.toString() });
         }
 
         let addToListContent = row.appendElement('span', { class: 'add-to-list-show' });

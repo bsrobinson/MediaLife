@@ -19,10 +19,11 @@
             if (Model.SiteSection == SiteSection.Movies) { buttonName = "Movie" + (Model.Show.EpisodeCount > 1 ? "s" : ""); }
             if (Model.SiteSection == SiteSection.Books) { buttonName = "Book" + (Model.Show.EpisodeCount > 1 ? "s" : ""); }
 
-            @Html.Button($"Add {buttonName}", new("plus"), "page.addShow()", new() { Colour = ButtonColour.Green, Classes = $"button add {(Model.Show.Added == null ? "" : "hide")}" }, new() { { "id", "addShowButton" } })
-            @Html.Button($"Remove {buttonName}", new("xmark"), "page.removeShow()", new() { Colour = ButtonColour.Red, Classes = $"button remove {(Model.Show.Added != null && Model.Show.Episodes.Count(e => e.Watched != null || e.StartedWatching != null) == 0 ? "" : "hide")}" }, new() { { "id", "removeShowButton" } })
-            @Html.Button(new Icon("filter"), "page.toggleFilterMenu()", new() { Classes = $"button settings {(Model.Show.Added != null ? "" : "hide")}" }, new() { { "id", "showFilterButton" } })
-            @Html.Button(new Icon("gear"), "page.toggleSettingsMenu()", new() { Classes = $"button settings {(Model.Show.Added != null ? "" : "hide")}" }, new() { { "id", "showSettingsButton" } })
+            @Html.Button(Model.Show.ActiveUserNames == "" ? "." : Model.Show.ActiveUserNames, new Icon("user"), "page.toggleUserMenu()", new() { Colour = ButtonColour.Transparent, Classes = $"button settings {(Model.Show.IsAdded ? "" : "hide")}" }, new() { { "id", "showUserButton" } })
+            @Html.Button(new Icon("filter"), "page.toggleFilterMenu()", new() { Classes = $"button settings {(Model.Show.IsAdded ? "" : "hide")}" }, new() { { "id", "showFilterButton" } })
+            @Html.Button(new Icon("gear"), "page.toggleSettingsMenu()", new() { Classes = $"button settings {(Model.Show.IsAdded ? "" : "hide")}" }, new() { { "id", "showSettingsButton" } })
+            @Html.Button($"Add {buttonName}", new("plus"), "page.addShow()", new() { Colour = ButtonColour.Green, Classes = $"button add {(!Model.Show.IsAdded ? "" : "hide")}" }, new() { { "id", "addShowButton" } })
+            @Html.Button($"Remove {buttonName}", new("xmark"), "page.removeShow()", new() { Colour = ButtonColour.Red, Classes = $"button remove {(Model.Show.IsAdded && Model.Show.Episodes.Any(e => e.UserWatchedStatus != UserWatchedStatus.Unwatched) ? "hide" : "")}" }, new() { { "id", "removeShowButton" } })
         }
         else
         {
@@ -34,9 +35,16 @@
     </div>
 </div>
 
-<div id="blackout" class="hide" onclick="page.toggleSettingsMenu()"></div>
+<div id="blackout" class="hide" onclick="page.closeSettingsMenus()"></div>
 <form id="settings_form" onsubmit="page.saveSettings(); return false;">
-    <div id="filter_menu" class="settings_menu @(Model.ShowListOptions ? "for_list" : "") hide">
+    <div id="userShow_menu" class="settings_menu narrow @(Model.ShowListOptions ? "for_list" : "") hide">
+        @foreach (ShowUserModel user in Model.Show.Users)
+        {
+            @Html.FormRow($"Show_User_{user.Id}", user.Name, user.HasAdded, new() { Style = FormRowStyle.BlockRow, ChangeEvent = "page.userActiveChanged(event)" })
+        }
+        @Html.SubmitRow("Save", new() { Thin = true })
+    </div>
+    <div id="filter_menu" class="settings_menu narrow @(Model.ShowListOptions ? "for_list" : "") hide">
         @Html.FormRowFor(m => Model.Show.HideWatched, new() { Style = FormRowStyle.BlockRow })
         @Html.FormRowFor(m => Model.Show.HideUnplayable, new() { Style = FormRowStyle.BlockRow })
         @Html.SubmitRow("Save", new() { Thin = true })

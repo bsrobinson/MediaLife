@@ -1,7 +1,7 @@
 ﻿import { BrandIcon, FadeAnimation, Icon, IconStyle, SolidIcon, makeIcon } from "./BRLibraries/Icon";
 import { EpisodeObject } from "./EpisodeObject";
 import { tsEpisodeModel } from "./Models/extendedModels";
-import { EpisodeModel } from "./Models/~csharpe-models";
+import { EpisodeModel, UserWatchedStatus } from "./Models/~csharpe-models";
 import { MediaLifeService } from "./Services/~csharpe-services";
 
 export class EpisodeFileIcon {
@@ -55,7 +55,7 @@ export class EpisodeFileIcon {
             this.node.changeIcon(new BrandIcon('youtube'));
             this.addClick(() => this.play());
         }
-        else if (episode.watched == null && !episode.skip) {
+        else if (episode.userWatchedStatus == UserWatchedStatus.Unwatched && !episode.skip) {
             this.node.changeIcon('video-slash');
             this.node.addClass('faded');
             this.addClick(() => this.addTorrent())

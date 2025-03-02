@@ -16,7 +16,7 @@ using System.Web;
 
 namespace MediaLife.Controllers
 {
-    [Authenticate]
+    [Authorised]
     [ExportFor(GasparType.TypeScript)]
     public class VLCController : Controller
     {

@@ -7,7 +7,7 @@ using MediaLife.Models;
 
 namespace MediaLife.Controllers
 {
-    [Authenticate]
+    [Authorised]
     public class LogController : Controller
     {
         private MySqlContext db;

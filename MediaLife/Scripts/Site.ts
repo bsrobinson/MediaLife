@@ -90,6 +90,11 @@ export class MediaLife {
         }
     }
 
+    switchUser(passkey: string) {
+        localStorage.removeItem('watching-with')
+        location.href = `/Login/${passkey}`
+    }
+
     showSnackBar(message: string, error = false) {
         element('snack_bar').removeClass('hide');
         element('snack_bar').toggleClassIfTrue('error', error);

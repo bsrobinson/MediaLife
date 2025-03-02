@@ -88,7 +88,7 @@ namespace MediaLife.DataProviders
                     Id = playlist.Id,
                     Name = playlist.Title,
                     Poster = playlist.Thumbnails.FirstOrDefault()?.Url,
-                    Added = null,
+                    IsAdded = false,
                     SiteSection = SiteSection.YouTube,
                     Episodes = await GetEpisodes(playlistVideos, getPublishDate),
                 }
@@ -115,7 +115,7 @@ namespace MediaLife.DataProviders
                     Id = channel.Id,
                     Name = channel.Title,
                     Poster = channel.Thumbnails.FirstOrDefault()?.Url,
-                    Added = null,
+                    IsAdded = false,
                     SiteSection = SiteSection.YouTube,
                     Episodes = await GetEpisodes(playlistVideos, getPublishDate),
                 }

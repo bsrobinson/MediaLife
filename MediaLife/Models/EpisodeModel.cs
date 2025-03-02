@@ -5,6 +5,7 @@ using Newtonsoft.Json.Serialization;
 using MediaLife.Library.DAL;
 using WCKDRZR.Gaspar;
 using MediaLife.Library.Models;
+using System.Linq;
 
 namespace MediaLife.Models
 {
@@ -23,14 +24,41 @@ namespace MediaLife.Models
         public string? Author { get; set; }
 
         public DateTime? AirDate { get; set; }
-        public DateTime? Watched { get; set; }
-        public DateTime? StartedWatching { get; set; }
+        public DateTime? UserWatched => Me?.Watched;
+        public DateTime? UserStartedWatching { get; set; }
         public bool Skip { get; set; }
+
+        public bool UserHasWatched => UserWatched != null;
+        public bool UserHasStartedWatching => UserStartedWatching != null;
+        public WatchedStatus WatchStatus => Users.Count > 0 && Users.Where(u => u.HasAdded).All(u => u.Watched != null) ? WatchedStatus.EveryoneWatched : WatchedStatus.Unwatched;
+        public UserWatchedStatus UserWatchedStatus { get {
+            bool someWatched = Users.Any(u => u.Watched != null);
+            if (!someWatched && !UserHasStartedWatching)
+            {
+                return UserWatchedStatus.Unwatched;
+            }
+            if (Me?.HasAdded == true)
+            {
+                bool allWatched = Users.Where(u => u.HasAdded).All(u => u.Watched != null);
+                if (allWatched) { return UserWatchedStatus.MyShowEveryoneWatched; }
+                if (Me?.Watched != null) { return UserWatchedStatus.IWatched; }
+                if (UserHasStartedWatching) { return UserWatchedStatus.MyShowIStartedWatching; }
+                return UserWatchedStatus.MyShowSomeWatched;
+            }
+            if (Me?.Watched != null)
+            {
+                return UserWatchedStatus.IWatched;
+            }
+            return UserHasStartedWatching ? UserWatchedStatus.MyShowIStartedWatching : UserWatchedStatus.SomeWatched;
+        } }
 
         public string? FilePath { get; set; }
         public bool InCloud { get; set; }
         public bool RequestDownload { get; set; }
         public List<Torrent> Torrents { get; set; }
+
+        public List<EpisodeUserModel> Users { get; set; } = [];
+        public EpisodeUserModel? Me => Users.FirstOrDefault(u => u.Me);
 
         public List<List> InLists { get; set; } = new();
 
@@ -45,10 +73,10 @@ namespace MediaLife.Models
             Id = "";
             Torrents = new();
         }
-        public EpisodeModel(Episode episode) : this()
+        public EpisodeModel(Episode episode, UserEpisode? userEpisode) : this()
         {
             Id = episode.EpisodeId;
-            SiteSection = (SiteSection)episode.SiteSection;
+            SiteSection = episode.SiteSection;
             SeriesNumber = episode.SeriesNumber;
             Number = episode.Number;
             Name = episode.Name;
@@ -56,14 +84,14 @@ namespace MediaLife.Models
             Poster = episode.Poster;
             Certificate = episode.Certificate;
             Author = episode.Author;
-            Watched = episode.Watched;
-            StartedWatching = episode.StartedWatching;
+            UserStartedWatching = userEpisode?.StartedWatching;
+            Users = [new(new() { Name = "", Me = true, HasAdded = true }, userEpisode)];
             Skip = episode.Skip;
             FilePath = episode.FilePath;
             InCloud = episode.InCloud;
             RequestDownload = episode.RequestDownload;
         }
-        public EpisodeModel(Episode episode, List<Torrent> torrents) : this(episode)
+        public EpisodeModel(Episode episode, UserEpisode? userEpisode, List<Torrent> torrents) : this(episode, userEpisode)
         {
             Torrents = torrents;
         }
@@ -87,5 +115,23 @@ namespace MediaLife.Models
                 RequestDownload = RequestDownload,
             };
         }
+    }
+
+    [ExportFor(GasparType.TypeScript)]
+    public enum UserWatchedStatus
+    {
+        IWatched,               // I added, and I watched, some other have not
+        MyShowEveryoneWatched,  // I added, and everyone who added has watched
+        MyShowIStartedWatching, // I added, and I started watching
+        MyShowSomeWatched,      // I added, and people other than me have watched
+        SomeWatched,            // Some users watched, I did not add
+        Unwatched,              // Nobody has watched
+    }
+
+    [ExportFor(GasparType.TypeScript)]
+    public enum WatchedStatus
+    {
+        EveryoneWatched,
+        Unwatched,
     }
 }

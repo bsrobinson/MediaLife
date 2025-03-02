@@ -43,7 +43,9 @@ namespace MediaLife.Models
             set { _episodes = value; }
         }
 
-        public DateTime? Added { get; set; }
+        public bool IsAdded { get; set; }
+        public DateTime? UserAdded { get; set; }
+
         [Display(Name = "Delete Watched")]
         public bool DeleteWatched { get; set; }
         [Display(Name = "Watch From Next Playable")]
@@ -76,20 +78,21 @@ namespace MediaLife.Models
 
         public string? ShowAuthor { get; set; }
 
-        private List<string> UnwatchedPosters => Unwatched.Where(e => !string.IsNullOrEmpty(e.Poster)).Take(4).Select(e => e.Poster!).ToList();
-        public List<string> EpisodePosters => UnwatchedPosters.Concat(Episodes.Where(e => !string.IsNullOrEmpty(e.Poster) && !UnwatchedPosters.Contains(e.Poster)).Take(4 - UnwatchedPosters.Count).Select(e => e.Poster!)).ToList();
+        private List<string> UserUnwatchedPosters => UserUnwatched.Where(e => !string.IsNullOrEmpty(e.Poster)).Take(4).Select(e => e.Poster!).ToList();
+        public List<string> EpisodePosters => UserUnwatchedPosters.Concat(Episodes.Where(e => !string.IsNullOrEmpty(e.Poster) && !UserUnwatchedPosters.Contains(e.Poster)).Take(4 - UserUnwatchedPosters.Count).Select(e => e.Poster!)).ToList();
 
         public List<EpisodeId> EpisodeIds => (from e in Episodes select new EpisodeId(e.Id, e.SiteSection)).ToList();
 
-        internal List<EpisodeModel> Unwatched => Episodes.Where(e => !e.Skip && e.Watched == null && (e.AirDate <= DateTime.Now || e.HasTorrents || e.FilePath != null || Episodes.Any(e2 => e2.AirDate > DateTime.Now && e2.Watched != null))).ToList();
-        private List<EpisodeModel> Playable => Unwatched.Where(e => e.FilePath != null).ToList();
-        private EpisodeModel? ActivelyWatching => Unwatched.FirstOrDefault(e => e.StartedWatching != null);
+        internal List<EpisodeModel> UserUnwatched => Episodes.Where(e => !e.Skip && !e.UserHasWatched && (e.AirDate <= DateTime.Now || e.HasTorrents || e.FilePath != null || Episodes.Any(e2 => e2.AirDate > DateTime.Now && e2.UserHasWatched))).ToList();
+        internal List<EpisodeModel> Unwatched => Episodes.Where(e => !e.Skip && e.WatchStatus == WatchedStatus.Unwatched && (e.AirDate <= DateTime.Now || e.HasTorrents || e.FilePath != null || Episodes.Any(e2 => e2.AirDate > DateTime.Now && e2.UserHasWatched))).ToList();
+        private List<EpisodeModel> UserPlayable => UserUnwatched.Where(e => e.FilePath != null).ToList();
+        private EpisodeModel? UserActivelyWatching => UserUnwatched.FirstOrDefault(e => e.UserHasStartedWatching);
 
-        public EpisodeModel? NextEpisode => ActivelyWatching != null ? ActivelyWatching : (WatchFromNextPlayable && Playable.Count > 0 ? Playable[0] : Unwatched.FirstOrDefault());
-        public EpisodeModel? EpisodeAfterNext => WatchFromNextPlayable ? (Playable.Count > 1 ? Playable[1] : (Playable.Count > 0 ? Unwatched.FirstOrDefault() : Unwatched.SecondOrDefault())) : Unwatched.SecondOrDefault();
+        public EpisodeModel? NextEpisode => UserActivelyWatching != null ? UserActivelyWatching : (WatchFromNextPlayable && UserPlayable.Count > 0 ? UserPlayable[0] : UserUnwatched.FirstOrDefault());
+        public EpisodeModel? EpisodeAfterNext => WatchFromNextPlayable ? (UserPlayable.Count > 1 ? UserPlayable[1] : (UserPlayable.Count > 0 ? UserUnwatched.FirstOrDefault() : UserUnwatched.SecondOrDefault())) : UserUnwatched.SecondOrDefault();
         public int EpisodeCount => Episodes.Count();
-        public int UnwatchedCount => Unwatched.Count();
-        public int WatchedCount => Episodes.Count(e => e.Watched != null || e.StartedWatching != null);
+        public int UserUnwatchedCount => UserUnwatched.Count();
+        public int WatchedCount => Episodes.Count(e => e.UserHasWatched || e.UserHasStartedWatching);
         public int NextEpisodePlayableSort => NextEpisode?.FilePath != null ? 1 : 2;
 
         public DateTime? FirstAirDate => Episodes.Count == 0 ? null : _episodes.Where(e => e.AirDate != null).OrderBy(e => e.AirDate).FirstOrDefault()?.AirDate;
@@ -97,41 +100,59 @@ namespace MediaLife.Models
         public bool StartedAiring => FirstAirDate <= DateTime.Now;
 
         public bool Started => WatchedCount > 0;
-        public bool Complete => UnwatchedCount == 0;
+        public bool UserComplete => UserUnwatchedCount == 0;
 
         internal List<EpisodeModel> UnSkipped => _episodes.Where(e => !e.Skip).ToList();
         [Display(Name = "Skip Until Series")]
         public short? SkipUntilSeries => _episodes.Count > 0 && UnSkipped.Count > 0 ? UnSkipped.Min(e => e.SeriesNumber) : (short)1;
 
-        public DateTime? LastWatched => Episodes.Max(e => new[] { e.StartedWatching, e.Watched }.Max());
+        public DateTime? LastWatched => Episodes.Max(e => new[] { e.UserStartedWatching, e.Me?.Watched }.Max());
         public DateTime? LatestEpisode => Episodes.Max(e => e.AirDate);
         public bool WatchedRecently => LastWatched > DateTime.Now.AddMonths(-1) || LatestEpisode > DateTime.Now.AddMonths(-1);
 
         public int EpisodeIndex;
+
+        public List<ShowUserModel> Users { get; set; } = [];
+        public string ActiveUserNames => string.Join(", ", Users.Where(u => u.HasAdded).Select(u => u.Name));
+
 
         public ShowModel()
         {
             Id = "";
             Name = "";
         }
-        public ShowModel(Show show, TvNetwork? network) : this()
+        public ShowModel(Show show, UserShow? userShow, List<User> accountUsers, List<UserShow> userShows) : this(
+            show, userShow, null, userShows
+                .Where(u => u.ShowId == show.ShowId && u.SiteSection == show.SiteSection)
+                .Select(u => new ShowUserModel()
+                    {
+                        Id = u.UserId,
+                        Name = accountUsers.FirstOrDefault(aU => aU.UserId == u.UserId)?.Name ?? "",
+                        HasAdded = true,
+                        Me = u.UserId == userShow?.UserId
+                    }
+                ).ToList()
+        ) { }
+        public ShowModel(Show show, UserShow? userShow, TvNetwork? network, List<ShowUserModel>? showUsers) : this()
         {
             Id = show.ShowId;
-            SiteSection = (SiteSection)show.SiteSection;
+            SiteSection = show.SiteSection;
             Name = show.Name;
             Poster = show.Poster;
             Network = network;
-            RecommendedBy = show.RecommendedBy;
-            HideWatched = show.HideWatched;
-            HideUnplayable = show.HideUnplayable;
-            Added = show.Added;
+            RecommendedBy = userShow?.RecommendedBy;
+            HideWatched = userShow?.HideWatched ?? false;
+            HideUnplayable = userShow?.HideUnplayable ?? false;
+            IsAdded = showUsers?.Any(u => u.HasAdded) ?? false;
+            UserAdded = userShow?.Added;
             DeleteWatched = show.DeleteWatched;
-            WatchFromNextPlayable = show.WatchFromNextPlayable;
+            WatchFromNextPlayable = userShow?.WatchFromNextPlayable ?? false;
             DownloadAllTogether = show.DownloadAllTogether;
             KeepAllDownloaded = show.KeepAllDownloaded;
-            ShowEpisodesAsThumbnails = show.ShowEpisodesAsThumbnails;
+            ShowEpisodesAsThumbnails = userShow?.ShowEpisodesAsThumbnails ?? false;
             DownloadLimit = show.DownloadLimit;
             DownloadSeriesOffset = show.DownloadSeriesOffset;
+            Users = showUsers ?? [];
         }
 
         public void AddEpisode(EpisodeModel episode)
@@ -190,6 +211,8 @@ namespace MediaLife.Models
         public bool KeepAllDownloaded { get; set; }
         public bool ShowEpisodesAsThumbnails { get; set; }
         public short SkipUntilSeries { get; set; }
+
+        public List<ShowUserModel> Users { get; set; } = [];
     }
 
     class IgnoreEpisodesResolver : DefaultContractResolver

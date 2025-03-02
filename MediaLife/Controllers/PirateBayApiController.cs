@@ -10,7 +10,7 @@ using WCKDRZR.Gaspar;
 
 namespace MediaLife.Controllers
 {
-    [Authenticate]
+    [Authorised]
     public class PirateBayApiController : Controller
     {
         private MySqlContext db;

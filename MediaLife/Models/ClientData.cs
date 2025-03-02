@@ -154,12 +154,12 @@ namespace MediaLife.Models
 
         public bool FixUnwatchedTag(string tagName)
         {
-            if (Tags.Contains(tagName) && Episode?.Watched != null)
+            if (Tags.Contains(tagName) && Episode?.WatchStatus == WatchedStatus.EveryoneWatched)
             {
                 Tags.Remove(tagName);
                 return true;
             }
-            if (!Tags.Contains(tagName) && Episode?.Watched == null)
+            if (!Tags.Contains(tagName) && Episode?.WatchStatus != WatchedStatus.EveryoneWatched)
             {
                 Tags.Add(tagName);
                 return true;
@@ -170,7 +170,7 @@ namespace MediaLife.Models
 
         public bool ShouldDelete()
         {
-            return Show?.DeleteWatched == true && Episode?.Watched != null && Episode.Watched < DateTime.Now.AddDays(-7);
+            return Show?.DeleteWatched == true && Episode?.WatchStatus == WatchedStatus.EveryoneWatched && Episode.UserWatched < DateTime.Now.AddDays(-7);
         }
 
     }
@@ -284,7 +284,7 @@ namespace MediaLife.Models
 
         public bool ShouldDelete()
         {
-            return Show == null || Episode == null || Episode.FilePath != null || Episode.Watched != null || Episode.Skip;
+            return Show == null || Episode == null || Episode.FilePath != null || Episode.WatchStatus == WatchedStatus.EveryoneWatched || Episode.Skip;
         }
     }
 

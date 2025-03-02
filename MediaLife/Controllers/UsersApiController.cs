@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace MediaLife.Controllers
 {
-    [Authenticate]
+    [Authorised]
     public class UsersApiController : Controller
     {
         private MySqlContext db;

@@ -4,11 +4,11 @@ import { EpisodeFileIcon } from "../../Scripts/EpisodeFileIcon";
 import { EpisodeObject } from "../../Scripts/EpisodeObject";
 import { EpisodeWatchIcon } from "../../Scripts/EpisodeWatchIcon";
 import { tsEpisodeModel, tsShowModel, tsShowModelForList } from "../../Scripts/Models/extendedModels";
-import { EpisodeId, EpisodeModel, ShowPageModel, ShowSettings, SiteSection } from "../../Scripts/Models/~csharpe-models";
+import { EpisodeId, EpisodeModel, ShowPageModel, ShowSettings, SiteSection, WatchedStatus } from "../../Scripts/Models/~csharpe-models";
 import { MediaLifeService } from "../../Scripts/Services/~csharpe-services";
 import { MediaLife } from "../../Scripts/Site";
 import '../../Scripts/BRLibraries/Form';
-import { makeButton } from "../../Scripts/BRLibraries/Form";
+import { makeButton, makeFormRow } from "../../Scripts/BRLibraries/Form";
 import { Icon } from "../../Scripts/BRLibraries/Icon";
 
 
@@ -53,7 +53,7 @@ export class HomeShow {
         this.drawEpisodes();
         this.drawPoster();
 
-        if (this.data.show.added) {
+        if (this.data.show.isAdded) {
 
             this.service.updateShow(this.data.showListOptions ? SiteSection.Lists : this.data.siteSection, this.data.show.id).then(response => {
                 if (response.data && !element('content').containsClass('edit-list')) {
@@ -130,7 +130,7 @@ export class HomeShow {
 
         let episodeShown = false;
         for (let i = 0; i < episodes.length; i++) {
-            if ((!this.data.show.hideWatched || episodes[i].watched == null) && (!this.data.show.hideUnplayable || episodes[i].filePath != null)) {
+            if ((!this.data.show.hideWatched || episodes[i].userHasWatched == false) && (!this.data.show.hideUnplayable || episodes[i].filePath != null)) {
                 if (this.data.show.showEpisodesAsThumbnails) {
                     element('episode_list').appendChild(this.episodeThumbnail(episodes[i] as tsEpisodeModel) as HTMLElement);
                 } else {
@@ -164,7 +164,7 @@ export class HomeShow {
         } else {
             row = makeElement<HTMLElement>('div', { id: 'episode_row' + episode.id, events: { mouseenter: (e: Event) => this.hoverEpisode(e), mouseleave: () => this.hoverOffEpisode() } });
         }
-        row.className = 'episode-row' + ((airDate == null || airDate > new Date()) && !available ? ' future' + (episode.watched ? '-but-watched' : '') : '');
+        row.className = 'episode-row' + ((airDate == null || airDate > new Date()) && !available ? ' future' + (episode.userHasWatched ? '-but-watched' : '') : '');
 
         let name = row.appendElement('div', { class: 'name-and-number' + (all ? ' wide-number' : '') });
         if (this.data.siteSection != SiteSection.YouTube) {
@@ -250,7 +250,7 @@ export class HomeShow {
             });
         }
 
-        thumbnail.className = 'episode-thumbnail' + ((airDate == null || airDate > new Date()) && !available ? ' future' + (episode.watched ? '-but-watched' : '') : '');
+        thumbnail.className = 'episode-thumbnail' + ((airDate == null || airDate > new Date()) && !available ? ' future' + (episode.userHasWatched ? '-but-watched' : '') : '');
 
         let nameRow = thumbnail.appendElement('div', { class: 'name-row' });
         if (this.data.siteSection != SiteSection.YouTube) {
@@ -291,7 +291,15 @@ export class HomeShow {
                 element('showName').html(response.data.name);
                 element('addShowButton').addClass('hide');
                 element('removeShowButton').removeClass('hide');
+                element('showUserButton').removeClass('hide');
+                element('showFilterButton').removeClass('hide');
                 element('showSettingsButton').removeClass('hide');
+                element<HTMLButtonElement>('showUserButton').changeLabel(response.data.activeUserNames);
+                response.data.users.forEach(u => {
+                    element('userShow_menu').insertBefore(makeFormRow(`Show_User_${u.id}`, { label: u.name, value: u.hasAdded, style: 'blockRow' }), element('userShow_menu').lastElementChild)
+                })
+                this.data.show.users = response.data.users
+                this.windowResize();
             } else {
                 element('addShowButton').removeClass('hide');
             }
@@ -307,6 +315,8 @@ export class HomeShow {
             this.service.removeShow(this.data.show.siteSection, this.data.show.id).then(response => {
                 if (response.data) {
                     element('removeShowButton').addClass('hide');
+                    element('showUserButton').addClass('hide');
+                    element('showFilterButton').addClass('hide');
                     element('showSettingsButton').addClass('hide');
                     element('addShowButton').removeClass('hide');
                 } else {
@@ -317,26 +327,48 @@ export class HomeShow {
         }
     }
 
-    toggleFilterMenu() {
-        if (!element('settings_menu').containsClass('hide')) {
-            this.toggleSettingsMenu();
+    toggleUserMenu() {
+        let isClosed = element('userShow_menu').containsClass('hide')
+        this.closeSettingsMenus()
+        if (isClosed) {
+            this.openSettingsMenus()
+            element('userShow_menu').removeClass('hide');
         }
-        let hide = !element('filter_menu').containsClass('hide');
-        element('blackout').toggleClassIfTrue('hide', hide);
-        element('filter_menu').toggleClassIfTrue('hide', hide);
-        element('showFilterButton').toggleClassIfTrue('open', !hide);
-        element('showSettingsButton').toggleClassIfTrue('open', !hide);
+    }
+
+    toggleFilterMenu() {
+        let isClosed = element('filter_menu').containsClass('hide')
+        this.closeSettingsMenus()
+        if (isClosed) {
+            this.openSettingsMenus()
+            element('filter_menu').removeClass('hide');
+        }
     }
 
     toggleSettingsMenu() {
-        if (!element('filter_menu').containsClass('hide')) {
-            this.toggleFilterMenu();
+        let isClosed = element('settings_menu').containsClass('hide')
+        this.closeSettingsMenus()
+        if (isClosed) {
+            this.openSettingsMenus()
+            element('settings_menu').removeClass('hide');
         }
-        let hide = !element('settings_menu').containsClass('hide');
-        element('blackout').toggleClassIfTrue('hide', hide);
-        element('settings_menu').toggleClassIfTrue('hide', hide);
-        element('showFilterButton').toggleClassIfTrue('open', !hide);
-        element('showSettingsButton').toggleClassIfTrue('open', !hide);
+    }
+
+    openSettingsMenus() {
+        element('blackout').removeClass('hide');
+        element('showUserButton').addClass('open');
+        element('showFilterButton').addClass('open');
+        element('showSettingsButton').addClass('open');
+    }
+
+    closeSettingsMenus() {
+        element('blackout').addClass('hide');
+        element('userShow_menu').addClass('hide');
+        element('filter_menu').addClass('hide');
+        element('settings_menu').addClass('hide');
+        element('showUserButton').removeClass('open');
+        element('showFilterButton').removeClass('open');
+        element('showSettingsButton').removeClass('open');
     }
 
     removeFilters() {
@@ -348,25 +380,35 @@ export class HomeShow {
         }
     }
 
+    userActiveChanged(e: Event) {
+        if (e.target instanceof HTMLInputElement && !e.target.checked && !this.data.show.users.some(u => elementOrNull<HTMLInputElement>(`Show_User_${u.id}`)?.checked ?? false)) {
+            setTimeout(() => {
+                if (e.target instanceof HTMLInputElement) {
+                    window.site.showSnackBar('Show must have at least one user', true)
+                    element('snack_bar').style.zIndex = '999999'
+                    e.target.checked = true
+                    setTimeout(() => {
+                        window.site.closeSnackBar()
+                        element('snack_bar').style.zIndex = ''
+                    }, 1000)
+                }
+            }, 150)
+        }
+    }
+
     saveSettings() {
 
-        if (!element('filter_menu').containsClass('hide')) {
-            this.toggleFilterMenu();
-        }
-        if (!element('settings_menu').containsClass('hide')) {
-            this.toggleSettingsMenu();
-        }
+        this.closeSettingsMenus();
+        element<HTMLButtonElement>('showUserButton').disableWithSpinIcon();
         element<HTMLButtonElement>('showFilterButton').disableWithSpinIcon();
         element<HTMLButtonElement>('showSettingsButton').disableWithSpinIcon();
 
         let form = element<HTMLFormElement>('settings_form').toJson<ShowPageModel>().show as ShowSettings;
+        form.users = this.data.show.users;
+        form.users.forEach(u => u.hasAdded = elementOrNull<HTMLInputElement>(`Show_User_${u.id}`)?.checked ?? false)
+
         this.service.saveSettings(this.data.show.siteSection, this.data.show.id, form).then(() => {
-            if (form.skipUntilSeries != this.data.show.skipUntilSeries || form.hideWatched != this.data.show.hideWatched || form.hideUnplayable != this.data.show.hideUnplayable) {
-                location.reload();
-            } else {
-                element<HTMLButtonElement>('showFilterButton').enable();
-                element<HTMLButtonElement>('showSettingsButton').enable();
-            }
+            location.reload();
         });
         
     }
@@ -383,14 +425,15 @@ export class HomeShow {
 
             //update buttons
             if (!this.data.showListOptions) {
-                if (this.data.show.episodes.filter(e => e.watched != null || e.startedWatching != null).length == 0) {
+                if (!this.data.show.episodes.some(e => e.watchStatus != WatchedStatus.Unwatched)) {
                     element('removeShowButton').removeClass('hide');
                     element('showSettingsButton').removeClass('hide');
                 } else {
                     element('addShowButton').addClass('hide');
                     element('removeShowButton').addClass('hide');
                     element('showSettingsButton').removeClass('hide');
-                    this.data.show.added = new Date().formatForJson();
+                    this.data.show.isAdded = true;
+                    this.data.show.userAdded = new Date().formatForJson();
                 }
             }
         }
@@ -557,6 +600,7 @@ export class HomeShow {
         element('poster').style.maxHeight = (windowHeight - contentTop - 2) + 'px';
 
         if (elementOrNull('showSettingsButton')) {
+            element('userShow_menu').style.top = (element('showSettingsButton').getPosition().top + element('showSettingsButton').offsetHeight + 2) + 'px';
             element('filter_menu').style.top = (element('showSettingsButton').getPosition().top + element('showSettingsButton').offsetHeight + 2) + 'px';
             element('settings_menu').style.top = (element('showSettingsButton').getPosition().top + element('showSettingsButton').offsetHeight + 2) + 'px';
         }
