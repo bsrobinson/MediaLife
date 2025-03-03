@@ -10,12 +10,10 @@ namespace MediaLife.Library.Models
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class ShowModelContext
     {
-        public SiteSection SiteSection { get; set; }
         public PageType PageType { get; set; }
 
-        public ShowModelContext(SiteSection section, PageType page)
+        public ShowModelContext(PageType page)
         {
-            SiteSection = section;
             PageType = page;
         }
     }

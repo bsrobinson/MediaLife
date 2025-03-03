@@ -5,10 +5,6 @@
     {
         titlePrefix += ViewData["Title"]?.ToString() + " - ";
     }
-    if (ViewData.ContainsKey("Section") && !String.IsNullOrEmpty(ViewData["Section"]?.ToString()))
-    {
-        titlePrefix += ViewData["Section"]?.ToString() + " - ";
-    }
 
     string controller = Context.Request.RouteValues["controller"]?.ToString() ?? "";
     string view = System.IO.Path.GetFileNameWithoutExtension(ViewContext.View.Path);
@@ -43,13 +39,15 @@
         jsData = Newtonsoft.Json.JsonConvert.SerializeObject(ViewData["jsData"], settings);
     }
     
-    string siteSection = ViewData["Section"]?.ToString() ?? "Media Life";
-    string sectionUrl = ViewData["Section"]?.ToString() != null ? siteSection.ToLower() : "";
-    Icon icon = new("🎭");
-    if (sectionUrl == "tv") { icon = new("📺"); }
-    if (sectionUrl == "youtube") { icon = new BrandIcon("youtube-square"); }
-    if (sectionUrl == "movies") { icon = new("🎥"); }
-    if (sectionUrl == "books") { icon = new("📚"); }
+    Context.Request.Cookies.TryGetValue("enabled_site_sections", out string? enabledSiteSectionsString);
+    List<SiteSection> enabledSiteSections = [];
+    foreach (string section in enabledSiteSectionsString?.Split("|") ?? [])
+    {
+        if (section == SiteSection.TV.DisplayName()) { enabledSiteSections.Add(SiteSection.TV); }
+        if (section == SiteSection.YouTube.DisplayName()) { enabledSiteSections.Add(SiteSection.YouTube); }
+        if (section == SiteSection.Movies.DisplayName()) { enabledSiteSections.Add(SiteSection.Movies); }
+        if (section == SiteSection.Books.DisplayName()) { enabledSiteSections.Add(SiteSection.Books); }
+    }
 }
 <html>
 <head>
@@ -95,10 +93,10 @@
                     <span></span>
                     <span></span>
                 </div>
-                @Html.Icon(icon, siteSection, $"/{sectionUrl}")
+                @Html.Icon(new Icon("🎭"), "Media Life", "/")
             </div>
             <div class="header-right">
-                <form action="/@sectionUrl/search">
+                <form action="/search">
                     <input type="search" name="q" value="@ViewBag.q" placeholder="search" />
                 </form>
                 <a href="JavaScript:;" class="search-link" onclick="site.openSearch()">🔍</a>
@@ -109,21 +107,29 @@
             </div>
         </div>
         <div id="search_row" class="hide">
-            <form action="/@sectionUrl/search">
+            <form action="/search">
                 <input type="search" name="q" id="search_input" onblur="site.searchBlur()" value="@ViewBag.q" placeholder="search" />
             </form>
         </div>
 
         <div id="site_menu" onclick="site.toggleSiteMenu();">
-            <div class="section-buttons">
-                @Html.ButtonRow(new() {
-                    Html.Button("TV", new("📺"), null, new ButtonOptions() { Url = "/tv", StackedIcon = true }),
-                    Html.Button("YouTube", new BrandIcon("youtube"), null, new ButtonOptions() { Url = "/youtube", StackedIcon = true, Classes = "youtube" }),
-                }, new() { Justify = RowJustify.SpaceEvenly })
-                @Html.ButtonRow(new() {
-                    Html.Button("Movies", new("🎥"), null, new ButtonOptions() { Url = "/movies", StackedIcon = true }),
-                    Html.Button("Books", new("📚"), null, new ButtonOptions() { Url = "/books", StackedIcon = true }),
-                }, new() { Justify = RowJustify.SpaceEvenly })
+            <div>
+                <div class="section-switch">
+                    @Html.FormRow("siteSection_tv", "TV", enabledSiteSectionsString == null || enabledSiteSections.Contains(SiteSection.TV), new() { Icon = new("📺"), ChangeEvent = "site.toggleSiteSection()" })
+                    @Html.Button("Only", new() { ClickEvent = $"site.onlySiteSection('{SiteSection.TV.DisplayName()}')" })
+                </div>
+                <div class="section-switch">
+                    @Html.FormRow("siteSection_youtube", "YouTube", enabledSiteSectionsString == null || enabledSiteSections.Contains(SiteSection.YouTube), new() { Icon = new BrandIcon("youtube"), ChangeEvent = "site.toggleSiteSection()" })
+                    @Html.Button("Only", new() { ClickEvent = $"site.onlySiteSection('{SiteSection.YouTube.DisplayName()}')" })
+                </div>
+                <div class="section-switch">
+                    @Html.FormRow("siteSection_movies", "Movies", enabledSiteSectionsString == null || enabledSiteSections.Contains(SiteSection.Movies), new() { Icon = new("🎥"), ChangeEvent = "site.toggleSiteSection()" })
+                    @Html.Button("Only", new() { ClickEvent = $"site.onlySiteSection('{SiteSection.Movies.DisplayName()}')" })
+                </div>
+                <div class="section-switch">
+                    @Html.FormRow("siteSection_books", "Books", enabledSiteSectionsString == null || enabledSiteSections.Contains(SiteSection.Books), new() { Icon = new("📚"), ChangeEvent = "site.toggleSiteSection()" })
+                    @Html.Button("Only", new() { ClickEvent = $"site.onlySiteSection('{SiteSection.Books.DisplayName()}')" })
+                </div>
             </div>
             @Html.Icon(new Icon("📝") { FixedWidth = true }, "Create Custom List", "site.createCustomList();", "menu-item")
             @Html.Icon(new Icon("⚙️") { FixedWidth = true }, "Settings", "/Config", "menu-item")

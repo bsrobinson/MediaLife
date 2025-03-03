@@ -30,6 +30,11 @@
         align-items: center;
         justify-content: center;
     }
+
+    &.youtube .poster.round > a {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
 }
 
 .poster {
@@ -47,8 +52,10 @@
         height: 155px;
         border-radius: 50%;
         background-size: cover;
+        margin-top: 30px;
+        margin-bottom: 37px;
     }
-
+    
     > a {
         width: 100%;
         background-size: 100%;

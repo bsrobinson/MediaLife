@@ -10,6 +10,7 @@ import { AddToList } from './AddToList';
 import { FormValidation } from './BRLibraries/FormValidation';
 import { createCookie, readCookie } from './BRLibraries/Cookies';
 import { MediaLifeService } from './Services/~csharpe-services';
+import { SiteSection } from './Models/~csharpe-models';
 
 declare global {
     interface Window {
@@ -43,7 +44,6 @@ export class MediaLife {
     }
 
     toggleUserMenu() {
-        let open = 
         element('user_menu_button').toggleClass('open');
         element('user_menu').style.visibility = element('user_menu_button').containsClass('open') ? 'visible' : 'hidden';
         element('user_menu').style.bottom = `calc(100vh - 57px - ${element('user_menu_button').containsClass('open') ? element('user_menu').offsetHeight : '0'}px)`;
@@ -55,6 +55,27 @@ export class MediaLife {
     }
     searchBlur() {
         element('search_row').addClass('hide');
+    }
+
+    toggleSiteSection() {
+        
+        let enabledSiteSections = ['x']
+        if (element<HTMLInputElement>('siteSection_tv').checked) { enabledSiteSections.push(SiteSection.TV) }
+        if (element<HTMLInputElement>('siteSection_youtube').checked) { enabledSiteSections.push(SiteSection.YouTube) }
+        if (element<HTMLInputElement>('siteSection_movies').checked) { enabledSiteSections.push(SiteSection.Movies) }
+        if (element<HTMLInputElement>('siteSection_books').checked) { enabledSiteSections.push(SiteSection.Books) }
+
+        createCookie('enabled_site_sections', enabledSiteSections.join('|'), 360)
+        if (window.page.changeSiteSections) {
+            window.page.changeSiteSections()
+        }
+    }
+    onlySiteSection(section: SiteSection) {
+        element<HTMLInputElement>('siteSection_tv').checked = SiteSection.TV == section
+        element<HTMLInputElement>('siteSection_youtube').checked = SiteSection.YouTube == section
+        element<HTMLInputElement>('siteSection_movies').checked = SiteSection.Movies == section
+        element<HTMLInputElement>('siteSection_books').checked = SiteSection.Books == section
+        this.toggleSiteSection()        
     }
 
     createCustomList() {

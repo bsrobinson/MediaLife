@@ -144,14 +144,17 @@ export namespace MediaLifeService {
     //File: ../../Controllers/HomeController.cs
 
     export class HomeController {
-        watching(section: SiteSection, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel[]>> {
-            return new GasparServiceHelper().fetch(`/${section}/watching`, { method: 'GET', credentials: 'include' }, showError);
+        watching(showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel[]>> {
+            return new GasparServiceHelper().fetch(`/watching`, { method: 'GET', credentials: 'include' }, showError);
         }
-        notStarted(section: SiteSection, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel[]>> {
-            return new GasparServiceHelper().fetch(`/${section}/notstarted`, { method: 'GET', credentials: 'include' }, showError);
+        notStarted(showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel[]>> {
+            return new GasparServiceHelper().fetch(`/notstarted`, { method: 'GET', credentials: 'include' }, showError);
         }
-        allShows(section: SiteSection, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel[]>> {
-            return new GasparServiceHelper().fetch(`/${section}/all`, { method: 'GET', credentials: 'include' }, showError);
+        allShows(showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel[]>> {
+            return new GasparServiceHelper().fetch(`/all`, { method: 'GET', credentials: 'include' }, showError);
+        }
+        searchResults(section: SiteSection, q: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel[]>> {
+            return new GasparServiceHelper().fetch(`/${section}/search?q=${q || ""}`, { method: 'GET', credentials: 'include' }, showError);
         }
         addShow(section: SiteSection, showId: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel>> {
             return new GasparServiceHelper().fetch(`/${section}/add/${showId}`, { method: 'POST', credentials: 'include' }, showError);

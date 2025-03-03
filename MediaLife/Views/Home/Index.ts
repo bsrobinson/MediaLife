@@ -7,6 +7,7 @@ import { EpisodeObject } from '../../Scripts/EpisodeObject';
 import { EpisodeFileIcon } from '../../Scripts/EpisodeFileIcon';
 import { EpisodeWatchIcon } from '../../Scripts/EpisodeWatchIcon';
 import '../../Scripts/BRLibraries/Form'
+import { readCookie } from '../../Scripts/BRLibraries/Cookies';
 
 export class HomeIndex {
 
@@ -19,6 +20,8 @@ export class HomeIndex {
         allShows: tsShowModel[],
     } = { watching: [], notWatchedRecently: [], notStarted: [], allShows: [] };
 
+    searchResults = {} as Record<SiteSection, tsShowModel[]>
+
     allShowsLoaded = false
 
     constructor(private site: MediaLife, private data: tsListPageModel) {
@@ -26,38 +29,25 @@ export class HomeIndex {
 
     init() {
         if (this.data.context.pageType == PageType.Search) {
-            this.addShowsToLists(this.data.shows);
-            this.showAllShows();
+            this.loadSearchResults()
         }
         else {
-            this.addShowsToLists([
-                { id: '0', skellington: true, started: true, watchedRecently: true },
-                { id: '1', skellington: true, started: true, watchedRecently: true },
-                { id: '2', skellington: true, started: true, watchedRecently: true },
-                { id: '3', skellington: true, started: true, watchedRecently: true },
-                { id: '4', skellington: true, started: true, watchedRecently: true },
-                { id: '5', skellington: true },
-                { id: '6', skellington: true },
-                { id: '7', skellington: true },
-                { id: '8', skellington: true },
-                { id: '9', skellington: true },
-            ] as tsShowModel[]);
-
-            this.service.watching(this.data.context.siteSection).then(response => {
+            this.addShowsToLists([...Array(10).keys()].map(i => ({ id: i.toString(), skellington: true, started: i < 5, watchedRecently: i < 5 } as tsShowModel)))
+            this.service.watching().then(response => {
                 if (response.data) {
                     this.data.shows = this.data.shows.filter(s => s.skellington && !s.started);
                     this.showLists.watching = [];
                     this.showLists.allShows = [];
                     this.addShowsToLists(response.data as tsShowModel[]);
 
-                    this.service.notStarted(this.data.context.siteSection).then(response => {
+                    this.service.notStarted().then(response => {
                         if (response.data) {
                             this.data.shows = this.data.shows.filter(s => !s.skellington);
                             this.showLists.notStarted = [];
                             this.showLists.allShows = [];
                             this.addShowsToLists(response.data as tsShowModel[]);
 
-                            this.service.allShows(this.data.context.siteSection).then(response => {
+                            this.service.allShows().then(response => {
                                 if (response.data) {
                                     this.allShowsLoaded = true
                                     this.addShowsToLists(response.data as tsShowModel[]);
@@ -70,6 +60,27 @@ export class HomeIndex {
         }
     }
 
+    enabledSiteSections(): Record<SiteSection, boolean> | null {
+        let enabledSiteSectionsString = readCookie('enabled_site_sections')
+        if (enabledSiteSectionsString == null) {
+            return null
+        }
+        let enabledSiteSections: Record<SiteSection, boolean> = {
+            'tv': false,
+            'youtube': false,
+            'movies': false,
+            'books': false,
+            'lists': false,
+        }
+        enabledSiteSectionsString.split('|').forEach(s => {
+            if (s == SiteSection.TV) { enabledSiteSections[SiteSection.TV] = true }
+            if (s == SiteSection.YouTube) { enabledSiteSections[SiteSection.YouTube] = true }
+            if (s == SiteSection.Movies) { enabledSiteSections[SiteSection.Movies] = true }
+            if (s == SiteSection.Books) { enabledSiteSections[SiteSection.Books] = true }
+        })
+        return enabledSiteSections
+    }
+
     addShowsToLists(shows: tsShowModel[]) {
         
         if (!this.data.shows) { this.data.shows = []; }
@@ -77,6 +88,13 @@ export class HomeIndex {
 
         this.updateShowLists()
         this.updateWatchingWithMenu()
+    }
+
+    changeSiteSections() {
+        this.updateShowLists()
+        if (this.data.context.pageType == PageType.Search) {
+            this.loadSearchResults()
+        }
     }
 
     changeWatchingWith() {
@@ -93,38 +111,40 @@ export class HomeIndex {
 
         this.showLists = { watching: [], notWatchedRecently: [], notStarted: [], allShows: [] };
 
+        let enabledSiteSections = this.enabledSiteSections()
+        let watchingWithIds = localStorage.getItem('watching-with') ?? ''
+        
         this.data.shows.forEach(show => {
 
-            let watchingWithIds = localStorage.getItem('watching-with') ?? '';
+            if (show.skellington || enabledSiteSections == null || enabledSiteSections[show.siteSection]) {
             
-            if (this.data.context.pageType == PageType.Search || show.skellington || watchingWithIds == '' || show.users.map(u => u.id).sort().join(',') == watchingWithIds) {
+                if (this.data.context.pageType == PageType.Search || show.skellington || watchingWithIds == '' || show.users.map(u => u.id).sort().join(',') == watchingWithIds) {
 
-                if (this.showLists.watching.find(s => s.id == show.id) == null && show.started && !show.userComplete && show.watchedRecently) {
-                    this.showLists.watching.push(show);
-                }
-                else if (this.showLists.notWatchedRecently.find(s => s.id == show.id) == null && show.started && !show.userComplete && !show.watchedRecently) {
-                    this.showLists.notWatchedRecently.push(show);
-                }
-                else if (this.showLists.notStarted.find(s => s.id == show.id) == null && (!show.startedAiring || (!show.started && !show.userComplete))) {
-                    this.showLists.notStarted.push(show);
-                }
-                if (this.showLists.allShows.find(s => s.id == show.id) == null) {
-                    this.showLists.allShows.push(show);
-                }
+                    if (this.showLists.watching.find(s => s.id == show.id) == null && show.started && !show.userComplete && show.watchedRecently) {
+                        this.showLists.watching.push(show);
+                    }
+                    else if (this.showLists.notWatchedRecently.find(s => s.id == show.id) == null && show.started && !show.userComplete && !show.watchedRecently) {
+                        this.showLists.notWatchedRecently.push(show);
+                    }
+                    else if (this.showLists.notStarted.find(s => s.id == show.id) == null && (!show.startedAiring || (!show.started && !show.userComplete))) {
+                        this.showLists.notStarted.push(show);
+                    }
+                    if (this.showLists.allShows.find(s => s.id == show.id) == null) {
+                        this.showLists.allShows.push(show);
+                    }
 
+                }
             }
         });
         this.sortWatching();
         this.sortNotWatchedRecently();
         this.sortNotStarted();
 
-        if (this.showLists.watching.length == 0 && this.showLists.notWatchedRecently.length == 0 && this.showLists.notStarted.length == 0) {
-            this.showAllShows();
-        } else {
-            if (elementOrNull('watching_header')) { element('watching_header').style.display = this.showLists.watching.length == 0 ? 'none' : 'flex'; }
-            if (elementOrNull('notWatchedRecently_header')) { element('notWatchedRecently_header').style.display = this.showLists.notWatchedRecently.length == 0 ? 'none' : 'flex'; }
-            if (elementOrNull('notStarted_header')) { element('notStarted_header').style.display = this.showLists.notStarted.length == 0 ? 'none' : 'flex'; }
-            if (elementOrNull('default_sections')) { element('default_sections').removeClass('hide'); }
+        if (elementOrNull('watching_header')) { element('watching_header').style.display = this.showLists.watching.length == 0 ? 'none' : 'flex'; }
+        if (elementOrNull('notWatchedRecently_header')) { element('notWatchedRecently_header').style.display = this.showLists.notWatchedRecently.length == 0 ? 'none' : 'flex'; }
+        if (elementOrNull('notStarted_header')) { element('notStarted_header').style.display = this.showLists.notStarted.length == 0 ? 'none' : 'flex'; }
+        if (elementOrNull('default_sections')) {
+            element('default_sections').toggleClassIfTrue('hide', this.showLists.watching.length == 0 && this.showLists.notWatchedRecently.length == 0 && this.showLists.notStarted.length == 0);
         }
     }
 
@@ -172,14 +192,54 @@ export class HomeIndex {
         }
     }
 
+    loadSearchResults() {
+
+        Object.entries(this.enabledSiteSections() || {}).forEach(([sectionString, enabled]) => {
+            
+            element(`${sectionString}_search_section`).toggleClassIfTrue('hide', !enabled)
+            if (enabled) {
+                
+                let section = sectionString as SiteSection
+
+                let query = location.search.slice(1).split('&').find(x => x.startsWith('q='))?.split('=')[1]
+                if (!query) { throw Error('Query missing') }
+
+                if (this.searchResults[section]) {
+                } else {
+
+                    this.searchResults[section] = [...Array(10).keys()].map(i => ({ id: i.toString(), skellington: true, siteSection: section } as tsShowModel))
+                    this.sortSearch(section)
+
+                    this.service.searchResults(section, query).then(response => {
+
+                        this.searchResults[section] = (response.data ?? []) as tsShowModel[]
+                        
+                        if (this.searchResults[section].length == 0) {
+                            element(`${sectionString}_search_posters`).addClass('empty')
+                            element(`${sectionString}_search_posters`).html(response.data ? 'No results found.' : 'Error loading results.')
+                        }
+                        else {
+                            element(`${sectionString}_search_posters`).removeClass('empty')
+                            this.sortSearch(section)
+                        }
+                    })
+                }
+            }
+        })
+    }
+
     sortWatching() { this.sortList('watching'); }
     sortNotWatchedRecently() { this.sortList('notWatchedRecently'); }
     sortNotStarted() { this.sortList('notStarted'); }
     sortAllShows() { this.sortList('allShows'); }
+    sortSearch(section: SiteSection) { this.sortList('allShows', section) }
 
-    sortList(list: ('watching' | 'notWatchedRecently' | 'notStarted' | 'allShows')) {
+    sortList(list: ('watching' | 'notWatchedRecently' | 'notStarted' | 'allShows'), searchSection: SiteSection | null = null) {
 
-        let sortSelect = elementOrNull<HTMLSelectElement>(list + '_sort_select');
+        let showList = searchSection ? (this.searchResults[searchSection] ?? []) : this.showLists[list]
+        let listName = searchSection ? `${searchSection}_search` : list
+
+        let sortSelect = elementOrNull<HTMLSelectElement>(listName + '_sort_select');
         if (sortSelect) {
             let option = sortSelect.options[sortSelect.selectedIndex];
             let order = option.value;
@@ -189,8 +249,8 @@ export class HomeIndex {
 
             let headers = order.slice(0, 6) == 'group_';
             if (headers) { order = order.slice(6); }
-
-            this.showLists[list].sort((a, b) => {
+            
+            showList.sort((a, b) => {
                 let sortA = a[order]?.toString() || (decending ? '0' : 'zzz');
                 if (typeof sortA == 'string') { sortA = sortA.toLowerCase(); }
                 let sortB = b[order]?.toString() || (decending ? '0' : 'zzz');
@@ -198,15 +258,17 @@ export class HomeIndex {
                 return decending ? (sortA < sortB ? 1 : -1) : (sortA > sortB ? 1 : -1);
             });
 
-            element(list + '_posters').innerHTML = '';
+            element(listName + '_posters').innerHTML = '';
             let previousValue = '';
-            for (let i = 0; i < this.showLists[list].length; i++) {
-                if (headers && previousValue != this.showLists[list][i][order]) {
-                    element(list + '_posters').appendElement('div', { class: 'sort-header', html: this.showLists[list][i][order] });
+            for (let i = 0; i < showList.length; i++) {
+                if (headers && previousValue != showList[i][order]) {
+                    element(listName + '_posters').appendElement('div', { class: 'sort-header', html: showList[i][order] });
                 }
-                this.addPoster(list + '_posters', this.showLists[list][i]);
-                previousValue = this.showLists[list][i][order];
+                this.addPoster(listName + '_posters', showList[i]);
+                previousValue = showList[i][order];
             }
+            
+            element(listName + '_posters').className = 'posters ' + [...new Set(showList.map(s => s.siteSection))].join('-')
         }
     }
 
@@ -224,8 +286,8 @@ export class HomeIndex {
         } else {
 
             poster = element(toElement).appendElement('div', { id: 'show_' + show.id, class: 'poster' });
-            let image = poster.appendElement('a', { href: 'JavaScript:;', events: { click: () => { location.href =  `/${show.isList ? 'lists' : this.data.context.siteSection}/${show.id}`; } } });
-            poster.appendElement('div', { class: 'name', html: this.data.context.siteSection != SiteSection.TV ? show.posterName : show.name });
+            let image = poster.appendElement('a', { href: 'JavaScript:;', events: { click: () => { location.href =  `/${show.isList ? 'lists' : show.siteSection}/${show.id}`; } } });
+            poster.appendElement('div', { class: 'name', html: show.siteSection != SiteSection.TV ? show.posterName : show.name });
             poster.appendChild(this.episodeRow(show));
 
             if (show.episodePosters.length == 1 && show.siteSection == SiteSection.Movies) {
@@ -257,8 +319,8 @@ export class HomeIndex {
             }
         }
         
-        if (this.data.context.siteSection == SiteSection.YouTube) {
-            poster.addClass('round');
+        if (show.siteSection == SiteSection.YouTube) {
+            poster.addClass('round')
         }
     }
 
@@ -270,9 +332,9 @@ export class HomeIndex {
         let ep = show.nextEpisode as tsEpisodeModel;
         if (show.userUnwatchedCount == 0) {
             if (show.startedAiring) {
-                episodeContent.appendIcon('check', { label: 'All ' + (this.data.context.siteSection == SiteSection.Books ? 'read' : 'watched') });
+                episodeContent.appendIcon('check', { label: 'All ' + (show.siteSection == SiteSection.Books ? 'read' : 'watched') });
             } else if (show.firstAirDate != null) {
-                episodeContent.appendElement('span', { html: (this.data.context.siteSection == SiteSection.TV ? 'Starts ' : 'Released ') + new Date(show.firstAirDate).format('j M Y') });
+                episodeContent.appendElement('span', { html: (show.siteSection == SiteSection.TV ? 'Starts ' : 'Released ') + new Date(show.firstAirDate).format('j M Y') });
             }
         } else {
 
@@ -281,7 +343,7 @@ export class HomeIndex {
             }
             episodeContent.appendChild(new EpisodeFileIcon(ep.obj, 'search-page').node);
             episodeContent.appendChild(new EpisodeWatchIcon(ep.obj, 'search-page').node);
-            episodeContent.appendElement('span', { html: this.data.context.siteSection == SiteSection.TV ? ep.seriesEpisodeNumber + ' &#8211; ' + ep.name : ep.name });
+            episodeContent.appendElement('span', { html: show.siteSection == SiteSection.TV ? ep.seriesEpisodeNumber + ' &#8211; ' + ep.name : ep.name });
             if (show.episodeAfterNext) {
                 new EpisodeFileIcon(new EpisodeObject(show, show.episodeAfterNext as tsEpisodeModel));
                 new EpisodeWatchIcon(new EpisodeObject(show, show.episodeAfterNext as tsEpisodeModel));
@@ -352,7 +414,7 @@ export class HomeIndex {
 
         if (this.data.shows.length == 0) {
             element('allShows_posters').addClass('empty');
-            element('allShows_posters').html(this.data.context.pageType == PageType.Search ? 'No results found.' : 'You have no shows added.')
+            element('allShows_posters').html('You have no shows added.')
         }
     }
     

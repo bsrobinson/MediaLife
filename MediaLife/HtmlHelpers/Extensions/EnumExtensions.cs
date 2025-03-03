@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace MediaLife.HtmlHelpers.Extensions
@@ -11,7 +12,10 @@ namespace MediaLife.HtmlHelpers.Extensions
     {
         public static string DisplayName(this Enum e)
         {
-            return e.GetType().GetMember(e.ToString()).First().GetCustomAttribute<DisplayAttribute>()?.Name ?? e.ToString();
+            MemberInfo member = e.GetType().GetMember(e.ToString()).First();
+            return member.GetCustomAttribute<DisplayAttribute>()?.Name
+                ?? member.GetCustomAttribute<EnumMemberAttribute>()?.Value
+                ?? e.ToString();
         }
 
         public static List<string> DisplayNameList<TEnum>() where TEnum : Enum

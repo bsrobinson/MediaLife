@@ -1,11 +1,6 @@
 ﻿@model ListPageModel
 @{
     ViewData["Title"] = "";
-    ViewData["Section"] = Model.Context.SiteSection;
-
-    string allLabel = "";
-    if (Model.Context.SiteSection == SiteSection.TV) { allLabel = "Shows"; }
-    if (Model.Context.SiteSection == SiteSection.Movies) { allLabel = "Movies"; }
 }
 
 @if (ViewBag.ShowUpdateIssue != null)
@@ -21,61 +16,71 @@ else if (ViewBag.PirateBayIssue != null)
     @Html.FormRow("watchingWithSelect", "", new() { Style = FormRowStyle.InlineBorderHover, Icon = new Icon("eye"), SelectOptions = [new SelectListItem("All shows", "")], ChangeEvent="page.changeWatchingWith()" })
 </div>
 
-<div id="default_sections" class="hide">
-    <div id="watching_header" class="section-header">
-        <h2>@(Model.Context.SiteSection == SiteSection.Books ? "Reading" : "Watching")</h2>
-        @Html.FormRow("watching_sort_select", null, new() { SelectOptions = new() {
-            new() { Text = "Last Watched", Value = "desc_lastWatched" },
-            new() { Text = "Playable", Value = "nextEpisodePlayableSort" },
-            new() { Text = "Alphabetal", Value = "sortableName" },
-        }, Style = FormRowStyle.InlineBorderHover, Icon = new SolidIcon("arrow-down-wide-short"), ChangeEvent="page.sortWatching()" })
+@if (Model.Context.PageType == PageType.Shows)
+{
+    <div id="default_sections" class="hide">
+        <div id="watching_header" class="section-header">
+            <h2>Watching</h2>
+            @Html.FormRow("watching_sort_select", null, new() { SelectOptions = new() {
+                new() { Text = "Last Watched", Value = "desc_lastWatched" },
+                new() { Text = "Playable", Value = "nextEpisodePlayableSort" },
+                new() { Text = "Alphabetal", Value = "sortableName" },
+            }, Style = FormRowStyle.InlineBorderHover, Icon = new SolidIcon("arrow-down-wide-short"), ChangeEvent="page.sortWatching()" })
+        </div>
+        <div id="watching_posters" class="posters"></div>
+
+        <div id="notWatchedRecently_header" class="section-header">
+            <h2>Not Watched Recently</h2>
+            @Html.FormRow("notWatchedRecently_sort_select", null, new() { SelectOptions = new() {
+                new() { Text = "Alphabetal", Value = "sortableName" },
+                new() { Text = "Playable", Value = "nextEpisodePlayableSort" },
+                new() { Text = "Last Watched", Value = "desc_lastWatched" },
+            }, Style = FormRowStyle.InlineBorderHover, Icon = new SolidIcon("arrow-down-wide-short"), ChangeEvent="page.sortNotWatchedRecently()" })
+        </div>
+        <div id="notWatchedRecently_posters" class="posters"></div>
+
+        <div id="notStarted_header" class="section-header">
+            <h2>Not Started</h2>
+            @Html.FormRow("notStarted_sort_select", null, new() { SelectOptions = new() {
+                new() { Text = "Added", Value = "desc_userAdded" },
+                new() { Text = "Alphabetal", Value = "sortableName" },
+                new() { Text = "Playable", Value = "nextEpisodePlayableSort" },
+                new() { Text = "Recommended By", Value = "group_recommendedBy" },
+            }, Style = FormRowStyle.InlineBorderHover, Icon = new SolidIcon("arrow-down-wide-short"), ChangeEvent="page.sortNotStarted()" })
+        </div>
+        <div id="notStarted_posters" class="posters"></div>
+
+        <a href="JavaScript:;" onclick="page.showAllShows()" id="showAllShowsLink">Show All</a>
+
     </div>
-    <div id="watching_posters" class="posters"></div>
 
-    <div id="notWatchedRecently_header" class="section-header">
-        <h2>Not @(Model.Context.SiteSection == SiteSection.Books ? "Read" : "Watched") Recently</h2>
-        @Html.FormRow("notWatchedRecently_sort_select", null, new() { SelectOptions = new() {
-            new() { Text = "Alphabetal", Value = "sortableName" },
-            new() { Text = "Playable", Value = "nextEpisodePlayableSort" },
-            new() { Text = "Last Watched", Value = "desc_lastWatched" },
-        }, Style = FormRowStyle.InlineBorderHover, Icon = new SolidIcon("arrow-down-wide-short"), ChangeEvent="page.sortNotWatchedRecently()" })
+    <div id="all_shows" class="hide">
+        <div class="section-header">
+            <h2>All</h2>
+            @Html.FormRow("allShows_sort_select", null, new() { SelectOptions = [
+                new() { Text = "Alphabetical", Value = "sortableName" },
+                new() { Text = "Recommended By", Value = "group_recommendedBy" },
+                new() { Text = "Added", Value = "desc_userAdded" },
+                new() { Text = "Last Watched", Value = "desc_lastWatched" },
+            ], Style = FormRowStyle.InlineBorderHover, Icon = new SolidIcon("arrow-down-wide-short"), ChangeEvent="page.sortAllShows()" })
+        </div>
+        <div id="allShows_posters" class="posters"></div>
     </div>
-    <div id="notWatchedRecently_posters" class="posters"></div>
+}
 
-    <div id="notStarted_header" class="section-header">
-        <h2>Not Started</h2>
-        @Html.FormRow("notStarted_sort_select", null, new() { SelectOptions = new() {
-            new() { Text = "Added", Value = "desc_userAdded" },
-            new() { Text = "Alphabetal", Value = "sortableName" },
-            new() { Text = "Playable", Value = "nextEpisodePlayableSort" },
-            new() { Text = "Recommended By", Value = "group_recommendedBy" },
-        }, Style = FormRowStyle.InlineBorderHover, Icon = new SolidIcon("arrow-down-wide-short"), ChangeEvent="page.sortNotStarted()" })
-    </div>
-    <div id="notStarted_posters" class="posters"></div>
-
-    <a href="JavaScript:;" onclick="page.showAllShows()" id="showAllShowsLink">Show All @allLabel</a>
-
-</div>
-
-
-<div id="all_shows" class="hide">
-    <div class="section-header">
-        <h2>@(Model.Context.PageType == PageType.Search ? "Search Results" : "All " + allLabel)</h2>
-        @{
-            var options = new List<SelectListItem>();
-            @if (Model.Context.PageType == PageType.Search)
-            {
-                options.Add(new() { Text = "Relevance", Value = "desc_searchScore" });
-            }
-            options.Add(new() { Text = "Alphabetal", Value = "sortableName" });
-            @if (Model.Context.PageType == PageType.Shows)
-            {
-                options.Add(new() { Text = "Recommended By", Value = "group_recommendedBy" });
-                options.Add(new() { Text = "Added", Value = "desc_userAdded" });
-                options.Add(new() { Text = "Last Watched", Value = "desc_lastWatched" });
-            }
-        }
-        @Html.FormRow("allShows_sort_select", null, new() { SelectOptions = options, Style = FormRowStyle.InlineBorderHover, Icon = new SolidIcon("arrow-down-wide-short"), ChangeEvent="page.sortAllShows()" })
-    </div>
-    <div id="allShows_posters" class="posters"></div>
-</div>
+@if (Model.Context.PageType == PageType.Search)
+{
+    @foreach (SiteSection section in EnumExtensions.ToList<SiteSection>())
+    {
+        <div id="@(section.DisplayName())_search_section" class="hide">
+            <div class="section-header">
+                <h2>@(section.ToString()) Search Results</h2>
+                @Html.FormRow($"{section.DisplayName()}_search_sort_select", null, new() { SelectOptions = [
+                    new() { Text = "Relevance", Value = "desc_searchScore" },
+                    new() { Text = "Alphabetical", Value = "sortableName" },
+                ], Style = FormRowStyle.InlineBorderHover, Icon = new SolidIcon("arrow-down-wide-short"), ChangeEvent=$"page.sortSearch('{section.DisplayName()}')" })
+            </div>
+            <div id="@(section.DisplayName())_search_posters" class="posters @(section.DisplayName())"></div>
+        </div>
+    }
+}

@@ -15,14 +15,14 @@ namespace MediaLife.Models
         public ShowModelContext Context { get; set; }
         public List<ShowModel> Shows { get; set; } = new();
 
-        public ListPageModel(SiteSection section, PageType page)
+        public ListPageModel(PageType page)
         {
-            Context = new(section, page);
+            Context = new(page);
         }
 
-        public ListPageModel(SiteSection section, PageType page, List<ShowModel> shows)
+        public ListPageModel(PageType page, List<ShowModel> shows)
         {
-            Context = new(section, page);
+            Context = new(page);
             Shows = shows;
         }
     }

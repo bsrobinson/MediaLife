@@ -780,14 +780,13 @@ namespace MediaLife.Services
             ).ToList();
         }
 
-        public List<ShowModel> UsersShows(User user, SiteSection section, List<string> showIds)
+        public List<ShowModel> UsersShows(User user, List<string> showIds)
         {
             List<UserShow> userShows = db.UserShows.ToList();
             List<User> accountUsers = db.Users.Where(u => u.AccountId == user.AccountId).ToList();
             return (
                 from s in db.Shows
                 join u in db.UserShows on new { s.ShowId, s.SiteSection, user.UserId } equals new { u.ShowId, u.SiteSection, u.UserId }
-                where s.SiteSection == section
                 where showIds.Contains(s.ShowId)
                 select new ShowModel(s, u, accountUsers, userShows)
                 {
@@ -809,11 +808,11 @@ namespace MediaLife.Services
             ).ToList();
         }
 
-        public List<ShowModel> ShowsAndLists(User user, SiteSection section, List<string>? showIds = null)
+        public List<ShowModel> ShowsAndLists(User user, List<string>? showIds = null)
         {
-            List<ShowModel> shows = UsersShows(user, section, showIds ?? []);
+            List<ShowModel> shows = UsersShows(user, showIds ?? []);
 
-            List<uint> sectionListIds = db.ListEntries.Where(e => e.SiteSection == section).Select(e => e.ListId).Distinct().ToList();
+            List<uint> sectionListIds = db.ListEntries.Select(e => e.ListId).Distinct().ToList();
             List<ShowModel> lists = (
                 from l in db.Lists
                 where sectionListIds.Contains(l.ListId)
@@ -842,18 +841,17 @@ namespace MediaLife.Services
             ).ToList();
 
             //Remove shows where all episodes are in lists
-            List<string> sectionEpisodesInLists = lists.SelectMany(l => l.Episodes.Where(e => e.SiteSection == section).Select(e => e.Id)).ToList();
+            List<string> sectionEpisodesInLists = lists.SelectMany(l => l.Episodes.Select(e => e.Id)).ToList();
             shows = shows.Where(s => s.Episodes.Select(e => e.Id).Except(sectionEpisodesInLists).Any()).ToList();
 
             return shows.Concat(lists).ToList();
         }
 
-        public List<ShowModel> CurrentlyWatching(User user, SiteSection section)
+        public List<ShowModel> CurrentlyWatching(User user)
         {
-            return UsersShows(user, section, (
+            return UsersShows(user, (
                 from e in db.Episodes
                 join userEp in db.UserEpisodes on new { e.EpisodeId, e.SiteSection, user.UserId  } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
-                where e.SiteSection == section
                 where e.AirDate != null && e.AirDate < DateTime.Now && !e.Skip
                 group new { e, userEp } by e.ShowId into grp
                 where grp.Count() > grp.Count(g => g.userEp != null && g.userEp.Watched != null)
@@ -862,12 +860,11 @@ namespace MediaLife.Services
             ).ToList());
         }
 
-        public List<ShowModel> NotStarted(User user, SiteSection section)
+        public List<ShowModel> NotStarted(User user)
         {
-            return UsersShows(user, section, (
+            return UsersShows(user, (
                 from e in db.Episodes
                 join userEp in db.UserEpisodes on new { e.EpisodeId, e.SiteSection, user.UserId } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
-                where e.SiteSection == section
                 where !e.Skip
                 where userEp == null
                 group e by e.ShowId into grp

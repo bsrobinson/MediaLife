@@ -462,6 +462,7 @@ input[type=checkbox].switch {
     cursor: pointer;
     font-size: inherit;
     outline: none;
+    pointer-events: none;
 
     &::before {
         content: "";

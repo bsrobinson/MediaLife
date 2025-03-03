@@ -272,7 +272,6 @@ export interface EpisodeId {
 //File: ../../MediaLife.Library/Models/SiteSection.cs
 
 export interface ShowModelContext {
-    siteSection: SiteSection;
     pageType: PageType;
 }
 

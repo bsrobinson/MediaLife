@@ -21,48 +21,49 @@ namespace MediaLife.Controllers
             service = new ShowsService(context, Guid.NewGuid());
         }
 
-        public RedirectResult Index()
-        {
-            return Redirect("tv");
-        }
-
-        [HttpGet("{section}")]
-        public ViewResult Index(SiteSection section)
+        public ViewResult Index()
         {
             ViewBag.PirateBayIssue = service.PirateBayIssue();
             ViewBag.ShowUpdateIssue = service.ShowUpdateIssue();
 
-            ViewData["jsData"] = new ListPageModel(section, PageType.Shows);
+            ViewData["jsData"] = new ListPageModel(PageType.Shows);
             return View(ViewData["jsData"]);
         }
 
         [ExportFor(GasparType.TypeScript)]
-        [HttpGet("{section}/watching")]
-        public ActionResult<List<ShowModel>> Watching(SiteSection section)
+        [HttpGet("/watching")]
+        public ActionResult<List<ShowModel>> Watching()
         {
-            return service.CurrentlyWatching(User.Obj(), section);
+            return service.CurrentlyWatching(User.Obj());
         }
 
         [ExportFor(GasparType.TypeScript)]
-        [HttpGet("{section}/notstarted")]
-        public ActionResult<List<ShowModel>> NotStarted(SiteSection section)
+        [HttpGet("/notstarted")]
+        public ActionResult<List<ShowModel>> NotStarted()
         {
-            return service.NotStarted(User.Obj(), section);
+            return service.NotStarted(User.Obj());
         }
 
         [ExportFor(GasparType.TypeScript)]
-        [HttpGet("{section}/all")]
-        public ActionResult<List<ShowModel>> AllShows(SiteSection section)
+        [HttpGet("/all")]
+        public ActionResult<List<ShowModel>> AllShows()
         {
-            return service.ShowsAndLists(User.Obj(), section);
+            return service.ShowsAndLists(User.Obj());
         }
 
-        [HttpGet("{section}/search")]
-        public ViewResult Search(SiteSection section, string q)
+        [HttpGet("/search")]
+        public ViewResult Search(string q)
         {
             ViewBag.q = q;
-            ViewData["jsData"] = new ListPageModel(section, PageType.Search, service.Search(section, q));
+            ViewData["jsData"] = new ListPageModel(PageType.Search);
             return View(nameof(Index), ViewData["jsData"]);
+        }
+
+        [ExportFor(GasparType.TypeScript)]
+        [HttpGet("{section}/search")]
+        public ActionResult<List<ShowModel>> SearchResults(SiteSection section, string q)
+        {
+            return service.Search(section, q);
         }
 
         [HttpGet("{section}/{showId}")]
