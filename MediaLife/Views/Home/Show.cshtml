@@ -1,7 +1,6 @@
 ﻿@model ShowPageModel
 @{
     ViewData["Title"] = Model.Show.PosterName;
-    ViewData["Section"] = Model.SiteSection;
 }
 
 <div class="title">
@@ -23,7 +22,7 @@
             @Html.Button(new Icon("filter"), "page.toggleFilterMenu()", new() { Classes = $"button settings {(Model.Show.IsAdded ? "" : "hide")}" }, new() { { "id", "showFilterButton" } })
             @Html.Button(new Icon("gear"), "page.toggleSettingsMenu()", new() { Classes = $"button settings {(Model.Show.IsAdded ? "" : "hide")}" }, new() { { "id", "showSettingsButton" } })
             @Html.Button($"Add {buttonName}", new("plus"), "page.addShow()", new() { Colour = ButtonColour.Green, Classes = $"button add {(!Model.Show.IsAdded ? "" : "hide")}" }, new() { { "id", "addShowButton" } })
-            @Html.Button($"Remove {buttonName}", new("xmark"), "page.removeShow()", new() { Colour = ButtonColour.Red, Classes = $"button remove {(Model.Show.IsAdded && Model.Show.Episodes.Any(e => e.UserWatchedStatus != UserWatchedStatus.Unwatched) ? "hide" : "")}" }, new() { { "id", "removeShowButton" } })
+            @Html.Button($"Remove {buttonName}", new("xmark"), "page.removeShow()", new() { Colour = ButtonColour.Red, Classes = $"button remove {(Model.Show.IsAdded && Model.Show.Episodes.All(e => e.WatchStatus == WatchedStatus.Unwatched) ? "" : "hide")}" }, new() { { "id", "removeShowButton" } })
         }
         else
         {
