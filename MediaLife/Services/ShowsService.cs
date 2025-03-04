@@ -743,29 +743,31 @@ namespace MediaLife.Services
         }
 
 
-        public List<ShowModel> AnonShows(SiteSection? section = null, List<string>? showIds = null)
+        public List<ShowModel> AnonShows(SiteSection? section = null)
         {
             List<UserShow> userShows = db.UserShows.ToList();
             List<User> users = db.Users.ToList();
+            
+            List<Show> shows = db.Shows.ToList();
+            List<Episode> episodes = db.Episodes.ToList();
+
+            List<UserEpisode> userEpisodes = db.UserEpisodes.Where(e => episodes.Select(e => e.EpisodeId).Contains(e.EpisodeId)).ToList();
+            List<Torrent> torrents = db.Torrents.ToList();
+            
             return (
-                from s in db.Shows
+                from s in shows
                 where section == null || s.SiteSection == section
-                where showIds == null || showIds.Contains(s.ShowId)
                 select new ShowModel(s, null, users, userShows)
                 {
                     Episodes = (
-                        from e in db.Episodes
+                        from e in episodes
                         where e.ShowId == s.ShowId && e.SiteSection == s.SiteSection
                         select new EpisodeModel(e, null)
                         {
-                            Torrents = (
-                                from t in db.Torrents
-                                where t.EpisodeId == e.EpisodeId && t.SiteSection == e.SiteSection
-                                select t
-                            ).ToList(),
+                            Torrents = torrents.Where(t => t.EpisodeId == e.EpisodeId && t.SiteSection == e.SiteSection).ToList(),
                             Users = (
-                                from uEp in db.UserEpisodes
-                                join u in db.Users on uEp.UserId equals u.UserId
+                                from uEp in userEpisodes
+                                join u in users on uEp.UserId equals u.UserId
                                 where uEp.EpisodeId == e.EpisodeId && uEp.SiteSection == e.SiteSection
                                 select new EpisodeUserModel(new()
                                 {
@@ -782,26 +784,29 @@ namespace MediaLife.Services
 
         public List<ShowModel> UsersShows(User user, List<string>? showIds = null)
         {
-            List<UserShow> userShows = db.UserShows.ToList();
+            List<UserShow> userShows = db.UserShows.Where(s => showIds == null || showIds.Contains(s.ShowId)).ToList();
             List<User> accountUsers = db.Users.Where(u => u.AccountId == user.AccountId).ToList();
+
+            List<Show> shows = db.Shows.Where(s => showIds == null || showIds.Contains(s.ShowId)).ToList();
+            List<Episode> episodes = db.Episodes.Where(e => showIds == null || showIds.Contains(e.ShowId)).ToList();
+
+            List<UserEpisode> userEpisodes = db.UserEpisodes.Where(e => episodes.Select(e => e.EpisodeId).Contains(e.EpisodeId)).ToList();
+            List<Torrent> torrents = db.Torrents.ToList();
+            
             return (
-                from s in db.Shows
-                join u in db.UserShows on new { s.ShowId, s.SiteSection, user.UserId } equals new { u.ShowId, u.SiteSection, u.UserId }
+                from s in shows
+                join u in userShows on new { s.ShowId, s.SiteSection, user.UserId } equals new { u.ShowId, u.SiteSection, u.UserId }
                 where showIds == null || showIds.Contains(s.ShowId)
                 select new ShowModel(s, u, accountUsers, userShows)
                 {
                     Episodes = (
-                        from e in db.Episodes
-                        join userEp in db.UserEpisodes on new { e.EpisodeId, e.SiteSection, user.UserId } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
+                        from e in episodes
+                        join userEp in userEpisodes on new { e.EpisodeId, e.SiteSection, user.UserId } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
                         where e.ShowId == s.ShowId && e.SiteSection == s.SiteSection
                         where user == null || userEp == null || userEp.UserId == user.UserId
                         select new EpisodeModel(e, userEp)
                         {
-                            Torrents = (
-                                from t in db.Torrents
-                                where t.EpisodeId == e.EpisodeId && t.SiteSection == e.SiteSection
-                                select t
-                            ).ToList()
+                            Torrents = torrents.Where(t => t.EpisodeId == e.EpisodeId && t.SiteSection == e.SiteSection).ToList()
                         }
                     ).ToList()
                 }
