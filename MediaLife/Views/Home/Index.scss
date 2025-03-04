@@ -31,9 +31,15 @@
         justify-content: center;
     }
 
-    &.youtube .poster.round > a {
-        margin-top: 0;
-        margin-bottom: 0;
+    &.youtube .poster.round {
+        > a {
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        .episode-count {
+            top: 120px;
+        }
     }
 }
 
@@ -48,12 +54,19 @@
     font-size: .9em;
     text-align: left;
 
-    &.round > a {
-        height: 155px;
-        border-radius: 50%;
-        background-size: cover;
-        margin-top: 30px;
-        margin-bottom: 37px;
+    &.round {
+        > a {
+            height: 155px;
+            border-radius: 50%;
+            background-size: cover;
+            margin-top: 30px;
+            margin-bottom: 37px;
+        }
+
+        .episode-count {
+            top: 145px;
+            right: 5px;
+        }
     }
     
     > a {
@@ -117,10 +130,6 @@
         line-height: 2em;
         border-radius: 50%;
         color: white;
-    }
-    &.round .episode-count {
-        top: 125px;
-        right: 5px;
     }
 
     .name {
