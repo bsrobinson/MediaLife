@@ -56,11 +56,13 @@ export interface ClientActions {
 //File: ../../MediaLife/Models/PageModels.cs
 
 export interface ListPageModel {
+    user: User;
     context: ShowModelContext;
     shows: ShowModel[];
 }
 
 export interface ShowPageModel {
+    user: User;
     siteSection: SiteSection;
     show: ShowModel;
     recommenders: string[];
@@ -371,6 +373,7 @@ export interface User {
     name: string;
     password: string;
     role: UserRole;
+    simpleMode: boolean;
 }
 
 export enum UserRole {

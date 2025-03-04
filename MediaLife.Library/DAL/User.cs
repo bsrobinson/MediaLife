@@ -22,8 +22,10 @@ namespace MediaLife.Library.DAL
 
         [Column(TypeName = "nvarchar(12)")]
         public required UserRole Role { get; set; }
-    }
 
+        public bool SimpleMode { get; set; }
+    }
+    
     [ExportFor(GasparType.TypeScript)]
     public enum UserRole
     {

@@ -5,6 +5,7 @@
 
 <div class="title">
     <h1 id="showName" class="edit-list-hide">@Model.Show.Name</h1>
+    <div id="unwatched_count" class="@(Model.Show.UserComplete ? "complete" : "")">@(Model.Show.UserComplete ? @Html.Icon("check") : Model.Show.UserUnwatchedCount)</div>
     <input type="text" id="editListTitle" class="edit-list-show" value="@Model.Show.Name" onchange="page.editedListChanged();" />
     @if (Model.SiteSection == SiteSection.Books)
     {
@@ -19,8 +20,9 @@
             if (Model.SiteSection == SiteSection.Books) { buttonName = "Book" + (Model.Show.EpisodeCount > 1 ? "s" : ""); }
 
             @Html.Button(Model.Show.ActiveUserNames == "" ? "." : Model.Show.ActiveUserNames, new Icon("user"), "page.toggleUserMenu()", new() { Colour = ButtonColour.Transparent, Classes = $"button settings {(Model.Show.IsAdded ? "" : "hide")}" }, new() { { "id", "showUserButton" } })
-            @Html.Button(new Icon("filter"), "page.toggleFilterMenu()", new() { Classes = $"button settings {(Model.Show.IsAdded ? "" : "hide")}" }, new() { { "id", "showFilterButton" } })
-            @Html.Button(new Icon("gear"), "page.toggleSettingsMenu()", new() { Classes = $"button settings {(Model.Show.IsAdded ? "" : "hide")}" }, new() { { "id", "showSettingsButton" } })
+            @Html.Button(new Icon("filter"), "page.toggleFilterMenu()", new() { Classes = $"button settings hide-simple-mode {(Model.Show.IsAdded ? "" : "hide")}" }, new() { { "id", "showFilterButton" } })
+            @Html.Button(new Icon("gear"), "page.toggleSettingsMenu()", new() { Classes = $"button settings hide-simple-mode {(Model.Show.IsAdded ? "" : "hide")}" }, new() { { "id", "showSettingsButton" } })
+            @Html.Button("Full Info", "page.simpleModeOff()", new() { Classes = $"button settings simple-mode-only" })
             @Html.Button($"Add {buttonName}", new("plus"), "page.addShow()", new() { Colour = ButtonColour.Green, Classes = $"button add {(!Model.Show.IsAdded ? "" : "hide")}" }, new() { { "id", "addShowButton" } })
             @Html.Button($"Remove {buttonName}", new("xmark"), "page.removeShow()", new() { Colour = ButtonColour.Red, Classes = $"button remove {(Model.Show.IsAdded && Model.Show.Episodes.All(e => e.WatchStatus == WatchedStatus.Unwatched) ? "" : "hide")}" }, new() { { "id", "removeShowButton" } })
         }

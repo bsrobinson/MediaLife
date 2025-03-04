@@ -780,14 +780,14 @@ namespace MediaLife.Services
             ).ToList();
         }
 
-        public List<ShowModel> UsersShows(User user, List<string> showIds)
+        public List<ShowModel> UsersShows(User user, List<string>? showIds = null)
         {
             List<UserShow> userShows = db.UserShows.ToList();
             List<User> accountUsers = db.Users.Where(u => u.AccountId == user.AccountId).ToList();
             return (
                 from s in db.Shows
                 join u in db.UserShows on new { s.ShowId, s.SiteSection, user.UserId } equals new { u.ShowId, u.SiteSection, u.UserId }
-                where showIds.Contains(s.ShowId)
+                where showIds == null || showIds.Contains(s.ShowId)
                 select new ShowModel(s, u, accountUsers, userShows)
                 {
                     Episodes = (
@@ -810,7 +810,7 @@ namespace MediaLife.Services
 
         public List<ShowModel> ShowsAndLists(User user, List<string>? showIds = null)
         {
-            List<ShowModel> shows = UsersShows(user, showIds ?? []);
+            List<ShowModel> shows = UsersShows(user, showIds);
 
             List<uint> sectionListIds = db.ListEntries.Select(e => e.ListId).Distinct().ToList();
             List<ShowModel> lists = (

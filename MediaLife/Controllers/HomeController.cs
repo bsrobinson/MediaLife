@@ -26,7 +26,7 @@ namespace MediaLife.Controllers
             ViewBag.PirateBayIssue = service.PirateBayIssue();
             ViewBag.ShowUpdateIssue = service.ShowUpdateIssue();
 
-            ViewData["jsData"] = new ListPageModel(PageType.Shows);
+            ViewData["jsData"] = new ListPageModel(User.Obj(), PageType.Shows);
             return View(ViewData["jsData"]);
         }
 
@@ -55,7 +55,7 @@ namespace MediaLife.Controllers
         public ViewResult Search(string q)
         {
             ViewBag.q = q;
-            ViewData["jsData"] = new ListPageModel(PageType.Search);
+            ViewData["jsData"] = new ListPageModel(User.Obj(), PageType.Search);
             return View(nameof(Index), ViewData["jsData"]);
         }
 
@@ -78,7 +78,7 @@ namespace MediaLife.Controllers
                     return NotFound();
                 }
             }
-            ViewData["jsData"] = new ShowPageModel(section, show, service.Recommenders(User.Obj()), service.SomeEpisodesInList(show));
+            ViewData["jsData"] = new ShowPageModel(User.Obj(), section, show, service.Recommenders(User.Obj()), service.SomeEpisodesInList(show));
             return View(ViewData["jsData"]);
         }
 

@@ -12,16 +12,19 @@ namespace MediaLife.Models
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class ListPageModel
     {
+        public User User { get; set; }
         public ShowModelContext Context { get; set; }
         public List<ShowModel> Shows { get; set; } = new();
 
-        public ListPageModel(PageType page)
+        public ListPageModel(User user, PageType page)
         {
+            User = user;
             Context = new(page);
         }
 
-        public ListPageModel(PageType page, List<ShowModel> shows)
+        public ListPageModel(User user, PageType page, List<ShowModel> shows)
         {
+            User = user;
             Context = new(page);
             Shows = shows;
         }
@@ -31,6 +34,7 @@ namespace MediaLife.Models
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class ShowPageModel
     {
+        public User User { get; set; }
         public SiteSection SiteSection { get; set; }
         public ShowModel Show { get; set; }
 
@@ -39,8 +43,9 @@ namespace MediaLife.Models
 
         public bool ShowListOptions { get; set; }
 
-        public ShowPageModel(SiteSection section, ShowModel show, List<string> recommenders, bool someEpisodesInList)
+        public ShowPageModel(User user, SiteSection section, ShowModel show, List<string> recommenders, bool someEpisodesInList)
         {
+            User = user;
             SiteSection = section;
             Show = show;
 

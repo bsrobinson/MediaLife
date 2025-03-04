@@ -120,6 +120,7 @@ export class UsersConfig {
             userForm.appendFormRow('password', { label: 'Pass Key', value: user.password, required: true });
             userForm.appendButtonRow([ this.copyLinkButton ], { thin: true });
             userForm.appendFormRow('role', { label: 'Role', selectOptions: roleOptions })
+            userForm.appendFormRow('simpleMode', { label: 'Simple Mode', value: user.simpleMode })
             userForm.appendElement('input', { type: 'hidden', name: 'userId', value: userId.toString() });
             userForm.appendElement('input', { type: 'hidden', name: 'accountId', value: user.accountId.toString() });
             userForm.appendSubmitRow('Save');

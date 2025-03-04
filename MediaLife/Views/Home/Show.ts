@@ -9,7 +9,7 @@ import { MediaLifeService } from "../../Scripts/Services/~csharpe-services";
 import { MediaLife } from "../../Scripts/Site";
 import '../../Scripts/BRLibraries/Form';
 import { makeButton, makeFormRow } from "../../Scripts/BRLibraries/Form";
-import { Icon } from "../../Scripts/BRLibraries/Icon";
+import { BrandIcon, Icon } from "../../Scripts/BRLibraries/Icon";
 
 
 export class HomeShow {
@@ -121,35 +121,86 @@ export class HomeShow {
 
     drawEpisodes() {
 
-        element('episode_list').innerHTML = '';
-        let episodes = this.data.show.episodes;
+        let episodeList = element('episode_list')
+        episodeList.empty();
+        elementOrNull('series_list_wrapper')?.toggleClassIfTrue('hide', this.data.user.simpleMode && this.data.show.userUnwatchedCount > 0)
+        element('content').toggleClassIfTrue('simple-mode', this.data.user.simpleMode && this.data.show.userUnwatchedCount > 0)
+        element('content').toggleClassIfTrue('simple-mode-thumbnails', this.data.user.simpleMode && this.data.show.userUnwatchedCount > 0 && this.data.show.showEpisodesAsThumbnails)
 
-        if (this.data.siteSection == SiteSection.TV && this.activeSeries !== null) {
-            episodes = this.data.show.episodes.filter(e => e.seriesNumber == this.activeSeries);
-        }
+        if (this.data.user.simpleMode && !this.data.show.showEpisodesAsThumbnails && this.data.show.userUnwatchedCount > 0) {
 
-        let episodeShown = false;
-        for (let i = 0; i < episodes.length; i++) {
-            if ((!this.data.show.hideWatched || episodes[i].userHasWatched == false) && (!this.data.show.hideUnplayable || episodes[i].filePath != null)) {
-                if (this.data.show.showEpisodesAsThumbnails) {
-                    element('episode_list').appendChild(this.episodeThumbnail(episodes[i] as tsEpisodeModel) as HTMLElement);
-                } else {
-                    element('episode_list').appendChild(this.episodeRow(episodes[i] as tsEpisodeModel) as HTMLElement);
+            let watching = this.data.show.episodes.find(e => e.userStartedWatching && !e.userHasWatched) as tsEpisodeModel
+            if (watching) {
+                watching.obj ??= new EpisodeObject(this.data.show as tsShowModel, watching);
+                episodeList.appendElement('div', { html: 'Watching Episode', class: 'title' })
+                episodeList.appendElement('div', { class: 'episode', children: [
+                    new EpisodeFileIcon(watching.obj, '').node,
+                    makeElement('div', { html: `${watching.seriesEpisodeNumber} - ${watching.name}` }),
+                ] })
+                episodeList.appendButton(`Watched`, { icon: new Icon('eye'), classes: 'watching', click: (e) => {
+                    e.button.disableWithSpinIcon()
+                    if (watching.obj) {
+                        watching.obj.toggleWatchedTogether(() => {
+                            this.drawEpisodes()
+                            this.updateEpisodeCount()
+                        });
+                    }
+                } })
+            }
+            else {
+                let nextEpisode = this.data.show.nextEpisode as tsEpisodeModel
+                if (nextEpisode) {
+                    nextEpisode.obj ??= new EpisodeObject(this.data.show as tsShowModel, nextEpisode);
+                    episodeList.appendElement('div', { html: 'Next Episode', class: 'title' })
+                    episodeList.appendElement('div', { class: 'episode', children: [
+                        new EpisodeFileIcon(nextEpisode.obj, '').node,
+                        makeElement('div', { html: `${nextEpisode.seriesEpisodeNumber} - ${nextEpisode.name}` }),
+                    ] })
+                    episodeList.appendButton(`Play`, { icon: new BrandIcon('youtube'), colour: 'green', click: (e) => {
+                        if (nextEpisode.obj) {
+                            window.vlc.open(nextEpisode.obj);
+                            nextEpisode.obj.toggleStartedWatching(() => {
+                                if (this.data.show.episodes.find(e => e.userStartedWatching && !e.userHasWatched)) {
+                                    this.drawEpisodes()
+                                }
+                            })
+                        }
+                    } })
+
                 }
-                episodeShown = true;
             }
-        }
-        if (!episodeShown) {
-            if (episodes.length == 0) {
-                element('episode_list').appendElement('div', { class: 'episode-row no-episodes', html: 'No episodes' })
-            } else {
-                this.removeFiltersButton = makeButton('Remove Filters', { icon: new Icon('filter-circle-xmark'), click: () => this.removeFilters() });
-                element('episode_list').appendElement('div', { class: 'episode-row no-episodes', html: 'All episodes hidden by filters' })
-                    .appendButtonRow([ this.removeFiltersButton ], { justify: 'center' });
-            }
-        }
 
-        element('episode_list').appendButton('Add to List', { classes: 'button add edit-list-show', click: () => this.startAddToListMode() });
+        } else {
+
+            let episodes = this.data.show.episodes;
+
+            if (this.data.siteSection == SiteSection.TV && this.activeSeries !== null) {
+                episodes = this.data.show.episodes.filter(e => e.seriesNumber == this.activeSeries);
+            }
+
+            let episodeShown = false;
+            for (let i = 0; i < episodes.length; i++) {
+                if ((!this.data.show.hideWatched || episodes[i].userHasWatched == false) && (!this.data.show.hideUnplayable || episodes[i].filePath != null)) {
+                    if (this.data.show.showEpisodesAsThumbnails) {
+                        episodeList.appendChild(this.episodeThumbnail(episodes[i] as tsEpisodeModel) as HTMLElement);
+                    } else {
+                        episodeList.appendChild(this.episodeRow(episodes[i] as tsEpisodeModel) as HTMLElement);
+                    }
+                    episodeShown = true;
+                }
+            }
+            if (!episodeShown) {
+                if (episodes.length == 0) {
+                    episodeList.appendElement('div', { class: 'episode-row no-episodes', html: 'No episodes' })
+                } else {
+                    this.removeFiltersButton = makeButton('Remove Filters', { icon: new Icon('filter-circle-xmark'), click: () => this.removeFilters() });
+                    episodeList.appendElement('div', { class: 'episode-row no-episodes', html: 'All episodes hidden by filters' })
+                        .appendButtonRow([ this.removeFiltersButton ], { justify: 'center' });
+                }
+            }
+
+            episodeList.appendButton('Add to List', { classes: 'button add edit-list-show', click: () => this.startAddToListMode() });
+        }
     }
 
     episodeRow(episode: tsEpisodeModel) {
@@ -328,11 +379,13 @@ export class HomeShow {
     }
 
     toggleUserMenu() {
-        let isClosed = element('userShow_menu').containsClass('hide')
-        this.closeSettingsMenus()
-        if (isClosed) {
-            this.openSettingsMenus()
-            element('userShow_menu').removeClass('hide');
+        if (!this.data.user.simpleMode || this.data.show.userUnwatchedCount == 0) {
+            let isClosed = element('userShow_menu').containsClass('hide')
+            this.closeSettingsMenus()
+            if (isClosed) {
+                this.openSettingsMenus()
+                element('userShow_menu').removeClass('hide');
+            }
         }
     }
 
@@ -437,6 +490,26 @@ export class HomeShow {
                 }
             }
         }
+
+        this.updateEpisodeCount()
+    }
+
+
+    updateEpisodeCount() {
+        let count = this.data.show.userUnwatchedCount
+        element('unwatched_count').toggleClassIfTrue('complete', count == 0)
+        if (count == 0) {
+            element('unwatched_count').empty()
+            element('unwatched_count').appendIcon('check')
+        } else {
+            element('unwatched_count').html(count.toString())
+        }
+    }
+
+
+    simpleModeOff() {
+        this.data.user.simpleMode = false;
+        this.drawEpisodes()
     }
 
 
