@@ -136,9 +136,13 @@ export class HomeIndex {
                 }
             }
         });
+        
         this.sortWatching();
         this.sortNotWatchedRecently();
         this.sortNotStarted();
+        if (!element('all_shows').containsClass('hide')) {
+            this.sortAllShows();
+        }
 
         if (elementOrNull('watching_header')) { element('watching_header').style.display = this.showLists.watching.length == 0 ? 'none' : 'flex'; }
         if (elementOrNull('notWatchedRecently_header')) { element('notWatchedRecently_header').style.display = this.showLists.notWatchedRecently.length == 0 ? 'none' : 'flex'; }
@@ -341,6 +345,7 @@ export class HomeIndex {
             if (!ep.obj) {
                 ep.obj = new EpisodeObject(show, ep);
             }
+
             episodeContent.appendChild(new EpisodeFileIcon(ep.obj, 'search-page').node);
             if (this.data.user.simpleMode == false) {
                 episodeContent.appendChild(new EpisodeWatchIcon(ep.obj, 'search-page').node);
