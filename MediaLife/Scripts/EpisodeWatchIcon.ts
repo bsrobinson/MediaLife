@@ -50,11 +50,11 @@ export class EpisodeWatchIcon {
             let buttons = [
                 makeIcon('ban', { label: 'Skip', class: 'skip', click: () => this.toggleSkip() }),
                 makeIcon('stopwatch', { label: 'Started', class: 'started', click: () => this.toggleStarted() }),
-                makeIcon('eye', { label: multiUser ? 'Alone' : this.watchedString, class: 'watched-alone', click: () => this.toggleWatchedAlone() }),
             ]
             if (multiUser) {
-                buttons.push(makeIcon('eye', { label: 'Together', class: 'watched-together', click: () => this.toggleWatchedTogether() }))
+                buttons.push(makeIcon('eye', { label: 'Alone', class: 'watched-alone', click: () => this.toggleWatchedAlone() }))
             }
+            buttons.push(makeIcon('eye', { label: multiUser ? 'Together' : this.watchedString, class: 'watched-together', click: () => this.toggleWatchedTogether() }))
 
             this.iconMenu = new IconMenu(thisId, this.node, this.watchButtonNode, buttons);
             this.updateClass();
