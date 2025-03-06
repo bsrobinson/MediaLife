@@ -84,13 +84,13 @@ namespace MediaLife.Services
             List<EpisodeModel>? episodes = null;
             List<UserShow> showUsers = db.UserShows.Where(u => u.ShowId == showId).ToList();
             UserShow? userShow = showUsers.FirstOrDefault(u => u.UserId == user?.UserId);
-
+            uint UserId = user?.UserId ?? 0;
+                
             if (section == SiteSection.Lists)
             {
                 List? list = db.Lists.SingleOrDefault(l => l.ListId.ToString() == showId);
                 if (list != null)
                 {
-                    uint UserId = user?.UserId ?? 0;
                     show = new() { ShowId = showId, SiteSection = section, Name = list.Name, Updated = list.Created, DeleteWatched = false, DownloadAllTogether = false, KeepAllDownloaded = false };
                     episodes = (
                         from e in db.Episodes
@@ -125,14 +125,12 @@ namespace MediaLife.Services
                 }
                 else if (section != SiteSection.TV && section != SiteSection.YouTube) { throw new NotImplementedException(); }
 
-                uint UserId = user?.UserId ?? 0;
                 show = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
                 episodes = (
                     from e in db.Episodes
                     join userEp in db.UserEpisodes on new { e.EpisodeId, e.SiteSection, UserId } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
                     where e.ShowId == showId && e.SiteSection == section
                     where userEp == null || userEp.UserId == UserId
-                    orderby e.AirDate ?? DateTime.MaxValue, e.Number
                     select new EpisodeModel(e, userEp)
                     {
                         Torrents = (
@@ -161,6 +159,40 @@ namespace MediaLife.Services
 
             if (show != null && episodes != null)
             {
+                //Merged shows
+
+                string? parentName = null;
+                if (show.MergeWithParentShowId != null)
+                {
+                    parentName = db.Shows.FirstOrDefault(s => s.ShowId == show.MergeWithParentShowId)?.Name;
+                }
+
+                foreach (Show mergedShow in db.Shows.Where(s => s.MergeWithParentShowId == show.ShowId && s.MergeWithParentSiteSection == show.SiteSection).ToList())
+                {
+                    episodes.AddRange((
+                        from e in db.Episodes
+                        join userEp in db.UserEpisodes on new { e.EpisodeId, e.SiteSection, UserId } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
+                        where e.ShowId == mergedShow.ShowId && e.SiteSection == mergedShow.SiteSection
+                        where userEp == null || userEp.UserId == UserId
+                        orderby e.AirDate ?? DateTime.MaxValue, e.Number
+                        select new EpisodeModel(e, userEp)
+                        {
+                            MergedFromShow = new()
+                            {
+                                Id = mergedShow.ShowId,
+                                SiteSection = mergedShow.SiteSection,
+                                Name = mergedShow.Name,
+                            },
+                            Poster = e.Poster ?? mergedShow.Poster,
+                            Torrents = (
+                                from t in db.Torrents
+                                where t.EpisodeId == e.EpisodeId && t.SiteSection == e.SiteSection
+                                select t
+                            ).ToList()
+                        }
+                    ));
+                }
+
                 TvNetwork? network =  db.TvNetworks.SingleOrDefault(n => n.NetworkId == show.NetworkId);
                 List<ShowUserModel>? users = null;
                 if (user != null)
@@ -183,10 +215,11 @@ namespace MediaLife.Services
                         episode.Users = users.Select(u => new EpisodeUserModel(u, userEpisodes.FirstOrDefault(uEp => uEp.EpisodeId == episode.Id && uEp.SiteSection == episode.SiteSection && uEp.UserId == u.Id))).ToList();
                     }
                 }
-
+                
                 return new ShowModel(show, userShow, network, users)
                 {
-                    Episodes = episodes
+                    Episodes = episodes,
+                    MergeWithParentShowName = parentName,
                 };
             }
             return null;
@@ -497,81 +530,92 @@ namespace MediaLife.Services
 
         public Show? UpdateSettings(SiteSection section, string showId, ShowSettings model, User user)
         {
-            Show? show = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
-            ShowModel? showModel = GetShow(section, showId);
-            if (show != null)
-            {
-                show.DownloadSeriesOffset = model.DownloadSeriesOffset;
-                show.DeleteWatched = model.DeleteWatched;
-                show.DownloadAllTogether = model.DownloadAllTogether;
-                show.DownloadLimit = model.DownloadLimit;
-                show.KeepAllDownloaded = model.KeepAllDownloaded;
-                db.SaveChanges();
+            Show? parentShow = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section && s.MergeWithParentShowId == null);
+            List<Show> shows = [];
 
-                //Set Skip
-                if (showModel != null && showModel.SkipUntilSeries != model.SkipUntilSeries)
+            if (parentShow != null)
+            {
+                shows = [parentShow];
+                shows.AddRange(db.Shows.Where(s => s.MergeWithParentShowId == parentShow.ShowId));
+            }
+
+            foreach (Show show in shows)
+            {
+                ShowModel? showModel = GetShow(section, showId);
+                if (show != null)
                 {
-                    bool newSkipValue = true;
-                    foreach (EpisodeModel episode in showModel.Episodes.Where(e => e.SeriesNumber < new[] { showModel.SkipUntilSeries, model.SkipUntilSeries }.Max()))
-                    {
-                        if (episode.SeriesNumber == model.SkipUntilSeries)
-                        {
-                            newSkipValue = false;
-                        }
-                        if (episode.UserStartedWatching == null && episode.UserHasWatched == false)
-                        {
-                            Episode? dbEpisode = db.Episodes.SingleOrDefault(e => e.EpisodeId == episode.Id && e.SiteSection == section);
-                            if (dbEpisode != null)
-                            {
-                                dbEpisode.Skip = newSkipValue;
-                            }
-                        }
-                    }
+                    show.DownloadSeriesOffset = model.DownloadSeriesOffset;
+                    show.DeleteWatched = model.DeleteWatched;
+                    show.DownloadAllTogether = model.DownloadAllTogether;
+                    show.DownloadLimit = model.DownloadLimit;
+                    show.KeepAllDownloaded = model.KeepAllDownloaded;
                     db.SaveChanges();
-                }
-            }
 
-            List<UserShow> userShows = db.UserShows.Where(s => s.ShowId == showId && s.SiteSection == section).ToList();
-            UserShow? userShow = userShows.FirstOrDefault(s => s.UserId == user.UserId);
-            if (userShow != null)
-            {
-                userShow.RecommendedBy = model.RecommendedBy;
-                userShow.WatchFromNextPlayable = model.WatchFromNextPlayable;
-                userShow.ShowEpisodesAsThumbnails = model.ShowEpisodesAsThumbnails;
-                userShow.HideWatched = model.HideWatched;
-                userShow.HideUnplayable = model.HideUnplayable;
-                db.SaveChanges();
-            }
-
-            if (model.Users.Any(u => u.HasAdded))
-            {
-                foreach (ShowUserModel userModel in model.Users)
-                {
-                    if (userModel.HasAdded && !userShows.Any(s => s.UserId == userModel.Id))
+                    //Set Skip
+                    if (showModel != null && showModel.SkipUntilSeries != model.SkipUntilSeries)
                     {
-                        AddShow(section, showId, user, userModel.Id);
-                    }
-                    if (!userModel.HasAdded)
-                    {
-                        UserShow? userShowToRemove = userShows.FirstOrDefault(s => s.UserId == userModel.Id);
-                        if (userShowToRemove != null)
+                        bool newSkipValue = true;
+                        foreach (EpisodeModel episode in showModel.Episodes.Where(e => e.SeriesNumber < new[] { showModel.SkipUntilSeries, model.SkipUntilSeries }.Max()))
                         {
-                            foreach (EpisodeModel episode in showModel?.Episodes ?? [])
+                            if (episode.SeriesNumber == model.SkipUntilSeries)
                             {
-                                UserEpisode? userEpisodeToRemove = db.UserEpisodes.FirstOrDefault(e => e.UserId == userModel.Id && e.EpisodeId == episode.Id && e.SiteSection == section);
-                                if (userEpisodeToRemove != null)
+                                newSkipValue = false;
+                            }
+                            if (episode.UserStartedWatching == null && episode.UserHasWatched == false)
+                            {
+                                Episode? dbEpisode = db.Episodes.SingleOrDefault(e => e.EpisodeId == episode.Id && e.SiteSection == section);
+                                if (dbEpisode != null)
                                 {
-                                    db.UserEpisodes.Remove(userEpisodeToRemove);
+                                    dbEpisode.Skip = newSkipValue;
                                 }
                             }
-                            db.UserShows.Remove(userShowToRemove);
-                            db.SaveChanges();
+                        }
+                        db.SaveChanges();
+                    }
+                }
+
+                List<UserShow> userShows = db.UserShows.Where(s => s.ShowId == showId && s.SiteSection == section).ToList();
+                UserShow? userShow = userShows.FirstOrDefault(s => s.UserId == user.UserId);
+                if (userShow != null)
+                {
+                    userShow.RecommendedBy = model.RecommendedBy;
+                    userShow.WatchFromNextPlayable = model.WatchFromNextPlayable;
+                    userShow.ShowEpisodesAsThumbnails = model.ShowEpisodesAsThumbnails;
+                    userShow.HideWatched = model.HideWatched;
+                    userShow.HideUnplayable = model.HideUnplayable;
+                    db.SaveChanges();
+                }
+
+                if (model.Users.Any(u => u.HasAdded))
+                {
+                    foreach (ShowUserModel userModel in model.Users)
+                    {
+                        if (userModel.HasAdded && !userShows.Any(s => s.UserId == userModel.Id))
+                        {
+                            AddShow(section, showId, user, userModel.Id);
+                        }
+                        if (!userModel.HasAdded)
+                        {
+                            UserShow? userShowToRemove = userShows.FirstOrDefault(s => s.UserId == userModel.Id);
+                            if (userShowToRemove != null)
+                            {
+                                foreach (EpisodeModel episode in showModel?.Episodes ?? [])
+                                {
+                                    UserEpisode? userEpisodeToRemove = db.UserEpisodes.FirstOrDefault(e => e.UserId == userModel.Id && e.EpisodeId == episode.Id && e.SiteSection == section);
+                                    if (userEpisodeToRemove != null)
+                                    {
+                                        db.UserEpisodes.Remove(userEpisodeToRemove);
+                                    }
+                                }
+                                db.UserShows.Remove(userShowToRemove);
+                                db.SaveChanges();
+                            }
                         }
                     }
                 }
             }
 
-            return show;
+            return shows.FirstOrDefault();
         }
 
         public ShowModel? UpdateEpisode(SiteSection section, string showId, User user, EpisodeModel episodeModel, bool updateAllUsers)
@@ -793,7 +837,7 @@ namespace MediaLife.Services
             List<UserEpisode> userEpisodes = db.UserEpisodes.Where(e => episodes.Select(e => e.EpisodeId).Contains(e.EpisodeId)).ToList();
             List<Torrent> torrents = db.Torrents.ToList();
             
-            return (
+            List<ShowModel> showModels = (
                 from s in shows
                 join u in userShows on new { s.ShowId, s.SiteSection, user.UserId } equals new { u.ShowId, u.SiteSection, u.UserId }
                 where showIds == null || showIds.Contains(s.ShowId)
@@ -811,6 +855,36 @@ namespace MediaLife.Services
                     ).ToList()
                 }
             ).ToList();
+
+            //Merge shows
+            List<ShowModel> additionalParents = new();
+            foreach (ShowModel show in showModels.Where(s => s.MergeWithParentShowId != null))
+            {
+                ShowModel? parentShow = showModels.FirstOrDefault(s => s.Id == show.MergeWithParentShowId && s.SiteSection == show.MergeWithParentSiteSection);
+                if (parentShow == null)
+                {
+                    Show? dbShow = db.Shows.FirstOrDefault(s => s.ShowId == show.MergeWithParentShowId && s.SiteSection == show.MergeWithParentSiteSection);
+                    if (dbShow != null)
+                    {
+                        UserShow? userShow = userShows.FirstOrDefault(s => s.ShowId == dbShow.ShowId && s.SiteSection == dbShow.SiteSection && s.UserId == user.UserId);
+                        parentShow = new(dbShow, userShow, accountUsers, userShows);
+                        additionalParents.Add(parentShow);
+                    }
+                }
+                if (parentShow != null)
+                {
+                    show.Episodes.ForEach(e => e.MergedFromShow = new()
+                    {
+                        Id = show.Id,
+                        SiteSection = show.SiteSection,
+                        Name = show.Name,
+                    });
+                    parentShow.Episodes = parentShow.Episodes.Concat(show.Episodes).ToList();
+                }
+            }
+            showModels = showModels.Concat(additionalParents).Where(s => s.MergeWithParentShowId == null).ToList();
+
+            return showModels;
         }
 
         public List<ShowModel> ShowsAndLists(User user, List<string>? showIds = null)

@@ -143,12 +143,9 @@ export interface VLC_Meta {
 
 //File: ../../MediaLife/Models/EpisodeModel.cs
 
-export interface EpisodeModel {
-    id: string;
-    siteSection: SiteSection;
+export interface EpisodeModel extends BaseSiteObjectModel {
     seriesNumber: number;
     number: number;
-    name: string;
     poster: string | null;
     certificate: string | null;
     author: string | null;
@@ -169,6 +166,7 @@ export interface EpisodeModel {
     inLists: List[];
     hasTorrents: boolean;
     seriesEpisodeNumber: string;
+    mergedFromShow: BaseSiteObjectModel | null;
 }
 
 export enum UserWatchedStatus {
@@ -187,13 +185,12 @@ export enum WatchedStatus {
 
 //File: ../../MediaLife/Models/ShowModel.cs
 
-export interface ShowModel {
+export interface ShowModel extends BaseSiteObjectModel {
     episodeIndex: number;
-    id: string;
-    siteSection: SiteSection;
-    name: string;
     poster: string | null;
     network: TvNetwork | null;
+    mergeWithParentShowId: string | null;
+    mergeWithParentSiteSection: SiteSection | null;
     episodes: EpisodeModel[];
     isAdded: boolean;
     userAdded: string | null;
@@ -249,6 +246,14 @@ export interface ShowSettings {
     showEpisodesAsThumbnails: boolean;
     skipUntilSeries: number;
     users: ShowUserModel[];
+}
+
+//File: ../../MediaLife/Models/BaseSiteObjectModel.cs
+
+export interface BaseSiteObjectModel {
+    id: string;
+    siteSection: SiteSection;
+    name: string;
 }
 
 //File: ../../MediaLife/Models/ShowUserModel.cs
@@ -358,6 +363,8 @@ export interface Show {
     poster: string | null;
     networkId: number | null;
     updated: string;
+    mergeWithParentShowId: string | null;
+    mergeWithParentSiteSection: SiteSection | null;
     deleteWatched: boolean;
     downloadAllTogether: boolean;
     downloadSeriesOffset: number | null;

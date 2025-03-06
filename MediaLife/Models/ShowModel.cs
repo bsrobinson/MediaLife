@@ -13,32 +13,29 @@ namespace MediaLife.Models
 {
     [ExportFor(GasparType.TypeScript)]
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class ShowModel
+    public class ShowModel : BaseSiteObjectModel
     {
-        public string Id { get; set; }
-        public SiteSection SiteSection { get; set; }
-
-        public string Name { get; set; }
         public string? Poster { get; set; }
         public TvNetwork? Network { get; set; }
+
+        public string? MergeWithParentShowId { get; set; }
+        public SiteSection? MergeWithParentSiteSection { get; set; }
+        public string? MergeWithParentShowName { get; set; }
 
         private List<EpisodeModel> _episodes = new();
         public List<EpisodeModel> Episodes
         {
             get
             {
+                if (_episodes.Any(e => e.MergedFromShow != null) || SiteSection == SiteSection.YouTube)
+                {
+                    return [.._episodes.OrderBy(e => e.AirDate).ThenBy(e => e.MergedFromShow == null ? 0 : 1)];
+                }
                 if (SiteSection == SiteSection.TV)
                 {
-                    return _episodes.OrderBy(e => e.SeriesNumber).ThenBy(e => e.AirDate ?? DateTime.MaxValue).ThenBy(e => e.Number).ToList();
+                    return _episodes.OrderBy(e => e.MergedFromShow == null).ThenBy(e => e.AirDate ?? DateTime.MaxValue).ThenBy(e => e.Number).ToList();
                 }
-                else if (SiteSection == SiteSection.YouTube)
-                {
-                    return _episodes.OrderBy(e => e.AirDate).ToList();
-                }
-                else
-                {
-                    return _episodes.OrderBy(e => e.Number).ToList();
-                }
+                return [.._episodes.OrderBy(e => e.Number).ThenBy(e => e.MergedFromShow == null ? 0 : 1)];
             }
             set { _episodes = value; }
         }
@@ -140,6 +137,8 @@ namespace MediaLife.Models
             Name = show.Name;
             Poster = show.Poster;
             Network = network;
+            MergeWithParentShowId = show.MergeWithParentShowId;
+            MergeWithParentSiteSection = show.MergeWithParentSiteSection;
             RecommendedBy = userShow?.RecommendedBy;
             HideWatched = userShow?.HideWatched ?? false;
             HideUnplayable = userShow?.HideUnplayable ?? false;

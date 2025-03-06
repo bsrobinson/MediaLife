@@ -11,14 +11,10 @@ namespace MediaLife.Models
 {
     [ExportFor(GasparType.TypeScript)]
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class EpisodeModel
+    public class EpisodeModel : BaseSiteObjectModel
     {
-        public string Id { get; set; }
-        public SiteSection SiteSection { get; set; }
-
         public short SeriesNumber { get; set; }
         public short Number { get; set; }
-        public string Name { get; set; } = "";
         public string? Poster { get; set; }
         public string? Certificate { get; set; }
         public string? Author { get; set; }
@@ -64,6 +60,8 @@ namespace MediaLife.Models
 
         public bool HasTorrents => Torrents.Count > 0;
         public string SeriesEpisodeNumber => "S" + SeriesNumber.ToString("D2") + "E" + Number.ToString("D2");
+
+        public BaseSiteObjectModel? MergedFromShow { get; set; }
 
         public string SeriesEpisodeNumberWithOffset(int? offset) => "S" + (SeriesNumber + (offset ?? 0)).ToString("D2") + "E" + Number.ToString("D2");
 

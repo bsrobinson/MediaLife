@@ -26,6 +26,12 @@ namespace MediaLife.Library.DAL
 
         public required DateTime Updated { get; set; }
 
+        [MaxLength(50)]
+        public string? MergeWithParentShowId { get; set; }
+
+        [DataType("uint")]
+        public SiteSection? MergeWithParentSiteSection { get; set; }
+
         public required bool DeleteWatched { get; set; }
 
         public required bool DownloadAllTogether { get; set; }

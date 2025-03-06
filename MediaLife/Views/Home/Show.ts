@@ -11,7 +11,12 @@ import '../../Scripts/BRLibraries/Form';
 import { makeButton, makeFormRow } from "../../Scripts/BRLibraries/Form";
 import { BrandIcon, Icon } from "../../Scripts/BRLibraries/Icon";
 
+//Live!
 
+//Merge UI
+//  Button on parent page (poss new settings menu?)
+//  Button opens popup showing existing children (for removal),
+//      and all other shows you might want to add, with filter, but sorted by lev distance so likely is on top
 export class HomeShow {
 
     service = new MediaLifeService.HomeController();
@@ -28,7 +33,7 @@ export class HomeShow {
 
     init() {
 
-        let lastSeries = this.data.show.nextEpisode ? this.data.show.nextEpisode.seriesNumber : null;
+        let lastSeries = this.data.show.episodes.find(e => e.mergedFromShow == null && !e.userHasWatched)?.seriesNumber
         let maxSeries = Math.max(...this.data.show.episodes.map(e => e.seriesNumber));
         if (!lastSeries) {
             lastSeries = maxSeries;
@@ -40,7 +45,7 @@ export class HomeShow {
         if (elementOrNull('series_list')) {
             element('series_list').innerHTML = '';
             if (maxSeries > 999) { element('series_list_wrapper').addClass('wide'); }
-            let series = [...new Set(this.data.show.episodes.map(e => e.seriesNumber))].sort((a, b) => a - b);
+            let series = [...new Set(this.data.show.episodes.filter(e => e.mergedFromShow == null).map(e => e.seriesNumber))].sort((a, b) => a - b);
 
             element('series_list').appendElement('li').appendElement('a', { html: 'All', href: 'JavaScript:;', events: { click: (e: Event) => this.selectSeries(e) } });
             for (let i = 0; i < series.length; i++) {
@@ -173,20 +178,22 @@ export class HomeShow {
         } else {
 
             let episodes = this.data.show.episodes;
-
-            if (this.data.siteSection == SiteSection.TV && this.activeSeries !== null) {
-                episodes = this.data.show.episodes.filter(e => e.seriesNumber == this.activeSeries);
-            }
-
             let episodeShown = false;
+            let maxDate = new Date(8640000000000000);
+
             for (let i = 0; i < episodes.length; i++) {
-                if ((!this.data.show.hideWatched || episodes[i].userHasWatched == false) && (!this.data.show.hideUnplayable || episodes[i].filePath != null)) {
-                    if (this.data.show.showEpisodesAsThumbnails) {
-                        episodeList.appendChild(this.episodeThumbnail(episodes[i] as tsEpisodeModel) as HTMLElement);
-                    } else {
-                        episodeList.appendChild(this.episodeRow(episodes[i] as tsEpisodeModel) as HTMLElement);
-                    }
+                if ((this.data.siteSection != SiteSection.TV || (this.data.siteSection == SiteSection.TV && (this.activeSeries === null || episodes[i].seriesNumber == this.activeSeries)))
+                    && episodes[i].mergedFromShow == null
+                    && (!this.data.show.hideWatched || episodes[i].userHasWatched == false)
+                    && (!this.data.show.hideUnplayable || episodes[i].filePath != null)
+                ) {
+                    episodeList.appendChild(this.episodeRow(episodes[i] as tsEpisodeModel, this.data.show.showEpisodesAsThumbnails) as HTMLElement);
                     episodeShown = true;
+                    
+                    let nextParentEpisode = episodes.find((e, index) => index > i && e.mergedFromShow == null)
+                    episodes.filter(e => e.mergedFromShow != null && (e.airDate ?? maxDate) >= (episodes[i].airDate ?? maxDate) && (e.airDate ?? maxDate) < (nextParentEpisode?.airDate ?? maxDate)).forEach(ep => {
+                        episodeList.appendChild(this.episodeRow(ep as tsEpisodeModel, this.data.show.showEpisodesAsThumbnails) as HTMLElement);
+                    })
                 }
             }
             if (!episodeShown) {
@@ -203,7 +210,11 @@ export class HomeShow {
         }
     }
 
-    episodeRow(episode: tsEpisodeModel) {
+    episodeRow(episode: tsEpisodeModel, thumbnail: boolean) {
+
+        if (thumbnail) {
+            return this.episodeThumbnail(episode)
+        }
 
         let all = this.activeSeries === null;
         let airDate = episode.airDate ? new Date(episode.airDate) : null;
@@ -218,10 +229,15 @@ export class HomeShow {
         row.className = 'episode-row' + ((airDate == null || airDate > new Date()) && !available ? ' future' + (episode.userHasWatched ? '-but-watched' : '') : '');
 
         let name = row.appendElement('div', { class: 'name-and-number' + (all ? ' wide-number' : '') });
-        if (this.data.siteSection != SiteSection.YouTube) {
-            name.appendElement('span', { class: 'number', html: (all ? 'S' + episode.seriesNumber + ': ' : '') + episode.number });
+        if (episode.mergedFromShow == null) {
+            if (this.data.siteSection != SiteSection.YouTube) {
+                name.appendElement('span', { class: 'number', html: (all ? 'S' + episode.seriesNumber + ': ' : '') + episode.number });
+            }
+            name.appendElement('span', { class: 'name', html: episode.name });
+        } else {
+            name.appendIcon('code-merge', { click: () => { location.href = `/${episode.mergedFromShow?.siteSection}/${episode.mergedFromShow?.id}` }, htmlAttributes: { style: 'text-indent:0; margin-right:0.4rem;', title: `Merged from\n${episode.mergedFromShow.name}\n${episode.seriesEpisodeNumber}` }})
+            name.appendElement('span', { class: 'name', html: `${episode.mergedFromShow.name}: ${episode.name}` });
         }
-        name.appendElement('span', { class: 'name', html: episode.name });
         name.appendElement('span', { html: ' ' });
         if (airDate && this.data.siteSection != SiteSection.Books) {
             name.appendElement('span', { class: 'date', html: airDate.format('j M Y'), title: this.data.siteSection == SiteSection.TV ? airDate.format('g:i a') + ' GMT' : '' });
@@ -653,7 +669,7 @@ export class HomeShow {
                     for (let i = 0; i < episodes.length; i++) {
                         let ep = this.data.show.episodes.find(e => e.id == episodes[i].id);
                         if (ep) {
-                            element('episode_row' + episodes[i].id).replaceWith(this.episodeRow(ep as tsEpisodeModel));
+                            element('episode_row' + episodes[i].id).replaceWith(this.episodeRow(ep as tsEpisodeModel, false));
                         }
                     }
                 });

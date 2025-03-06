@@ -350,7 +350,10 @@ export class HomeIndex {
             if (this.data.user.simpleMode == false) {
                 episodeContent.appendChild(new EpisodeWatchIcon(ep.obj, 'search-page').node);
             }
-            episodeContent.appendElement('span', { html: show.siteSection == SiteSection.TV ? ep.seriesEpisodeNumber + ' &#8211; ' + ep.name : ep.name });
+            if (ep.mergedFromShow != null) {
+                episodeContent.appendIcon('code-merge', { htmlAttributes: { style: 'margin-right:-2px; margin-top:2px;', title: `Merged from ${ep.mergedFromShow.name}` } })
+            }
+            episodeContent.appendElement('span', { html: show.siteSection == SiteSection.TV && ep.mergedFromShow == null ? ep.seriesEpisodeNumber + ' &#8211; ' + ep.name : ep.name });
             if (show.episodeAfterNext) {
                 new EpisodeFileIcon(new EpisodeObject(show, show.episodeAfterNext as tsEpisodeModel));
                 new EpisodeWatchIcon(new EpisodeObject(show, show.episodeAfterNext as tsEpisodeModel));
