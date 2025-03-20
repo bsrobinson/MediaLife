@@ -14,6 +14,7 @@ import { BrandIcon, Icon } from "../../Scripts/BRLibraries/Icon";
 //Live!
 
 //Merge UI
+//  Update child shows, when show page loads
 //  Button on parent page (poss new settings menu?)
 //  Button opens popup showing existing children (for removal),
 //      and all other shows you might want to add, with filter, but sorted by lev distance so likely is on top
@@ -33,7 +34,7 @@ export class HomeShow {
 
     init() {
 
-        let lastSeries = this.data.show.episodes.find(e => e.mergedFromShow == null && !e.userHasWatched)?.seriesNumber
+        let lastSeries = this.data.show.episodes.find(e => !e.skip && e.mergedFromShow == null && !e.userHasWatched)?.seriesNumber
         let maxSeries = Math.max(...this.data.show.episodes.map(e => e.seriesNumber));
         if (!lastSeries) {
             lastSeries = maxSeries;
