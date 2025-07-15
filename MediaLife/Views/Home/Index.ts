@@ -28,6 +28,9 @@ export class HomeIndex {
     }
 
     init() {
+        if (this.data.user.simpleMode) {
+            this.showAllShows()
+        }
         if (this.data.context.pageType == PageType.Search) {
             this.loadSearchResults()
         }
