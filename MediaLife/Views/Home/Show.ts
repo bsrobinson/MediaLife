@@ -431,8 +431,8 @@ export class HomeShow {
     openSettingsMenus() {
         element('blackout').removeClass('hide');
         element('showUserButton').addClass('open');
-        element('showFilterButton').addClass('open');
-        element('showSettingsButton').addClass('open');
+        elementOrNull('showFilterButton')?.addClass('open');
+        elementOrNull('showSettingsButton')?.addClass('open');
     }
 
     closeSettingsMenus() {
@@ -441,8 +441,8 @@ export class HomeShow {
         element('filter_menu').addClass('hide');
         element('settings_menu').addClass('hide');
         element('showUserButton').removeClass('open');
-        element('showFilterButton').removeClass('open');
-        element('showSettingsButton').removeClass('open');
+        elementOrNull('showFilterButton')?.removeClass('open');
+        elementOrNull('showSettingsButton')?.removeClass('open');
     }
 
     removeFilters() {
@@ -474,8 +474,8 @@ export class HomeShow {
 
         this.closeSettingsMenus();
         element<HTMLButtonElement>('showUserButton').disableWithSpinIcon();
-        element<HTMLButtonElement>('showFilterButton').disableWithSpinIcon();
-        element<HTMLButtonElement>('showSettingsButton').disableWithSpinIcon();
+        elementOrNull<HTMLButtonElement>('showFilterButton')?.disableWithSpinIcon();
+        elementOrNull<HTMLButtonElement>('showSettingsButton')?.disableWithSpinIcon();
 
         let form = element<HTMLFormElement>('settings_form').toJson<ShowPageModel>().show as ShowSettings;
         form.users = this.data.show.users;
@@ -693,10 +693,10 @@ export class HomeShow {
         element('episode_list').style.height = (windowHeight - contentTop - 2) + 'px';
         element('poster').style.maxHeight = (windowHeight - contentTop - 2) + 'px';
 
-        if (elementOrNull('showSettingsButton')) {
-            element('userShow_menu').style.top = (element('showSettingsButton').getPosition().top + element('showSettingsButton').offsetHeight + 2) + 'px';
-            element('filter_menu').style.top = (element('showSettingsButton').getPosition().top + element('showSettingsButton').offsetHeight + 2) + 'px';
-            element('settings_menu').style.top = (element('showSettingsButton').getPosition().top + element('showSettingsButton').offsetHeight + 2) + 'px';
+        if (elementOrNull('showUserButton')) {
+            element('userShow_menu').style.top = (element('showUserButton').getPosition().top + element('showUserButton').offsetHeight + 2) + 'px';
+            element('filter_menu').style.top = (element('showUserButton').getPosition().top + element('showUserButton').offsetHeight + 2) + 'px';
+            element('settings_menu').style.top = (element('showUserButton').getPosition().top + element('showUserButton').offsetHeight + 2) + 'px';
         }
         
         if (!this.resized && this.activeSeries && this.activeSeries > 3) {

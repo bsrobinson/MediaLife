@@ -35,6 +35,7 @@
         }
         else
         {
+            @Html.Button(Model.Show.ActiveUserNames == "" ? "." : Model.Show.ActiveUserNames, new Icon("user"), "page.toggleUserMenu()", new() { Colour = ButtonColour.Transparent, Classes = $"button settings edit-list-hide" }, new() { { "id", "showUserButton" } })
             @Html.Button("Edit List", new("pencil"), "page.editList()", new() { Classes = "button edit edit-list-hide" })
             @Html.Button("Save List", new("check"), "page.editListSave()", new() { Colour = ButtonColour.Green, Classes = "button add save edit-list-show" })
             @Html.Button("Cancel", new("xmark"), "page.editListCancel()", new() { Colour = ButtonColour.Red, Classes = "button remove edit-list-show" })

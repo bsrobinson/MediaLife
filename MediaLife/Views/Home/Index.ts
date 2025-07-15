@@ -1,6 +1,6 @@
 ﻿import { MediaLife } from '../../Scripts/Site'
 import { element, elementOrNull, makeElement } from '../../Scripts/BRLibraries/DOM'
-import { PageType, SiteSection } from '../../Scripts/Models/~csharpe-models';
+import { PageType, ShowModel, SiteSection } from '../../Scripts/Models/~csharpe-models';
 import { MediaLifeService } from '../../Scripts/Services/~csharpe-services';
 import { tsEpisodeId, tsEpisodeModel, tsListPageModel, tsShowModel } from '../../Scripts/Models/extendedModels';
 import { EpisodeObject } from '../../Scripts/EpisodeObject';
@@ -63,6 +63,24 @@ export class HomeIndex {
         }
     }
 
+    siteSectionIsEnabled(show: ShowModel): boolean {
+
+        let enabledSiteSections = this.enabledSiteSections()
+        if (enabledSiteSections == null) { return true }
+
+        if (show.siteSection == SiteSection.Lists) {
+            for (let i = 0; i < show.episodes.length; i++) {
+                if (enabledSiteSections[show.episodes[i].siteSection]) {
+                    return true
+                }
+            }
+        } else {
+            return enabledSiteSections[show.siteSection];
+        }
+
+        return false;
+    }
+
     enabledSiteSections(): Record<SiteSection, boolean> | null {
         let enabledSiteSectionsString = readCookie('enabled_site_sections')
         if (enabledSiteSectionsString == null) {
@@ -114,12 +132,11 @@ export class HomeIndex {
 
         this.showLists = { watching: [], notWatchedRecently: [], notStarted: [], allShows: [] };
 
-        let enabledSiteSections = this.enabledSiteSections()
         let watchingWithIds = localStorage.getItem('watching-with') ?? ''
         
         this.data.shows.forEach(show => {
 
-            if (show.skellington || enabledSiteSections == null || enabledSiteSections[show.siteSection]) {
+            if (show.skellington || this.siteSectionIsEnabled(show)) {
             
                 if (this.data.context.pageType == PageType.Search || show.skellington || watchingWithIds == '' || show.users.map(u => u.id).sort().join(',') == watchingWithIds) {
 

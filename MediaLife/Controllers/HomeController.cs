@@ -48,7 +48,7 @@ namespace MediaLife.Controllers
         [HttpGet("/all")]
         public ActionResult<List<ShowModel>> AllShows()
         {
-            return service.ShowsAndLists(User.Obj());
+            return service.UsersShowsAndLists(User.Obj());
         }
 
         [HttpGet("/search")]
@@ -145,15 +145,10 @@ namespace MediaLife.Controllers
 
         [ExportFor(GasparType.TypeScript)]
         [HttpPut("{section}/[action]/{showId}")]
-        public ActionResult<Show> SaveSettings(SiteSection section, string showId, [FromBody] ShowSettings model)
+        public IActionResult SaveSettings(SiteSection section, string showId, [FromBody] ShowSettings model)
         {
-            Show? show = service.UpdateSettings(section, showId, model, User.Obj());
-            if (show != null)
-            {
-                return show;
-            }
-            return NotFound();
-
+            service.UpdateSettings(section, showId, model, User.Obj());
+            return Ok();
         }
 
         [ExportFor(GasparType.TypeScript)]
