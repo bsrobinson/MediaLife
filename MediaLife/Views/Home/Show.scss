@@ -172,7 +172,8 @@ h1 {
             text-align: center;
             color: black;
             text-decoration: none;
-
+            position: relative;
+            
             &:hover {
                 background: #ddd;
             }
@@ -185,6 +186,16 @@ h1 {
 
         &:last-child {
             margin-bottom: 20px;
+        }
+
+        .offset-series {
+            font-size: 0.7rem;
+            position: absolute;
+            bottom: -12px;
+            right: 0;
+            font-style: italic;
+            opacity: 0.4;
+            padding-right: 2px;
         }
     }
 }

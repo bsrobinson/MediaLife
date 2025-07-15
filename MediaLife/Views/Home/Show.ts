@@ -48,11 +48,16 @@ export class HomeShow {
             if (maxSeries > 999) { element('series_list_wrapper').addClass('wide'); }
             let series = [...new Set(this.data.show.episodes.filter(e => e.mergedFromShow == null).map(e => e.seriesNumber))].sort((a, b) => a - b);
 
-            element('series_list').appendElement('li').appendElement('a', { html: 'All', href: 'JavaScript:;', events: { click: (e: Event) => this.selectSeries(e) } });
+            element('series_list').appendElement('li').appendElement('a', { html: 'All', href: 'JavaScript:;', events: { click: (e: Event) => this.selectSeries(e, null) } });
             for (let i = 0; i < series.length; i++) {
-                element('series_list')
+                let seriesBox = element('series_list')
                     .appendElement('li', { class: series[i] == this.activeSeries ? 'active' : '' })
-                    .appendElement('a', { html: series[i].toString(), href: 'JavaScript:;', events: { click: (e: Event) => this.selectSeries(e) } });
+                    .appendElement('a', { href: 'JavaScript:;', events: { click: (e: Event) => this.selectSeries(e, series[i]) } })
+                
+                seriesBox.appendElement('span', { html: series[i].toString() })
+                if (this.data.show.downloadSeriesOffset != null) {
+                    seriesBox.appendElement('span', { class: 'offset-series', html: (series[i] + this.data.show.downloadSeriesOffset).toString() })
+                }
             }
         }
 
@@ -110,7 +115,7 @@ export class HomeShow {
         }
     }
 
-    selectSeries(event: Event) {
+    selectSeries(event: Event, seriesNumber: number | null) {
 
         let seriesButtons = element('series_list').children;
         for (let i = 0; i < seriesButtons.length; i++) {
@@ -119,8 +124,7 @@ export class HomeShow {
 
         if (event.target instanceof HTMLElement) {
             event.target.parentOfType('li')?.addClass('active');
-            let seriesHtml = event.target.html();
-            this.activeSeries = seriesHtml == 'All' ? null : parseInt(seriesHtml);
+            this.activeSeries = seriesNumber;
             this.drawEpisodes();
         }
     }
