@@ -1,5 +1,5 @@
 ﻿import { MediaLife } from '../../Scripts/Site'
-import { element, elementOrNull, makeElement } from '../../Scripts/BRLibraries/DOM'
+import { element, elementOrNull, firstOfClassOrNull, makeElement } from '../../Scripts/BRLibraries/DOM'
 import { PageType, ShowModel, SiteSection } from '../../Scripts/Models/~csharpe-models';
 import { MediaLifeService } from '../../Scripts/Services/~csharpe-services';
 import { tsEpisodeId, tsEpisodeModel, tsListPageModel, tsShowModel } from '../../Scripts/Models/extendedModels';
@@ -28,38 +28,47 @@ export class HomeIndex {
     }
 
     init() {
-        if (this.data.user.simpleMode) {
-            this.showAllShows()
-        }
         if (this.data.context.pageType == PageType.Search) {
             this.loadSearchResults()
         }
         else {
-            this.addShowsToLists([...Array(10).keys()].map(i => ({ id: i.toString(), skellington: true, started: i < 5, watchedRecently: i < 5 } as tsShowModel)))
-            this.service.watching().then(response => {
-                if (response.data) {
-                    this.data.shows = this.data.shows.filter(s => s.skellington && !s.started);
-                    this.showLists.watching = [];
-                    this.showLists.allShows = [];
-                    this.addShowsToLists(response.data as tsShowModel[]);
+            if (this.data.user.simpleMode) {
+                this.showAllShows()
+                this.addShowsToLists([...Array(5).keys()].map(i => ({ id: i.toString(), skellington: true } as tsShowModel)))
+                this.service.allShows().then(response => {
+                    if (response.data) {
+                        this.data.shows = this.data.shows.filter(s => !s.skellington);
+                        this.allShowsLoaded = true
+                        this.addShowsToLists(response.data as tsShowModel[]);
+                    }
+                });
+            } else {
+                this.addShowsToLists([...Array(10).keys()].map(i => ({ id: i.toString(), skellington: true, started: i < 5, watchedRecently: i < 5 } as tsShowModel)))
+                this.service.watching().then(response => {
+                    if (response.data) {
+                        this.data.shows = this.data.shows.filter(s => s.skellington && !s.started);
+                        this.showLists.watching = [];
+                        this.showLists.allShows = [];
+                        this.addShowsToLists(response.data as tsShowModel[]);
 
-                    this.service.notStarted().then(response => {
-                        if (response.data) {
-                            this.data.shows = this.data.shows.filter(s => !s.skellington);
-                            this.showLists.notStarted = [];
-                            this.showLists.allShows = [];
-                            this.addShowsToLists(response.data as tsShowModel[]);
+                        this.service.notStarted().then(response => {
+                            if (response.data) {
+                                this.data.shows = this.data.shows.filter(s => !s.skellington);
+                                this.showLists.notStarted = [];
+                                this.showLists.allShows = [];
+                                this.addShowsToLists(response.data as tsShowModel[]);
 
-                            this.service.allShows().then(response => {
-                                if (response.data) {
-                                    this.allShowsLoaded = true
-                                    this.addShowsToLists(response.data as tsShowModel[]);
-                                }
-                            });
-                        }
-                    });
-                }
-            });
+                                this.service.allShows().then(response => {
+                                    if (response.data) {
+                                        this.allShowsLoaded = true
+                                        this.addShowsToLists(response.data as tsShowModel[]);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
         }
     }
 
@@ -310,8 +319,19 @@ export class HomeIndex {
         } else {
 
             poster = element(toElement).appendElement('div', { id: 'show_' + show.id, class: 'poster' });
-            let image = poster.appendElement('a', { href: 'JavaScript:;', events: { click: () => { location.href =  `/${show.isList ? 'lists' : show.siteSection}/${show.id}`; } } });
-            poster.appendElement('div', { class: 'name', html: show.siteSection != SiteSection.TV ? show.posterName : show.name });
+            let image = poster.appendElement('a', { href: 'JavaScript:;', events: { click: () => {
+                if (this.data.user.simpleMode && show.episodeCount == 1) {
+                    let fileIcon = firstOfClassOrNull('episode-file-icon', element(`show_${show.id}`))
+                    if (fileIcon && fileIcon.className.includes('youtube')) {
+                        fileIcon.click();
+                        return
+                    }
+                }
+                location.href =  `/${show.isList ? 'lists' : show.siteSection}/${show.id}`;
+            }, dblclick: () => {
+                location.href =  `/${show.isList ? 'lists' : show.siteSection}/${show.id}`;
+            }} });
+            poster.appendElement('div', { class: 'name', html: show.siteSection != SiteSection.TV ? show.posterName : show.name});
             poster.appendChild(this.episodeRow(show));
 
             if (show.episodePosters.length == 1 && show.siteSection == SiteSection.Movies) {
@@ -353,14 +373,18 @@ export class HomeIndex {
         let row = makeElement('div', { id: 'episode_row_for_show_' + show.id, class: 'episode-row' });
 
         let episodeContent = row.appendElement('span', { class: 'add-to-list-hide' });
-        let ep = show.nextEpisode as tsEpisodeModel;
-        if (show.userUnwatchedCount == 0) {
+        if (show.userUnwatchedCount == 0 && (!this.data.user.simpleMode || (this.data.user.simpleMode && show.episodeCount > 1))) {
             if (show.startedAiring) {
                 episodeContent.appendIcon('check', { label: 'All ' + (show.siteSection == SiteSection.Books ? 'read' : 'watched') });
             } else if (show.firstAirDate != null) {
                 episodeContent.appendElement('span', { html: (show.siteSection == SiteSection.TV ? 'Starts ' : 'Released ') + new Date(show.firstAirDate).format('j M Y') });
             }
         } else {
+            
+            let ep = show.nextEpisode as tsEpisodeModel;
+            if (this.data.user.simpleMode && show.episodeCount == 1) {
+                ep = show.episodes[0] as tsEpisodeModel
+            }
 
             if (!ep.obj) {
                 ep.obj = new EpisodeObject(show, ep);
@@ -437,14 +461,16 @@ export class HomeIndex {
     }
 
     showAllShows() {
-        element('default_sections').innerHTML = '';
-        element('all_shows').removeClass('hide');
-        this.sortAllShows();
-        document.body.scrollTop = 0;
-
-        if (this.data.shows.length == 0) {
-            element('allShows_posters').addClass('empty');
-            element('allShows_posters').html('You have no shows added.')
+        if (elementOrNull('default_sections')) {
+            element('default_sections').innerHTML = '';
+            element('all_shows').removeClass('hide');
+            this.sortAllShows();
+            document.body.scrollTop = 0;
+            
+            if (this.data.shows.length == 0) {
+                element('allShows_posters').addClass('empty');
+                element('allShows_posters').html('You have no shows added.')
+            }
         }
     }
     

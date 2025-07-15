@@ -207,8 +207,12 @@ h1 {
         display: grid;
         width: 100%;  
         grid-template-columns: repeat(auto-fill, 200px);
-        grid-template-rows: repeat(auto-fit, 144px);
+        grid-template-rows: repeat(auto-fit, 326px);
         justify-content: space-around;
+        
+        &.YouTube {
+            grid-template-rows: repeat(auto-fit, 144px);
+        }
     }
 }
 .episode-row:last-child {
@@ -356,7 +360,7 @@ h1 {
         background-size: 100%;
         background-repeat: no-repeat;
         background-position: center;
-        height: 108px;
+        height: 290px;
         border: 1px solid white;
         margin-bottom: 5px;
         background-color: #ccc;
@@ -376,6 +380,10 @@ h1 {
         &:hover {
             border: 1px dotted black;
         }
+    }
+    
+    &.youtube > a {
+        height: 108px;
     }
 
     .name-row {

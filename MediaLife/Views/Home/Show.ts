@@ -322,7 +322,7 @@ export class HomeShow {
             });
         }
 
-        thumbnail.className = 'episode-thumbnail' + ((airDate == null || airDate > new Date()) && !available ? ' future' + (episode.userHasWatched ? '-but-watched' : '') : '');
+        thumbnail.className = 'episode-thumbnail ' + this.data.show.siteSection + ((airDate == null || airDate > new Date()) && !available ? ' future' + (episode.userHasWatched ? '-but-watched' : '') : '');
 
         let nameRow = thumbnail.appendElement('div', { class: 'name-row' });
         if (this.data.siteSection != SiteSection.YouTube) {

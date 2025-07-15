@@ -107,7 +107,7 @@
             posterClass = Model.Show.Id.StartsWith("PL") ? "wide" : "round";
         }
     }
-    <div id="episode_list" class="@(Model.Show.ShowEpisodesAsThumbnails ? "thumbnails" : "")"></div>
+    <div id="episode_list" class="@(Model.Show.ShowEpisodesAsThumbnails ? "thumbnails" : "") @Model.Show.SiteSection"></div>
     @if (!Model.Show.ShowEpisodesAsThumbnails)
     {
         <div>

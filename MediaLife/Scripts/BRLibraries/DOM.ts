@@ -30,6 +30,7 @@ export interface ElementAttributes {
 
 export interface EventAttributes {
     click?: EventListener
+    dblclick? : EventListener
     contextmenu?: EventListener
     change?: EventListener
     mouseover?: EventListener
