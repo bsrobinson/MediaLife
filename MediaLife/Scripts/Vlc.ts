@@ -46,7 +46,10 @@ export class VLCClient {
             }
 
         }
-        this.callServer(this.service.open(episodeObj.episode.filePath?.replace(/&/g, '%26') || ''));
+        
+        if (episodeObj.episode.filePath) {
+            this.callServer(this.service.open(encodeURIComponent(episodeObj.episode.filePath)));
+        }
     }
 
     play() {
