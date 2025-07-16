@@ -174,6 +174,7 @@ namespace MediaLife.DataProviders
             if (client == null) { return null; }
 
             Collection movieCollection = await client.GetCollectionAsync(collectionId);
+            if (movieCollection == null) { return null; }
 
             ShowModel model = new()
             {
