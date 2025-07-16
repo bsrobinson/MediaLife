@@ -105,7 +105,7 @@ namespace MediaLife.Controllers
                         string? filename = status.Information?.Category?.Meta?.Filename;
                         if (filename == null)
                         {
-                            HttpResponseMessage playlistResponse = httpClient.GetAsync($"{address}requests/playlist.json{qs ?? ""}").Result;
+                            HttpResponseMessage playlistResponse = httpClient.GetAsync($"{address}requests/playlist.json").Result;
                             if (playlistResponse.IsSuccessStatusCode)
                             {
                                 VLCPlaylist? playlist = JsonConvert.DeserializeObject<VLCPlaylist>(playlistResponse.Content.ReadAsStringAsync().Result, settings);
