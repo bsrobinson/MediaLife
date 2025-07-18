@@ -43,9 +43,9 @@ export class AddToList {
 		this.save();
     }
 
-	start(showModel: ShowModel, redirectSection: string) {
+	start(showModel: ShowModel) {
 		this.updateAddToListFromShowModel(showModel);
-		location.href = '/' + redirectSection;
+		location.href = '/';
 	}
 
 	end() {

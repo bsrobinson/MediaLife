@@ -124,6 +124,9 @@ h1 {
     .episode-row:nth-last-child(2), .button.add:last-child {
         margin-bottom: 20px !important;
     }
+    .button.add:last-child {
+        margin-top: 0.6rem;
+    }
     &.edit-list .episode-row:nth-last-child(2) {
         margin-bottom: 0px !important;
     }
@@ -520,7 +523,7 @@ h1 {
 &#content.vlc-open {
     padding-bottom: 0px;
 
-    .episode-row:nth-last-child(2), .episode-thumbnail:nth-last-child(2), #content.vlc-open .button.add:last-child {
+    .episode-row:nth-last-child(2), .episode-thumbnail:nth-last-child(2), .button.add:last-child {
         margin-bottom: 180px !important;
     }
     &.edit-list .episode-row:nth-last-child(2) {

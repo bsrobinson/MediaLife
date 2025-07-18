@@ -569,7 +569,7 @@ export class HomeShow {
                 this.editListSave(true);
             }
         } else {
-            window.addToListMode.start(this.data.show, this.data.siteSection);
+            window.addToListMode.start(this.data.show);
         }
     }
     removeEpisode(event: Event) {

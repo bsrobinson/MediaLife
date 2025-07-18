@@ -925,13 +925,12 @@ namespace MediaLife.Services
             }
             showModels = showModels.Concat(additionalParents).Where(s => s.MergeWithParentShowId == null).ToList();
 
-
-            List<uint> sectionListIds = db.ListEntries.Select(e => e.ListId).Distinct().ToList();
-            List<UserList> userLists = db.UserLists.Where(s => showIds == null || showIds.Contains(s.ListId.ToString())).ToList();
+            List<uint> episodeListIds = db.ListEntries.Where(e => episodes.Select(e => e.EpisodeId).Contains(e.EpisodeId)).Select(e => e.ListId).ToList();  
+            List<UserList> userLists = db.UserLists.Where(s => episodeListIds.Contains(s.ListId)).ToList();
             List<ShowModel> lists = (
                 from l in db.Lists.ToList()
                 join u in userLists on new { l.ListId, user.UserId } equals new { u.ListId, u.UserId }
-                where sectionListIds.Contains(l.ListId)
+                where episodeListIds.Contains(l.ListId)
                 select new ShowModel
                 {
                     Id = l.ListId.ToString(),

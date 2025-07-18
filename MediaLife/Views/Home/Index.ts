@@ -334,11 +334,13 @@ export class HomeIndex {
             poster.appendElement('div', { class: 'name', html: show.siteSection != SiteSection.TV ? show.posterName : show.name});
             poster.appendChild(this.episodeRow(show));
 
-            if (show.episodePosters.length == 1 && show.siteSection == SiteSection.Movies) {
+            const showMultipleThumbsInPoster = show.siteSection == SiteSection.Movies || show.siteSection == SiteSection.Lists
+
+            if (show.episodePosters.length == 1 && showMultipleThumbsInPoster) {
 
                 image.style.backgroundImage = "url('" + show.episodePosters[0] + "')";
 
-            } else if (show.episodePosters.length > 1 && show.siteSection == SiteSection.Movies) {
+            } else if (show.episodePosters.length > 1 && showMultipleThumbsInPoster) {
 
                 for (let i = 0; i < show.episodePosters.length; i++) {
                     image.appendElement('div', { class: 'mini-poster', style: `background-image:url('${show.episodePosters[i]}')` })
