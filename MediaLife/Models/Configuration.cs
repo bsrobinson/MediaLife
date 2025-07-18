@@ -80,18 +80,27 @@ namespace MediaLife.Models
     public class TVConfig : SectionConfig { }
     
     [ExportFor(GasparType.TypeScript)]
-    public class YouTubeConfig : SectionConfig { }
+    public class YouTubeConfig : SectionConfig
+    {
+        ///<summary>Use Proxy for YouTube Connections</summary>
+        [DefaultValue(null), DisplayName("Use Proxy Server for YouTube")]
+        public bool UseProxy { get; set; }
+
+        ///<summary>Internal - cached last good proxy address</summary>
+        [DefaultValue(null)]
+        public string? LastWorkingProxyAddress { get; set;}
+    }
 
     [ExportFor(GasparType.TypeScript)]
     public class MovieConfig : SectionConfig 
-    { 
+    {
         ///<summary>API Key for TheMovieDB</summary>
         [DefaultValue(null), DisplayName("TheMovieDb Api Key")]
         public string? TheMovieDbApiKey { get; set; }
         
         ///<summary>Country code used for movie release date</summary>
         [DefaultValue("GB"), DisplayName("Country Code")]
-        public string? MovieReleaseCountryCode { get; set; }        
+        public string? MovieReleaseCountryCode { get; set; }
     }
 
     [ExportFor(GasparType.TypeScript)]

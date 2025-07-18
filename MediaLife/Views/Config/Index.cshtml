@@ -78,6 +78,7 @@
             })
             @Html.FormRowFor(m => Model.UserConfig.MovieConfig.MovieReleaseCountryCode, new() { Style = FormRowStyle.OutlineInset })
             @Html.FormRowFor(m => Model.UserConfig.MovieConfig.TheMovieDbApiKey)
+            @Html.FormRowFor(m => Model.UserConfig.YouTubeConfig.UseProxy)
             @Html.SubmitRow("Save")
         </form>
 

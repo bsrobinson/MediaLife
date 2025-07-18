@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
+using AngleSharp.Text;
 using MediaLife.Library.Models;
 using MediaLife.Models;
 using MediaLife.Services;
@@ -21,8 +24,62 @@ namespace MediaLife.DataProviders
 
         public YouTube(Library.DAL.MySqlContext dbContext)
         {
-            client = new YoutubeClient();
             db = dbContext;
+            ConfigService configSrv = new(db);
+
+            YouTubeConfig youTubeConfig = configSrv.Config.UserConfig.YouTubeConfig;
+            if (youTubeConfig.UseProxy)
+            {
+                WebProxy? workingProxy = null;
+                if (youTubeConfig.LastWorkingProxyAddress != null)
+                {
+                    workingProxy = TestProxy(youTubeConfig.LastWorkingProxyAddress, wasGood: true);
+                }
+
+                if (workingProxy == null)
+                {
+                    string[] proxies = new HttpClient().GetStringAsync("https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text").Result.SplitSpaces();
+                    foreach (var server in proxies)
+                    {
+                        workingProxy ??= TestProxy(server);
+                    }
+                }
+
+                if (workingProxy == null)
+                {
+                    throw new Exception("Cannot find working proxy");
+                }
+
+                if (workingProxy.Address?.ToString() != youTubeConfig.LastWorkingProxyAddress)
+                {
+                    youTubeConfig.LastWorkingProxyAddress = workingProxy.Address?.ToString();
+                    configSrv.SaveToDatabase();
+                }
+
+                client = new YoutubeClient(new HttpClient(new HttpClientHandler() { Proxy = workingProxy }));
+            }
+            else
+            {
+                client = new YoutubeClient();
+            }
+        }
+
+        private WebProxy? TestProxy(string address, bool wasGood = false)
+        {
+            try
+            {
+                WebProxy proxy = new(address);
+                HttpClient testClient = new(new HttpClientHandler() { Proxy = proxy });
+                testClient.Timeout = TimeSpan.FromSeconds(wasGood ? 15 : 5);
+                
+                _ = new ChannelClient(testClient).GetAsync("UCK8sQmJBp8GCxrOtXWBpyEA").Result;
+
+                return proxy;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public async Task<List<ShowModel>> SearchAsync(ShowsService showsService, string query)

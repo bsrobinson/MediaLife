@@ -45,7 +45,7 @@
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
         <PackageReference Include="TMDbLib" Version="1.9.2" />
         <PackageReference Include="GoodreadsScrapper" Version="1.0.1" />
-        <PackageReference Include="YoutubeExplode" Version="6.3.9" />
+        <PackageReference Include="YoutubeExplode" Version="6.5.4" />
     </ItemGroup>
 
     <ItemGroup>
