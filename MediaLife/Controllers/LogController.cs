@@ -43,7 +43,7 @@ namespace MediaLife.Controllers
             }
             model.SortSessions();
 
-            ViewData["jsData"] = db.LoggedPayloads.First();
+            ViewData["jsData"] = db.LoggedPayloads.OrderBy(p => p.Id).First();
 
             return View(model);
         }
