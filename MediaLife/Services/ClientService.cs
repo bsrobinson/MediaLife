@@ -31,9 +31,9 @@ namespace MediaLife.Services
             db.Log(SessionId, $"{label} {clientData.Files.Count} Files");
             db.Log(SessionId, $"{label} {clientData.Torrents.Count} Torrents");
         }
-        public void LogError(string error)
+        public void LogError(Exception exception)
         {
-            db.Log(SessionId, error, true);
+            db.Log(SessionId, exception.Message, exception);
         }
         public void LogDisabled()
         {
@@ -335,7 +335,7 @@ namespace MediaLife.Services
                     foreach (EpisodeModel episode in show.Episodes.Where(e => e.InCloud == true))
                     {
                         episodes.Add(episode);
-                        db.Log(SessionId, $"Request Download from Cloud (next episode): {episode.FilePath}");
+                        db.Log(SessionId, $"Request Download from Cloud (keep all offline): {episode.FilePath}");
                     }
                 }
                 else if (configSrv.Config.UserConfig.SectionConfig(show.SiteSection).KeepNextEpisodeOffCloud)

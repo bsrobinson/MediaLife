@@ -18,6 +18,8 @@ namespace MediaLife.Library.DAL
 
         public required bool Error { get; set; }
 
+        public string? StackTrace { get; set; }
+
         public required bool Emailed { get; set; }
 
     }

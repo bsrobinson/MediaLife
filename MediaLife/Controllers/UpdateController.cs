@@ -108,7 +108,7 @@ namespace MediaLife.Controllers
                     }
                     else
                     {
-                        clientSrv.LogError($"Update Stopped: Client File Threshold Breached. {clientData.Files.Count} files sent, {dbFileCount} files in database ({clientFilePercentage}%)");
+                        clientSrv.LogError(new Exception($"Update Stopped: Client File Threshold Breached. {clientData.Files.Count} files sent, {dbFileCount} files in database ({clientFilePercentage}%)"));
                         clientActions.Error = "Error: File Threshold Breached";
                         return clientActions;
                     }
@@ -120,7 +120,7 @@ namespace MediaLife.Controllers
             }
             catch (Exception e)
             {
-                clientSrv.LogError(e.Message);
+                clientSrv.LogError(e);
                 throw;
             }
         }

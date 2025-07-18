@@ -431,7 +431,8 @@ namespace MediaLife.Services
                         string? updateErrorMessage = await UpdateShowAsync((SiteSection)show.SiteSection, show.ShowId);
                         if (updateErrorMessage != null)
                         {
-                            db.Log(SessionId, "Update for " + section.ToString() + " failed - " + updateErrorMessage, true);
+                            Exception error = new Exception("Update for " + section.ToString() + " failed - " + updateErrorMessage);
+                            db.Log(SessionId, error.Message, error);
                         }
                     }
                 }

@@ -6,14 +6,15 @@ namespace MediaLife.Extensions
 {
 	public static class MySqlContextExtension
     {
-        public static void Log(this MySqlContext db, Guid sessionId, string message, bool isError = false)
+        public static void Log(this MySqlContext db, Guid sessionId, string message, Exception? exception = null)
         {
             db.Log.Add(new Log
             {
                 SessionId = sessionId.ToString(),
                 Timestamp = DateTime.Now,
                 Message = message,
-                Error = isError,
+                Error = exception != null,
+                StackTrace = exception?.StackTrace,
                 Emailed = false,
             });
             db.SaveChanges();
