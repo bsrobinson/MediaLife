@@ -238,7 +238,7 @@ namespace MediaLife.Services
             return null;
         }
 
-        public async Task<ShowModel?> GetShowFromProviderAsync(SiteSection section, string showId)
+        public async Task<ShowModel?> GetShowFromProviderAsync(SiteSection section, string showId, Guid? updateSessionId = null)
         {
             bool idIsNumeric = int.TryParse(showId, out int numericId);
             if (section == SiteSection.TV && idIsNumeric)
@@ -247,7 +247,7 @@ namespace MediaLife.Services
             }
             if (section == SiteSection.YouTube)
             {
-                return await new YouTube(db).GetShowAsync(showId);
+                return await new YouTube(db, updateSessionId).GetShowAsync(showId);
             }
             if (section == SiteSection.Movies && idIsNumeric)
             {
@@ -417,7 +417,7 @@ namespace MediaLife.Services
             return false;
         }
 
-        public async Task<bool> UpdateLastUpdatedAsync()
+        public async Task<bool> UpdateLastUpdatedAsync(Guid updateSessionId)
         {
             foreach (SiteSection section in Enum.GetValues(typeof(SiteSection)))
             {
@@ -428,7 +428,7 @@ namespace MediaLife.Services
                     if (show != null)
                     {
                         db.Log(SessionId, "Updating for " + section.ToString() + " - " + show.Name);
-                        string? updateErrorMessage = await UpdateShowAsync((SiteSection)show.SiteSection, show.ShowId);
+                        string? updateErrorMessage = await UpdateShowAsync(show.SiteSection, show.ShowId, updateSessionId);
                         if (updateErrorMessage != null)
                         {
                             Exception error = new Exception("Update for " + section.ToString() + " failed - " + updateErrorMessage);
@@ -440,7 +440,7 @@ namespace MediaLife.Services
             return true;
         }
 
-        public async Task<string?> UpdateShowAsync(SiteSection section, string showId)
+        public async Task<string?> UpdateShowAsync(SiteSection section, string showId, Guid? updateSessionId = null)
         {
             if (section == SiteSection.Lists && uint.TryParse(showId, out uint numericId))
             {
@@ -450,7 +450,7 @@ namespace MediaLife.Services
             Show? dbShow = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
             if (dbShow != null)
             {
-                ShowModel? showModel = await GetShowFromProviderAsync(section, showId);
+                ShowModel? showModel = await GetShowFromProviderAsync(section, showId, updateSessionId);
 
                 if (showModel != null)
                 {
@@ -521,7 +521,7 @@ namespace MediaLife.Services
             foreach (ListEntry entry in db.ListEntries.Where(e => e.ListId == listId).ToList())
             {
                 string showId = db.Episodes.Single(e => e.EpisodeId == entry.EpisodeId && entry.SiteSection == entry.SiteSection).ShowId;
-                string? result = UpdateShowAsync((SiteSection)entry.SiteSection, showId).Result;
+                string? result = UpdateShowAsync(entry.SiteSection, showId).Result;
                 if (result != null)
                 {
                     results.Add(result);

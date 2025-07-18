@@ -17,7 +17,7 @@ namespace MediaLife.Services
     public class ClientService
     {
         private MySqlContext db;
-        private Guid SessionId;
+        public Guid SessionId { get; set; }
 
         public ClientService(MySqlContext context, Guid? sessionId = null)
         {

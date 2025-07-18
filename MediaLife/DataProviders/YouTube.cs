@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Text;
+using MediaLife.Extensions;
 using MediaLife.Library.Models;
 using MediaLife.Models;
 using MediaLife.Services;
@@ -19,30 +21,39 @@ namespace MediaLife.DataProviders
 {
     public class YouTube
     {
-        private YoutubeClient client;
-        private Library.DAL.MySqlContext db;
+        private readonly YoutubeClient client;
+        private readonly ConfigService configSrv;
+        private readonly Library.DAL.MySqlContext db;
 
-        public YouTube(Library.DAL.MySqlContext dbContext)
+        public YouTube(Library.DAL.MySqlContext dbContext, Guid? updateSessionId = null)
         {
             db = dbContext;
-            ConfigService configSrv = new(db);
-
-            YouTubeConfig youTubeConfig = configSrv.Config.UserConfig.YouTubeConfig;
-            if (youTubeConfig.UseProxy)
+            configSrv = new(db);
+            
+            if (configSrv.Config.UserConfig.YouTubeConfig.UseProxy)
             {
                 WebProxy? workingProxy = null;
-                if (youTubeConfig.LastWorkingProxyAddress != null)
+                if (configSrv.Config.UserConfig.YouTubeConfig.LastWorkingProxyAddress != null)
                 {
-                    workingProxy = TestProxy(youTubeConfig.LastWorkingProxyAddress, wasGood: true);
+                    workingProxy = TestProxy(configSrv.Config.UserConfig.YouTubeConfig.LastWorkingProxyAddress, wasGood: true);
+                    if (updateSessionId != null && workingProxy != null) { db.Log((Guid)updateSessionId, $"YouTube update using proxy {workingProxy.Address} (again)"); }
                 }
 
                 if (workingProxy == null)
                 {
-                    string[] proxies = new HttpClient().GetStringAsync("https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text").Result.SplitSpaces();
-                    foreach (var server in proxies)
+                    Stack<string> proxies = new(new HttpClient().GetStringAsync("https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text").Result.SplitSpaces().Reverse());
+                    Stopwatch sw = new();
+                    sw.Start();
+
+                    while (workingProxy == null && sw.ElapsedMilliseconds < 60000)
                     {
-                        workingProxy ??= TestProxy(server);
+                        if (proxies.TryPeek(out var proxy))
+                        {
+                            workingProxy = TestProxy(proxy);
+                        }
                     }
+
+                    if (updateSessionId != null && workingProxy != null) { db.Log((Guid)updateSessionId, $"YouTube update using proxy {workingProxy.Address}"); }
                 }
 
                 if (workingProxy == null)
@@ -50,13 +61,12 @@ namespace MediaLife.DataProviders
                     throw new Exception("Cannot find working proxy");
                 }
 
-                if (workingProxy.Address?.ToString() != youTubeConfig.LastWorkingProxyAddress)
-                {
-                    youTubeConfig.LastWorkingProxyAddress = workingProxy.Address?.ToString();
-                    configSrv.SaveToDatabase();
-                }
+                SetLastUsedProxy(workingProxy);
 
-                client = new YoutubeClient(new HttpClient(new HttpClientHandler() { Proxy = workingProxy }));
+                HttpClient httpClient = new(new HttpClientHandler() { Proxy = workingProxy });
+                httpClient.Timeout = TimeSpan.FromSeconds(30);
+
+                client = new YoutubeClient(httpClient);
             }
             else
             {
@@ -64,8 +74,10 @@ namespace MediaLife.DataProviders
             }
         }
 
-        private WebProxy? TestProxy(string address, bool wasGood = false)
+        private WebProxy? TestProxy(string? address, bool wasGood = false)
         {
+            if (address == null) { return null; }
+
             try
             {
                 WebProxy proxy = new(address);
@@ -80,6 +92,21 @@ namespace MediaLife.DataProviders
             {
                 return null;
             }
+        }
+
+        private void SetLastUsedProxy(WebProxy proxy)
+        {
+            if (proxy.Address?.ToString() != configSrv.Config.UserConfig.YouTubeConfig.LastWorkingProxyAddress)
+            {
+                configSrv.Config.UserConfig.YouTubeConfig.LastWorkingProxyAddress = proxy.Address?.ToString();
+                configSrv.SaveToDatabase();
+            }
+        }
+
+        private void ClearLastUsedProxy()
+        {
+            configSrv.Config.UserConfig.YouTubeConfig.LastWorkingProxyAddress = null;
+            configSrv.SaveToDatabase();
         }
 
         public async Task<List<ShowModel>> SearchAsync(ShowsService showsService, string query)
@@ -137,7 +164,10 @@ namespace MediaLife.DataProviders
             {
                 playlistVideos = (await client.Playlists.GetVideosAsync(playlist.Id)).ToList();
             }
-            catch { }
+            catch
+            {
+                ClearLastUsedProxy();
+            }
             
             ShowModel model = (
                 new ShowModel
@@ -164,7 +194,10 @@ namespace MediaLife.DataProviders
             {
                 playlistVideos = (await client.Channels.GetUploadsAsync(channel.Id)).ToList();
             }
-            catch { }
+            catch
+            {
+                ClearLastUsedProxy();
+            }
             
             ShowModel model = (
                 new ShowModel

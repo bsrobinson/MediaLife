@@ -56,7 +56,7 @@ namespace MediaLife.Controllers
         public void UpdateLastUpdated()
         {
             showSrv.HousekeepLogs(configSrv.Config.LogDays);
-            _ = showSrv.UpdateLastUpdatedAsync().Result;
+            _ = showSrv.UpdateLastUpdatedAsync(clientSrv.SessionId).Result;
         }
 
         [ExportFor(GasparType.TypeScript)]
@@ -74,7 +74,11 @@ namespace MediaLife.Controllers
                     clientSrv.LogReceivedPayload(JsonSerializer.Serialize(clientData));
                     clientSrv.LogClientData(clientData, "Received");
 
-                    _ = showSrv.UpdateLastUpdatedAsync().Result;
+                    try
+                    {
+                        _ = showSrv.UpdateLastUpdatedAsync(clientSrv.SessionId).Result;
+                    }
+                    catch {}
 
                     List<ShowModel> dbData = showSrv.AnonShows();
                     List<EpisodeModel> dbEpisodes = dbData.SelectMany(s => s.Episodes).ToList();
