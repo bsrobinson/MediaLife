@@ -78,7 +78,10 @@ namespace MediaLife.Controllers
                     {
                         _ = showSrv.UpdateLastUpdatedAsync(clientSrv.SessionId).Result;
                     }
-                    catch {}
+                    catch (Exception e)
+                    {
+                        clientSrv.LogError(e);
+                    }
 
                     List<ShowModel> dbData = showSrv.AnonShows();
                     List<EpisodeModel> dbEpisodes = dbData.SelectMany(s => s.Episodes).ToList();

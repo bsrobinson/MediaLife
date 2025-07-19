@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
-using AngleSharp.Text;
 using MediaLife.Extensions;
 using MediaLife.Library.Models;
 using MediaLife.Models;
@@ -29,7 +30,7 @@ namespace MediaLife.DataProviders
         {
             db = dbContext;
             configSrv = new(db);
-            
+
             if (configSrv.Config.UserConfig.YouTubeConfig.UseProxy)
             {
                 WebProxy? workingProxy = null;
@@ -37,23 +38,30 @@ namespace MediaLife.DataProviders
                 {
                     workingProxy = TestProxy(configSrv.Config.UserConfig.YouTubeConfig.LastWorkingProxyAddress, wasGood: true);
                     if (updateSessionId != null && workingProxy != null) { db.Log((Guid)updateSessionId, $"YouTube update using proxy {workingProxy.Address} (again)"); }
+
+                    if (workingProxy == null) { ClearLastUsedProxy(); }
                 }
 
                 if (workingProxy == null)
                 {
-                    Stack<string> proxies = new(new HttpClient().GetStringAsync("https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text").Result.SplitSpaces().Reverse());
-                    Stopwatch sw = new();
-                    sw.Start();
-
-                    while (workingProxy == null && sw.ElapsedMilliseconds < 60000)
+                    ProxyScrapeModel? json = new HttpClient().GetFromJsonAsync<ProxyScrapeModel>("https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=json").Result;
+                    if (json != null)
                     {
-                        if (proxies.TryPeek(out var proxy))
-                        {
-                            workingProxy = TestProxy(proxy);
-                        }
-                    }
+                        Stack<ProxyModel> proxies = new(json.Proxies.Where(p => p.Alive).OrderBy(p => p.LastSeen));
+                    
+                        Stopwatch sw = new();
+                        sw.Start();
 
-                    if (updateSessionId != null && workingProxy != null) { db.Log((Guid)updateSessionId, $"YouTube update using proxy {workingProxy.Address}"); }
+                        while (workingProxy == null && sw.ElapsedMilliseconds < 300000)
+                        {
+                            if (proxies.TryPeek(out var proxy))
+                            {
+                                workingProxy = TestProxy(proxy.Proxy);
+                            }
+                        }
+
+                        if (updateSessionId != null && workingProxy != null) { db.Log((Guid)updateSessionId, $"YouTube update using proxy {workingProxy.Address}"); }
+                    }
                 }
 
                 if (workingProxy == null)
@@ -109,66 +117,78 @@ namespace MediaLife.DataProviders
             configSrv.SaveToDatabase();
         }
 
+
         public async Task<List<ShowModel>> SearchAsync(ShowsService showsService, string query)
         {
-            List<ShowModel> shows = new();
-            List<Task<ShowModel?>> showTasks = new();
-            
-            int score = 999;
-            foreach (ChannelSearchResult result in await client.Search.GetChannelsAsync(query).CollectAsync(10))
-            {
-                ShowModel? showInDb = showsService.GetShow(SiteSection.YouTube, result.Id);
-                if (showInDb != null)
-                {
-                    shows.Add(showInDb);
-                }
-                else
-                {
-                    Channel channel = new(result.Id, result.Title, result.Thumbnails);
-                    showTasks.Add(GetShowAsync(channel, score, false));
-                }
-                score--;
-            }
-
-            while (showTasks.Any())
-            {
-                Task<ShowModel?> finishedTask = Task.WhenAny(showTasks).Result;
-                showTasks.Remove(finishedTask);
-                if (finishedTask.Result != null)
-                {
-                    shows.Add(finishedTask.Result);
-                }
-            }
-
-            return shows;
-        }
-
-        public async Task<ShowModel?> GetShowAsync(string showId)
-        {
-            if (showId.StartsWith("PL"))
-            {
-                Playlist show = await client.Playlists.GetAsync(showId);
-                return await GetShowAsync(show);
-            }
-            else
-            {
-                Channel show = await client.Channels.GetAsync(showId);
-                return await GetShowAsync(show);
-            }
-        }
-
-        private async Task<ShowModel?> GetShowAsync(Playlist playlist, double? searchScore = null, bool getPublishDate = true)
-        {
-            List<PlaylistVideo> playlistVideos = new();
             try
             {
-                playlistVideos = (await client.Playlists.GetVideosAsync(playlist.Id)).ToList();
+                List<ShowModel> shows = new();
+                List<Task<ShowModel?>> showTasks = new();
+                
+                int score = 999;
+                foreach (ChannelSearchResult result in await client.Search.GetChannelsAsync(query).CollectAsync(10))
+                {
+                    ShowModel? showInDb = showsService.GetShow(SiteSection.YouTube, result.Id);
+                    if (showInDb != null)
+                    {
+                        shows.Add(showInDb);
+                    }
+                    else
+                    {
+                        Channel channel = new(result.Id, result.Title, result.Thumbnails);
+                        showTasks.Add(GetShowAsync(channel, score, false));
+                    }
+                    score--;
+                }
+
+                while (showTasks.Any())
+                {
+                    Task<ShowModel?> finishedTask = Task.WhenAny(showTasks).Result;
+                    showTasks.Remove(finishedTask);
+                    if (finishedTask.Result != null)
+                    {
+                        shows.Add(finishedTask.Result);
+                    }
+                }
+
+                return shows;
             }
             catch
             {
                 ClearLastUsedProxy();
+                throw;
             }
-            
+        }
+
+        public async Task<ShowModel?> GetShowAsync(string showId)
+        {
+            try
+            {    
+                CancellationTokenSource cancellationTokenSource = new();
+                cancellationTokenSource.CancelAfter(60000);
+
+                if (showId.StartsWith("PL"))
+                {
+                    Playlist show = await client.Playlists.GetAsync(showId);
+                    return await GetShowAsync(show, cancellationToken: cancellationTokenSource.Token);
+                }
+                else
+                {
+                    Channel show = await client.Channels.GetAsync(showId);
+                    return await GetShowAsync(show, cancellationToken: cancellationTokenSource.Token);
+                }
+            }
+            catch
+            {
+                ClearLastUsedProxy();
+                throw;
+            }
+        }
+
+        private async Task<ShowModel?> GetShowAsync(Playlist playlist, double? searchScore = null, bool getPublishDate = true, CancellationToken cancellationToken = default)
+        {
+            List<PlaylistVideo> playlistVideos = (await client.Playlists.GetVideosAsync(playlist.Id, cancellationToken)).ToList();
+
             ShowModel model = (
                 new ShowModel
                 {
@@ -187,17 +207,9 @@ namespace MediaLife.DataProviders
             return model;
         }
 
-        private async Task<ShowModel?> GetShowAsync(Channel channel, double? searchScore = null, bool getPublishDate = true)
+        private async Task<ShowModel?> GetShowAsync(Channel channel, double? searchScore = null, bool getPublishDate = true, CancellationToken cancellationToken = default)
         {
-            List<PlaylistVideo> playlistVideos = new();
-            try
-            {
-                playlistVideos = (await client.Channels.GetUploadsAsync(channel.Id)).ToList();
-            }
-            catch
-            {
-                ClearLastUsedProxy();
-            }
+            List<PlaylistVideo> playlistVideos = (await client.Channels.GetUploadsAsync(channel.Id, cancellationToken)).ToList();
             
             ShowModel model = (
                 new ShowModel

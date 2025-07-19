@@ -31,9 +31,9 @@ namespace MediaLife.Services
             db.Log(SessionId, $"{label} {clientData.Files.Count} Files");
             db.Log(SessionId, $"{label} {clientData.Torrents.Count} Torrents");
         }
-        public void LogError(Exception exception)
+        public void LogError(Exception exception, string messagePrefix = "")
         {
-            db.Log(SessionId, exception.Message, exception);
+            db.Log(SessionId, $"{messagePrefix}{(messagePrefix != "" ? ": " : "")}{exception.Message}", exception);
         }
         public void LogDisabled()
         {
@@ -326,29 +326,29 @@ namespace MediaLife.Services
                 }
             }
 
-            ConfigService configSrv = new(db);
-            foreach (ShowModel show in shows)
-            {
-                if (show.KeepAllDownloaded) 
-                {
-                    //Keep all offline
-                    foreach (EpisodeModel episode in show.Episodes.Where(e => e.InCloud == true))
-                    {
-                        episodes.Add(episode);
-                        db.Log(SessionId, $"Request Download from Cloud (keep all offline): {episode.FilePath}");
-                    }
-                }
-                else if (configSrv.Config.UserConfig.SectionConfig(show.SiteSection).KeepNextEpisodeOffCloud)
-                {
-                    //Offline next episode
-                    EpisodeModel? nextEpisodeWithFile = show.Unwatched.FirstOrDefault(e => e.FilePath != null);
-                    if (nextEpisodeWithFile?.InCloud == true && nextEpisodeWithFile.FilePath != null)
-                    {
-                        episodes.Add(nextEpisodeWithFile);
-                        db.Log(SessionId, $"Request Download from Cloud (next episode): {nextEpisodeWithFile.FilePath}");
-                    }
-                }
-            }
+            // ConfigService configSrv = new(db);
+            // foreach (ShowModel show in shows)
+            // {
+            //     if (show.KeepAllDownloaded) 
+            //     {
+            //         //Keep all offline
+            //         foreach (EpisodeModel episode in show.Episodes.Where(e => e.InCloud == true))
+            //         {
+            //             episodes.Add(episode);
+            //             db.Log(SessionId, $"Request Download from Cloud (keep all offline): {episode.FilePath}");
+            //         }
+            //     }
+            //     else if (configSrv.Config.UserConfig.SectionConfig(show.SiteSection).KeepNextEpisodeOffCloud)
+            //     {
+            //         //Offline next episode
+            //         EpisodeModel? nextEpisodeWithFile = show.Unwatched.FirstOrDefault(e => e.FilePath != null);
+            //         if (nextEpisodeWithFile?.InCloud == true && nextEpisodeWithFile.FilePath != null)
+            //         {
+            //             episodes.Add(nextEpisodeWithFile);
+            //             db.Log(SessionId, $"Request Download from Cloud (next episode): {nextEpisodeWithFile.FilePath}");
+            //         }
+            //     }
+            // }
 
             return episodes;
         }
