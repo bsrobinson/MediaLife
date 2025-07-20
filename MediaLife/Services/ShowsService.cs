@@ -421,20 +421,27 @@ namespace MediaLife.Services
         {
             foreach (SiteSection section in Enum.GetValues(typeof(SiteSection)))
             {
-                ConfigService configSrv = new(db);
-                if (configSrv.Config.UserConfig.SectionConfig(section).UpdateFromDataProvider)
+                try
                 {
-                    Show? show = db.Shows.OrderBy(s => s.Updated).FirstOrDefault(s => s.SiteSection == section);
-                    if (show != null)
+                    ConfigService configSrv = new(db);
+                    if (configSrv.Config.UserConfig.SectionConfig(section).UpdateFromDataProvider)
                     {
-                        db.Log(SessionId, "Updating for " + section.ToString() + " - " + show.Name);
-                        string? updateErrorMessage = await UpdateShowAsync(show.SiteSection, show.ShowId, updateSessionId);
-                        if (updateErrorMessage != null)
+                        Show? show = db.Shows.OrderBy(s => s.Updated).FirstOrDefault(s => s.SiteSection == section);
+                        if (show != null)
                         {
-                            Exception error = new Exception("Update for " + section.ToString() + " failed - " + updateErrorMessage);
-                            db.Log(SessionId, error.Message, error);
+                            db.Log(SessionId, "Updating for " + section.ToString() + " - " + show.Name);
+                            string? updateErrorMessage = await UpdateShowAsync(show.SiteSection, show.ShowId, updateSessionId);
+                            if (updateErrorMessage != null)
+                            {
+                                Exception error = new Exception("Update for " + section.ToString() + " failed - " + updateErrorMessage);
+                                db.Log(SessionId, error.Message, error);
+                            }
                         }
                     }
+                }
+                catch (Exception e)
+                {
+                    db.Log(updateSessionId, e.Message, e);
                 }
             }
             return true;

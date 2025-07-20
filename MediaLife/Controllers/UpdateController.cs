@@ -73,15 +73,8 @@ namespace MediaLife.Controllers
 
                     clientSrv.LogReceivedPayload(JsonSerializer.Serialize(clientData));
                     clientSrv.LogClientData(clientData, "Received");
-
-                    try
-                    {
-                        _ = showSrv.UpdateLastUpdatedAsync(clientSrv.SessionId).Result;
-                    }
-                    catch (Exception e)
-                    {
-                        clientSrv.LogError(e);
-                    }
+                    
+                    _ = showSrv.UpdateLastUpdatedAsync(clientSrv.SessionId).Result;
 
                     List<ShowModel> dbData = showSrv.AnonShows();
                     List<EpisodeModel> dbEpisodes = dbData.SelectMany(s => s.Episodes).ToList();

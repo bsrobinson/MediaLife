@@ -52,7 +52,7 @@ namespace MediaLife.DataProviders
                         Stopwatch sw = new();
                         sw.Start();
 
-                        while (workingProxy == null && sw.ElapsedMilliseconds < 300000)
+                        while (workingProxy == null && sw.ElapsedMilliseconds < 60000)
                         {
                             if (proxies.TryPeek(out var proxy))
                             {
