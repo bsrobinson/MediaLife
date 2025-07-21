@@ -199,6 +199,20 @@
             border-radius: 0 6px 6px 0;
         }
     }
+    .close-button {
+        position: absolute;
+        right: -10px;
+        top: -10px;
+        border: 2px solid white;
+        border-radius: 50%;
+        height: 24px;
+        width: 24px;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.8);
+        font-size: 1.1rem;
+        display: none;
+        cursor: pointer;
+    }
     &:hover {
         &.in-menu {
             .move-button.move-out-of-menu-button {
@@ -209,6 +223,9 @@
             .move-button.move-to-menu-button {
                 display: block;
             }
+        }
+        .close-button {
+            display: flex;
         }
     }
 

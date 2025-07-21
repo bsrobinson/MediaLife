@@ -38,8 +38,15 @@ namespace MediaLife.Controllers
         [HttpGet("[controller]/[action]")]
         public ActionResult<VLCStatus?> Open([FromQuery] string path)
         {
-            StatusPage("command=pl_empty");
+            Close();
             StatusPage("command=in_play&input=" + HttpUtility.UrlEncode(path.Replace("+", "␚")).Replace("+", " ").Replace("␚", "+"));
+            return StatusPage();
+        }
+
+        [HttpGet("[controller]/[action]")]
+        public ActionResult<VLCStatus?> Close()
+        {
+            StatusPage("command=pl_empty");
             return StatusPage();
         }
 

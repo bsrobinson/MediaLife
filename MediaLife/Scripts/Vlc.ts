@@ -314,4 +314,8 @@ export class VLCClient {
         element('vlc_player').removeClass('in-menu');
     }
 
+    close() {
+        this.callServer(this.service.close());
+    }
+
 }

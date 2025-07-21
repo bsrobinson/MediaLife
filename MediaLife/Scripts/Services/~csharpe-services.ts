@@ -121,6 +121,9 @@ export namespace MediaLifeService {
         open(path: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
             return new GasparServiceHelper().fetch(`/VLC/Open?path=${path || ""}`, { method: 'GET', credentials: 'include' }, showError);
         }
+        close(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
+            return new GasparServiceHelper().fetch(`/VLC/Close`, { method: 'GET', credentials: 'include' }, showError);
+        }
         play(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
             return new GasparServiceHelper().fetch(`/VLC/Play`, { method: 'GET', credentials: 'include' }, showError);
         }
