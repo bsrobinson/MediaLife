@@ -275,8 +275,8 @@ namespace MediaLife.Models
                 {
                     if (episode.Torrents.Any(t => t.Hash.ToUpper() == Hash.ToUpper()))
                     {
-                        Show = show;
-                        Episode = episode;
+                        Show = show.DeepClone();
+                        Episode = episode.DeepClone();
                     }
                 }
             }

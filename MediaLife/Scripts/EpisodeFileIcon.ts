@@ -43,17 +43,17 @@ export class EpisodeFileIcon {
         this.node.removeClass('faded');
         this.node.style.fontSize = '';
 
-        if (episode.hasTorrents) {
-            this.node.changeIcon('download');
-            this.node.title = episode.torrents.map(t => t.hash).join('\n');
-        }
-        else if (episode.filePath && episode.inCloud) {
+        if (episode.filePath && episode.inCloud) {
             this.node.changeIcon(episode.requestDownload ? 'cloud-arrow-down' : 'cloud');
             this.addClick(() => this.toggleRequestDownload());
         }
         else if (episode.filePath) {
             this.node.changeIcon(new BrandIcon('youtube'));
             this.addClick(() => this.play());
+        }
+        else if (episode.hasTorrents) {
+            this.node.changeIcon('download');
+            this.node.title = episode.torrents.map(t => t.hash).join('\n');
         }
         else if (episode.userWatchedStatus == UserWatchedStatus.Unwatched && !episode.skip) {
             this.node.changeIcon('video-slash');
