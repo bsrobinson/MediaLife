@@ -164,7 +164,7 @@ export class VLCClient {
     }
 
     updateStatus() {
-
+        
         if (this.initialising) {
 
             this.showInfo('Connecting to VLC Server');
@@ -189,22 +189,28 @@ export class VLCClient {
                     element('vlc-scrubber-time-remaining').innerHTML = '&nbsp;' + this.convertSeconds(this.status.length);
 
                     element('vlc-scrubber-mark').style.left = 'calc(' + (this.status.position * 100) + '% - 7px)';
-
+                    
                     element('vlc_player').toggleClassIfTrue('with-poster', this.status.show != null);
                     if (this.status.show) {
-                        element<HTMLAnchorElement>('vlc_poster').style.backgroundImage = "url('" + (this.status.show.episodes[this.status.show.episodeIndex].poster || this.status.show.poster) + "')";
-                        element<HTMLAnchorElement>('vlc_poster').href = `/${this.status.show.siteSection}/${this.status.show.id}`;
 
-                        let lastEpisode = this.status.show.episodeIndex == this.status.show.episodes.length - 1;
-                        let episodeId = this.status.show.episodes[this.status.show.episodeIndex].id;
-                        let iconShowId = `${this.status.show.siteSection}_${this.status.show.id}_`;
+                        let show = this.status.show
+                        let ep = show.episodes[show.episodeIndex]
+
+                        element('vlc_playing_title').title = filename;
+                        element('vlc_playing_title').innerHTML = `${show.name}${ep && ep.name && ep.name != show.name ? ` - ${ep.name}` : ''}`
+                        element<HTMLAnchorElement>('vlc_poster').style.backgroundImage = "url('" + (ep.poster || show.poster) + "')";
+                        element<HTMLAnchorElement>('vlc_poster').href = `/${show.siteSection}/${show.id}`;
+
+                        let lastEpisode = show.episodeIndex == show.episodes.length - 1;
+                        let episodeId = ep.id;
+                        let iconShowId = `${show.siteSection}_${show.id}_`;
 
                         let nextFileIcon = null;
                         if (window.episodeFileIcons && !lastEpisode) {
-                            nextFileIcon = window.episodeFileIcons[iconShowId + this.status.show.episodes[this.status.show.episodeIndex + 1].id];
-                            if (!nextFileIcon && this.status.show.watchFromNextPlayable) {
-                                for (let i = this.status.show.episodeIndex + 2; i < this.status.show.episodes.length; i++) {
-                                    nextFileIcon = window.episodeFileIcons[iconShowId + this.status.show.episodes[i].id];
+                            nextFileIcon = window.episodeFileIcons[iconShowId + show.episodes[show.episodeIndex + 1].id];
+                            if (!nextFileIcon && show.watchFromNextPlayable) {
+                                for (let i = show.episodeIndex + 2; i < show.episodes.length; i++) {
+                                    nextFileIcon = window.episodeFileIcons[iconShowId + show.episodes[i].id];
                                     if (nextFileIcon && nextFileIcon.episodeObj.episode.filePath) { break; }
                                 }
                                 if (!nextFileIcon) { lastEpisode = true; }

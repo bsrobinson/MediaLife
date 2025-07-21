@@ -31,7 +31,7 @@
         justify-content: center;
     }
 
-    &.youtube .poster.round {
+    &.youtube .poster.round, &.radio .poster.round {
         > a {
             margin-top: 0;
             margin-bottom: 0;

@@ -47,6 +47,7 @@
         if (section == SiteSection.YouTube.DisplayName()) { enabledSiteSections.Add(SiteSection.YouTube); }
         if (section == SiteSection.Movies.DisplayName()) { enabledSiteSections.Add(SiteSection.Movies); }
         if (section == SiteSection.Books.DisplayName()) { enabledSiteSections.Add(SiteSection.Books); }
+        if (section == SiteSection.Radio.DisplayName()) { enabledSiteSections.Add(SiteSection.Radio); }
     }
 }
 <html>
@@ -129,6 +130,10 @@
                 <div class="section-switch">
                     @Html.FormRow("siteSection_books", "Books", enabledSiteSectionsString == null || enabledSiteSections.Contains(SiteSection.Books), new() { Icon = new("📚"), ChangeEvent = "site.toggleSiteSection()" })
                     @Html.Button("Only", new() { ClickEvent = $"site.onlySiteSection('{SiteSection.Books.DisplayName()}')" })
+                </div>
+                <div class="section-switch">
+                    @Html.FormRow("siteSection_radio", "Radio", enabledSiteSectionsString == null || enabledSiteSections.Contains(SiteSection.Radio), new() { Icon = new("📻"), ChangeEvent = "site.toggleSiteSection()" })
+                    @Html.Button("Only", new() { ClickEvent = $"site.onlySiteSection('{SiteSection.Radio.DisplayName()}')" })
                 </div>
             </div>
             @Html.Icon(new Icon("📝") { FixedWidth = true }, "Create Custom List", "site.createCustomList();", "menu-item")

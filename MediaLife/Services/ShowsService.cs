@@ -121,7 +121,7 @@ namespace MediaLife.Services
                     }
                     else { return null; }
                 }
-                else if (section != SiteSection.TV && section != SiteSection.YouTube) { throw new NotImplementedException(); }
+                else if (section != SiteSection.TV && section != SiteSection.YouTube && section != SiteSection.Radio) { throw new NotImplementedException(); }
 
                 show = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
                 episodes = (
@@ -257,6 +257,10 @@ namespace MediaLife.Services
             {
                 return await new Goodreads(db).GetBookAsync(numericId);
             }
+            if (section == SiteSection.Radio)
+            {
+                return await new RadioFeeds(db).GetRadioStationAsync(showId);
+            }
             throw new NotImplementedException();
         }
 
@@ -276,6 +280,11 @@ namespace MediaLife.Services
         public ShowModel? GetShowForFileName(string filename)
         {
             Episode? episode = db.Episodes.FirstOrDefault(e => e.FilePath != null && e.FilePath.EndsWith(filename));
+            if (episode == null && filename.Contains('?'))
+            {
+                string filenameWithoutQuery = filename.Split('?')[0];
+                episode = db.Episodes.FirstOrDefault(e => e.FilePath != null && (e.FilePath.Contains(filenameWithoutQuery) || e.FilePath.Contains(filenameWithoutQuery.Replace('.', '-'))));
+            }
             if (episode != null)
             {
                 ShowModel? show = GetShow(episode.SiteSection, episode.ShowId);
@@ -318,7 +327,7 @@ namespace MediaLife.Services
 
         public ShowModel? AddShow(SiteSection section, string showId, User user, uint? addForUserId = null)
         {
-            Show? dbShow = db.Shows.SingleOrDefault(s => s.ShowId == showId);
+            Show? dbShow = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
 
             ShowModel? showModel = dbShow == null
                 ? GetShowFromProviderAsync(section, showId).Result
@@ -509,6 +518,7 @@ namespace MediaLife.Services
                             if (episode.Poster != null && dbEpisode.Poster != episode.Poster) { dbEpisode.Poster = episode.Poster; }
                             if (episode.Certificate != null && dbEpisode.Certificate != episode.Certificate) { dbEpisode.Certificate = episode.Certificate; }
                             if (episode.Author != null && dbEpisode.Author != episode.Author) { dbEpisode.Author = episode.Author; }
+                            if (episode.FilePath != null && dbEpisode.FilePath != episode.FilePath) { dbEpisode.FilePath = episode.FilePath; }
                         }
                     }
 
@@ -535,6 +545,20 @@ namespace MediaLife.Services
                 }
             }
             return results.All(t => t == null);
+        }
+
+        public ShowModel? SetShowPoster(SiteSection section, string showId, string posterUrl)
+        {
+            Show? show = db.Shows.SingleOrDefault(s => s.SiteSection == section && s.ShowId == showId);
+            if (show != null)
+            {
+                show.Poster = posterUrl;
+                db.SaveChanges();
+
+                return GetShow(section, showId);
+            }
+
+            return null;
         }
 
         public UserShow? RemoveFilters(SiteSection section, string showId, User user)
@@ -972,7 +996,7 @@ namespace MediaLife.Services
 
         public List<ShowModel> CurrentlyWatching(User user)
         {
-            return UsersShowsAndLists(user, (
+            return UsersShowsAndLists(user, [..
                 from e in db.Episodes
                 join userEp in db.UserEpisodes on new { e.EpisodeId, e.SiteSection, user.UserId  } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
                 where e.AirDate != null && e.AirDate < DateTime.Now && !e.Skip
@@ -980,7 +1004,7 @@ namespace MediaLife.Services
                 where grp.Count() > grp.Count(g => g.userEp != null && g.userEp.Watched != null)
                 where grp.Count(g => g.userEp != null) > 0
                 select grp.Key
-            ).ToList());
+            , ..db.Shows.Where(s => s.SiteSection == SiteSection.Radio).Select(s => s.ShowId)]);
         }
 
         public List<ShowModel> NotStarted(User user)
@@ -1014,6 +1038,10 @@ namespace MediaLife.Services
                 if (section == SiteSection.Books)
                 {
                     return new Goodreads(db).SearchAsync(this, query).Result;
+                }
+                if (section == SiteSection.Radio)
+                {
+                    return new RadioFeeds(db).SearchAsync(query).Result;
                 }
             }
             throw new NotImplementedException();

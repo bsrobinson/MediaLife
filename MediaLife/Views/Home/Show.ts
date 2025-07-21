@@ -115,6 +115,18 @@ export class HomeShow {
         }
     }
 
+    editShowPoster() {
+        let url = prompt('Paste image url (will be replaced it data provider gets an image)');
+        if (url) {
+            this.service.setShowPoster(this.data.show.siteSection, this.data.show.id, url).then(response => {
+                if (response.data) {
+                    this.data.show.poster = response.data.poster
+                    this.drawPoster();
+                }
+            })
+        }
+    }
+
     selectSeries(event: Event, seriesNumber: number | null) {
 
         let seriesButtons = element('series_list').children;
@@ -235,7 +247,7 @@ export class HomeShow {
 
         let name = row.appendElement('div', { class: 'name-and-number' + (all ? ' wide-number' : '') });
         if (episode.mergedFromShow == null) {
-            if (this.data.siteSection != SiteSection.YouTube) {
+            if (this.data.siteSection != SiteSection.YouTube && this.data.siteSection != SiteSection.Radio) {
                 name.appendElement('span', { class: 'number', html: (all ? 'S' + episode.seriesNumber + ': ' : '') + episode.number });
             }
             name.appendElement('span', { class: 'name', html: episode.name });
@@ -270,7 +282,9 @@ export class HomeShow {
             episode.obj = new EpisodeObject(this.data.show as tsShowModel, episode);
         }
         icons.appendChild(new EpisodeFileIcon(episode.obj, 'edit-list-hide add-to-list-hide').node);
-        icons.appendChild(new EpisodeWatchIcon(episode.obj, 'edit-list-hide add-to-list-hide').node);
+        if (this.data.siteSection != SiteSection.Radio) {
+            icons.appendChild(new EpisodeWatchIcon(episode.obj, 'edit-list-hide add-to-list-hide').node);
+        }
 
         icons.appendIcon('arrow-up', { class: 'icon edit-list-show', click: (e: Event) => this.moveEpisodeUp(e), htmlAttributes: { title: 'Move up' } });
         icons.appendIcon('arrow-down', { class: 'icon edit-list-show', click: (e: Event) => this.moveEpisodeDown(e), htmlAttributes: { title: 'Move down' } });
@@ -364,8 +378,8 @@ export class HomeShow {
                 element('addShowButton').addClass('hide');
                 element('removeShowButton').removeClass('hide');
                 element('showUserButton').removeClass('hide');
-                element('showFilterButton').removeClass('hide');
-                element('showSettingsButton').removeClass('hide');
+                elementOrNull('showFilterButton')?.removeClass('hide');
+                elementOrNull('showSettingsButton')?.removeClass('hide');
                 element<HTMLButtonElement>('showUserButton').changeLabel(response.data.activeUserNames);
                 response.data.users.forEach(u => {
                     element('userShow_menu').insertBefore(makeFormRow(`Show_User_${u.id}`, { label: u.name, value: u.hasAdded, style: 'blockRow' }), element('userShow_menu').lastElementChild)
@@ -388,8 +402,8 @@ export class HomeShow {
                 if (response.data) {
                     element('removeShowButton').addClass('hide');
                     element('showUserButton').addClass('hide');
-                    element('showFilterButton').addClass('hide');
-                    element('showSettingsButton').addClass('hide');
+                    elementOrNull('showFilterButton')?.addClass('hide');
+                    elementOrNull('showSettingsButton')?.addClass('hide');
                     element('addShowButton').removeClass('hide');
                 } else {
                     element('removeShowButton').removeClass('hide');

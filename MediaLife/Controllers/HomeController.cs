@@ -119,6 +119,19 @@ namespace MediaLife.Controllers
         }
 
         [ExportFor(GasparType.TypeScript)]
+        [HttpPost("{section}/poster/{showId}")]
+        public ActionResult<ShowModel> SetShowPoster(SiteSection section, string showId, [FromBody] string posterUrl)
+        {
+            ShowModel? show = service.SetShowPoster(section, showId, posterUrl);
+            if (show != null)
+            {
+                return show;
+            }
+
+            return Problem();
+        }
+
+        [ExportFor(GasparType.TypeScript)]
         [HttpGet("{section}/[action]/{episodeId:int}")]
         public ActionResult<EpisodeModel> Episode(SiteSection section, string episodeId)
         {

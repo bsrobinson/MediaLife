@@ -75,6 +75,7 @@
                 @Html.FormRowFor(m => Model.UserConfig.YouTubeConfig.UpdateFromDataProvider, "For YouTube Shows"),
                 @Html.FormRowFor(m => Model.UserConfig.MovieConfig.UpdateFromDataProvider, "For Movies"),
                 @Html.FormRowFor(m => Model.UserConfig.BookConfig.UpdateFromDataProvider, "For Books"),
+                @Html.FormRowFor(m => Model.UserConfig.RadioConfig.UpdateFromDataProvider, "For Radio"),
             })
             @Html.FormRowFor(m => Model.UserConfig.MovieConfig.MovieReleaseCountryCode, new() { Style = FormRowStyle.OutlineInset })
             @Html.FormRowFor(m => Model.UserConfig.MovieConfig.TheMovieDbApiKey)

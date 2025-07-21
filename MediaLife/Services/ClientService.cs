@@ -326,29 +326,29 @@ namespace MediaLife.Services
                 }
             }
 
-            // ConfigService configSrv = new(db);
-            // foreach (ShowModel show in shows)
-            // {
-            //     if (show.KeepAllDownloaded) 
-            //     {
-            //         //Keep all offline
-            //         foreach (EpisodeModel episode in show.Episodes.Where(e => e.InCloud == true))
-            //         {
-            //             episodes.Add(episode);
-            //             db.Log(SessionId, $"Request Download from Cloud (keep all offline): {episode.FilePath}");
-            //         }
-            //     }
-            //     else if (configSrv.Config.UserConfig.SectionConfig(show.SiteSection).KeepNextEpisodeOffCloud)
-            //     {
-            //         //Offline next episode
-            //         EpisodeModel? nextEpisodeWithFile = show.Unwatched.FirstOrDefault(e => e.FilePath != null);
-            //         if (nextEpisodeWithFile?.InCloud == true && nextEpisodeWithFile.FilePath != null)
-            //         {
-            //             episodes.Add(nextEpisodeWithFile);
-            //             db.Log(SessionId, $"Request Download from Cloud (next episode): {nextEpisodeWithFile.FilePath}");
-            //         }
-            //     }
-            // }
+            ConfigService configSrv = new(db);
+            foreach (ShowModel show in shows)
+            {
+                if (show.KeepAllDownloaded) 
+                {
+                    //Keep all offline
+                    foreach (EpisodeModel episode in show.Episodes.Where(e => e.InCloud == true))
+                    {
+                        episodes.Add(episode);
+                        db.Log(SessionId, $"Request Download from Cloud (keep all offline): {episode.FilePath}");
+                    }
+                }
+                else if (configSrv.Config.UserConfig.SectionConfig(show.SiteSection).KeepNextEpisodeOffCloud)
+                {
+                    //Offline next episode
+                    EpisodeModel? nextEpisodeWithFile = show.Unwatched.FirstOrDefault(e => e.FilePath != null);
+                    if (nextEpisodeWithFile?.InCloud == true && nextEpisodeWithFile.FilePath != null)
+                    {
+                        episodes.Add(nextEpisodeWithFile);
+                        db.Log(SessionId, $"Request Download from Cloud (next episode): {nextEpisodeWithFile.FilePath}");
+                    }
+                }
+            }
 
             return episodes;
         }
@@ -357,7 +357,7 @@ namespace MediaLife.Services
         public void UpdateFilePaths(List<ClientFile> files, List<EpisodeModel> dbEpisodes)
         {
             //Remove file paths not on the client
-            foreach (string? path in dbEpisodes.Select(e => e.FilePath).Except(files.Select(f => f.Path)))
+            foreach (string? path in dbEpisodes.Where(e => e.SiteSection != SiteSection.Radio).Select(e => e.FilePath).Except(files.Select(f => f.Path)))
             {
                 if (!string.IsNullOrEmpty(path))
                 {

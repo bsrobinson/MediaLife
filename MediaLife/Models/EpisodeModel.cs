@@ -111,6 +111,7 @@ namespace MediaLife.Models
                 Skip = Skip,
                 InCloud = InCloud,
                 RequestDownload = RequestDownload,
+                FilePath = FilePath,
             };
         }
     }

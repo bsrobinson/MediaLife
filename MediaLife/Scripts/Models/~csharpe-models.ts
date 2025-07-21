@@ -102,6 +102,8 @@ export interface TVConfig extends SectionConfig {
 }
 
 export interface YouTubeConfig extends SectionConfig {
+    useProxy: boolean;
+    lastWorkingProxyAddress: string | null;
 }
 
 export interface MovieConfig extends SectionConfig {
@@ -191,6 +193,7 @@ export interface ShowModel extends BaseSiteObjectModel {
     network: TvNetwork | null;
     mergeWithParentShowId: string | null;
     mergeWithParentSiteSection: SiteSection | null;
+    mergeWithParentShowName: string | null;
     episodes: EpisodeModel[];
     isAdded: boolean;
     userAdded: string | null;
@@ -288,6 +291,7 @@ export enum SiteSection {
     YouTube = 'youtube',
     Movies = 'movies',
     Books = 'books',
+    Radio = 'radio',
 }
 
 export enum PageType {
@@ -330,6 +334,13 @@ export interface TvNetwork {
     countryCode: string | null;
     homepageUrl: string | null;
     searchUrl: string | null;
+}
+
+//File: ../../../MediaLife.Library/DAL/UserList.cs
+
+export interface UserList {
+    userId: number;
+    listId: number;
 }
 
 //File: ../../../MediaLife.Library/DAL/UserEpisode.cs

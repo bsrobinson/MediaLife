@@ -165,6 +165,9 @@ export namespace MediaLifeService {
         updateShow(section: SiteSection, showId: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel | null>> {
             return new GasparServiceHelper().fetch(`/${section}/update/${showId}`, { method: 'POST', credentials: 'include' }, showError);
         }
+        setShowPoster(section: SiteSection, showId: string, posterUrl: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel | null>> {
+            return new GasparServiceHelper().fetch(`/${section}/poster/${showId}`, { method: 'POST', credentials: 'include', body: `"${posterUrl}"`, headers: { 'Content-Type': 'application/json' } }, showError);
+        }
         episode(section: SiteSection, episodeId: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<EpisodeModel>> {
             return new GasparServiceHelper().fetch(`/${section}/Episode/${episodeId}`, { method: 'GET', credentials: 'include' }, showError);
         }

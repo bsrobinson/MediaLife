@@ -1,6 +1,6 @@
 ﻿import { MediaLife } from '../../Scripts/Site'
 import { element, elementOrNull, firstOfClassOrNull, makeElement } from '../../Scripts/BRLibraries/DOM'
-import { PageType, ShowModel, SiteSection } from '../../Scripts/Models/~csharpe-models';
+import { PageType, ShowModel, SiteSection, UserWatchedStatus, WatchedStatus } from '../../Scripts/Models/~csharpe-models';
 import { MediaLifeService } from '../../Scripts/Services/~csharpe-services';
 import { tsEpisodeId, tsEpisodeModel, tsListPageModel, tsShowModel } from '../../Scripts/Models/extendedModels';
 import { EpisodeObject } from '../../Scripts/EpisodeObject';
@@ -100,6 +100,7 @@ export class HomeIndex {
             'youtube': false,
             'movies': false,
             'books': false,
+            'radio': false,
             'lists': false,
         }
         enabledSiteSectionsString.split('|').forEach(s => {
@@ -107,6 +108,7 @@ export class HomeIndex {
             if (s == SiteSection.YouTube) { enabledSiteSections[SiteSection.YouTube] = true }
             if (s == SiteSection.Movies) { enabledSiteSections[SiteSection.Movies] = true }
             if (s == SiteSection.Books) { enabledSiteSections[SiteSection.Books] = true }
+            if (s == SiteSection.Radio) { enabledSiteSections[SiteSection.Radio] = true }
         })
         return enabledSiteSections
     }
@@ -149,19 +151,23 @@ export class HomeIndex {
             
                 if (this.data.context.pageType == PageType.Search || show.skellington || watchingWithIds == '' || show.users.map(u => u.id).sort().join(',') == watchingWithIds) {
 
-                    if (this.showLists.watching.find(s => s.id == show.id) == null && show.started && !show.userComplete && show.watchedRecently) {
-                        this.showLists.watching.push(show);
+                    if (show.siteSection == SiteSection.Radio && this.showLists.watching.find(s => s.id == show.id) == null) {
+                        this.showLists.watching.push(show)
                     }
-                    else if (this.showLists.notWatchedRecently.find(s => s.id == show.id) == null && show.started && !show.userComplete && !show.watchedRecently) {
-                        this.showLists.notWatchedRecently.push(show);
+                    else {
+                        if (this.showLists.watching.find(s => s.id == show.id) == null && show.started && !show.userComplete && show.watchedRecently) {
+                            this.showLists.watching.push(show);
+                        }
+                        else if (this.showLists.notWatchedRecently.find(s => s.id == show.id) == null && show.started && !show.userComplete && !show.watchedRecently) {
+                            this.showLists.notWatchedRecently.push(show);
+                        }
+                        else if (this.showLists.notStarted.find(s => s.id == show.id) == null && (!show.startedAiring || (!show.started && !show.userComplete))) {
+                            this.showLists.notStarted.push(show);
+                        }
+                        if (this.showLists.allShows.find(s => s.id == show.id) == null) {
+                            this.showLists.allShows.push(show);
+                        }
                     }
-                    else if (this.showLists.notStarted.find(s => s.id == show.id) == null && (!show.startedAiring || (!show.started && !show.userComplete))) {
-                        this.showLists.notStarted.push(show);
-                    }
-                    if (this.showLists.allShows.find(s => s.id == show.id) == null) {
-                        this.showLists.allShows.push(show);
-                    }
-
                 }
             }
         });
@@ -169,7 +175,7 @@ export class HomeIndex {
         this.sortWatching();
         this.sortNotWatchedRecently();
         this.sortNotStarted();
-        if (!element('all_shows').containsClass('hide')) {
+        if (!elementOrNull('all_shows')?.containsClass('hide')) {
             this.sortAllShows();
         }
 
@@ -365,7 +371,7 @@ export class HomeIndex {
             }
         }
         
-        if (show.siteSection == SiteSection.YouTube) {
+        if (show.siteSection == SiteSection.YouTube || show.siteSection == SiteSection.Radio) {
             poster.addClass('round')
         }
     }
@@ -393,7 +399,7 @@ export class HomeIndex {
             }
 
             episodeContent.appendChild(new EpisodeFileIcon(ep.obj, 'search-page').node);
-            if (this.data.user.simpleMode == false) {
+            if (this.data.user.simpleMode == false && show.siteSection != SiteSection.Radio) {
                 episodeContent.appendChild(new EpisodeWatchIcon(ep.obj, 'search-page').node);
             }
             if (ep.mergedFromShow != null) {

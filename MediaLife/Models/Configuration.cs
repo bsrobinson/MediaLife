@@ -34,6 +34,7 @@ namespace MediaLife.Models
         public YouTubeConfig YouTubeConfig { get; set; } = new();
         public MovieConfig MovieConfig { get; set; } = new();
         public BookConfig BookConfig { get; set; } = new();
+        public RadioConfig RadioConfig { get; set; } = new();
 
         public VLCConfig VLCConfig { get; set; } = new();
 
@@ -45,6 +46,7 @@ namespace MediaLife.Models
                 case SiteSection.YouTube: return YouTubeConfig;
                 case SiteSection.Movies: return MovieConfig;
                 case SiteSection.Books: return BookConfig;
+                case SiteSection.Radio: return RadioConfig;
                 case SiteSection.Lists: return new SectionConfig();
                 default:
                     throw new NotImplementedException($"Cannot get config for '{section}' section");
@@ -105,6 +107,9 @@ namespace MediaLife.Models
 
     [ExportFor(GasparType.TypeScript)]
     public class BookConfig : SectionConfig { }
+
+    [ExportFor(GasparType.TypeScript)]
+    public class RadioConfig : SectionConfig { }
 
     [ExportFor(GasparType.TypeScript)]
     public class VLCConfig : IConfiguration
