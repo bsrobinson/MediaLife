@@ -61,7 +61,12 @@ namespace MediaLife.Services
                 if (clientData.Torrents[i].ShouldDelete())
                 {
                     returnTorrents.Add(clientData.Torrents[i].DeepClone());
-                    db.Log(SessionId, $"Request Delete Torrent: {clientData.Torrents[i].Hash} - {clientData.Torrents[i].TorrentName}");
+
+                    foreach (PirateBayTorrent torrent in clientData.Torrents[i].Torrents ?? [])
+                    {
+                        db.Log(SessionId, $"Request Delete Torrent: {clientData.Torrents[i].Show?.Name} - {clientData.Torrents[i].Episode?.Name} ({torrent.Hash} - {torrent.Name})");
+                    }
+                    
                     clientData.Torrents.RemoveAt(i);
                 }
             }
@@ -73,21 +78,26 @@ namespace MediaLife.Services
             List<ClientTorrent> returnTorrents = new();
             foreach (ClientTorrent torrent in clientData.Torrents)
             {
-                if (torrent.PercentComplete == 100)
+                PirateBayTorrent? torrentToSave = torrent.Torrents?.FirstOrDefault(t => t.PercentComplete == 100);
+                if (torrentToSave != null)
                 {
-                    returnTorrents.Add(torrent.DeepClone());
-                    db.Log(SessionId, $"Request Save {torrent.Episode?.SiteSection} Torrent: {torrent.Hash} - {torrent.TorrentName} - {torrent.DestinationFileName}");
+                    ClientTorrent returnTorrent = torrent.DeepClone();
+                    returnTorrent.Torrents = [ torrentToSave.DeepClone() ];
+
+                    returnTorrents.Add(returnTorrent);
+
+                    db.Log(SessionId, $"Request Save {torrent.Episode?.SiteSection} Torrent: {torrentToSave.Hash} - {torrentToSave.Name} - {torrent.GetFileName(torrentToSave)}");
                 }
             }
-            return returnTorrents;//.ToStringList(withFileLocations: true);
+            return returnTorrents;
         }
 
         public List<ClientTorrent> TorrentsToAdd(List<ShowModel> shows, ref ClientData clientData)
         {
             List<ClientTorrent> returnTorrents = new();
 
-            PirateBay? piratebay = db.PirateBay.FirstOrDefault(p => p.Active);
-            if (piratebay != null)
+            PirateBay? pirateBay = db.PirateBay.FirstOrDefault(p => p.Active);
+            if (pirateBay != null)
             {
                 List<Task<ClientTorrent?>> torrentTasks = new();
 
@@ -96,15 +106,13 @@ namespace MediaLife.Services
                     List<EpisodeModel> missingFiles = show.Unwatched.Where(e => e.FilePath == null).ToList();
                     if (missingFiles.Count > 0 && (show.DownloadLimit == null || show.Unwatched.Count - missingFiles.Count < show.DownloadLimit))
                     {
-                        if (missingFiles.First().HasTorrents == false)
-                        {
-                            torrentTasks.Add(SearchForTorrent(piratebay, show, missingFiles.First()));
-                        }
+                        torrentTasks.Add(SearchForTorrent(pirateBay, show, missingFiles.First()));
+                        
                         if (show.DownloadAllTogether)
                         {
                             foreach (EpisodeModel episode in missingFiles.Skip(1))
                             {
-                                torrentTasks.Add(SearchForTorrent(piratebay, show, episode));
+                                torrentTasks.Add(SearchForTorrent(pirateBay, show, episode));
                             }
                         }
                     }
@@ -112,11 +120,11 @@ namespace MediaLife.Services
                 if (torrentTasks.Count > 0)
                 {
                     //Test search; error if no results
-                    torrentTasks.Add(SearchForTorrent(piratebay, null, new()));
+                    torrentTasks.Add(SearchForTorrent(pirateBay, null, new()));
                 }
 
-                int errorsBeforeRun = piratebay.ConsecutiveErrors;
-                DateTime? lastSuccessBeforeRun = piratebay.LastSuccess;
+                int errorsBeforeRun = pirateBay.ConsecutiveErrors;
+                DateTime? lastSuccessBeforeRun = pirateBay.LastSuccess;
 
                 int totalResultCount = 0;
                 int? testRunCount = null;
@@ -125,51 +133,57 @@ namespace MediaLife.Services
                     Task<ClientTorrent?> finishedTask = Task.WhenAny(torrentTasks).Result;
                     torrentTasks.Remove(finishedTask);
 
-                    ClientTorrent? torrent = finishedTask.Result;
-                    if (torrent != null && torrent.Show != null && torrent.Episode != null)
+                    ClientTorrent? clientTorrent = finishedTask.Result;
+                    if (clientTorrent != null && clientTorrent.Show != null && clientTorrent.Episode != null)
                     {
-                        if (torrent.TorrentResultCount == 0 && (Regex.Match(torrent.Show.Name, "[^A-Za-z0-9\\s]").Success || Regex.Match(torrent.Episode.Name, "[^A-Za-z0-9\\s]").Success) && !torrent.StrippedSpecialChars)
+                        if (clientTorrent.Torrents?.Count == 0 && (Regex.Match(clientTorrent.Show.Name, "[^A-Za-z0-9\\s]").Success || Regex.Match(clientTorrent.Episode.Name, "[^A-Za-z0-9\\s]").Success) && !clientTorrent.StrippedSpecialChars)
                         {
-                            torrentTasks.Add(SearchForTorrent(piratebay, torrent.Show, torrent.Episode, true));
+                            torrentTasks.Add(SearchForTorrent(pirateBay, clientTorrent.Show, clientTorrent.Episode, true));
                         }
 
-                        if (torrent.Show != null && !string.IsNullOrEmpty(torrent.Hash))
+                        if (clientTorrent.Show != null)
                         {
-                            if (db.Torrents.FirstOrDefault(t => t.Hash == torrent.Hash) == null)
+                            clientData.Torrents.Add(clientTorrent);
+                            ClientTorrent returnTorrent = clientTorrent.DeepClone();
+
+                            foreach (PirateBayTorrent torrent in clientTorrent.Torrents ?? [])
                             {
-                                db.Torrents.Add(torrent.DbTorrent());
-                                clientData.Torrents.Add(torrent);
-                                returnTorrents.Add(torrent);
-                                db.Log(SessionId, $"Request Add Torrent: {torrent.Hash} - {torrent.TorrentName}");
+                                if (!string.IsNullOrEmpty(torrent.Hash))
+                                {
+                                    db.Torrents.Add(clientTorrent.DbTorrent(torrent));
+                                    db.Log(SessionId, $"Request Add Torrent: {clientTorrent.Show?.Name} - {clientTorrent.Episode?.Name} ({torrent.Hash} - {torrent.Name})");
+                                }
+                                else
+                                {
+                                    returnTorrent.Torrents?.Remove(torrent);
+                                }
+                            }
+
+                            returnTorrents.Add(returnTorrent);
+
+                            if (clientTorrent.Torrents != null)
+                            {
+                                pirateBay.ConsecutiveErrors = 0;
+                                pirateBay.LastSuccess = DateTime.Now;
+                                totalResultCount += clientTorrent.Torrents.Count;
+                                if (clientTorrent.Show == null) { testRunCount = clientTorrent.Torrents.Count; }
                             }
                             else
                             {
-                                db.Log(SessionId, $"Cannot Add Torrent (duplicate): {torrent.Hash} - {torrent.TorrentName}");
+                                pirateBay.ConsecutiveErrors++;
+                                pirateBay.LastError = DateTime.Now;
                             }
-                        }
-
-                        if (torrent.TorrentResultCount != null)
-                        {
-                            piratebay.ConsecutiveErrors = 0;
-                            piratebay.LastSuccess = DateTime.Now;
-                            totalResultCount += (int)torrent.TorrentResultCount;
-                            if (torrent.Show == null) { testRunCount = torrent.TorrentResultCount; }
-                        }
-                        else
-                        {
-                            piratebay.ConsecutiveErrors++;
-                            piratebay.LastError = DateTime.Now;
                         }
                     }
                 }
 
                 if (testRunCount == 0 && totalResultCount == 0)
                 {
-                    piratebay.ConsecutiveErrors = errorsBeforeRun + 1;
-                    piratebay.LastSuccess = lastSuccessBeforeRun;
-                    piratebay.LastError = DateTime.Now;
+                    pirateBay.ConsecutiveErrors = errorsBeforeRun + 1;
+                    pirateBay.LastSuccess = lastSuccessBeforeRun;
+                    pirateBay.LastError = DateTime.Now;
                 }
-                piratebay.ResultsInLastRun = totalResultCount;
+                pirateBay.ResultsInLastRun = totalResultCount;
                 db.SaveChanges();
 
                 db.Log(SessionId, $"Found {totalResultCount} (incl. {testRunCount} test) results when searching Pirate Bay");
@@ -182,15 +196,15 @@ namespace MediaLife.Services
             //Add manual torrents
             foreach (Torrent torrent in db.Torrents.Where(t => t.ManuallyAdded))
             {
-                returnTorrents.Add(new() { Hash = torrent.Hash, TorrentName = torrent.Name });
+                returnTorrents.Add(new() { Torrents = [ new() { Hash = torrent.Hash, Name = torrent.Name } ] });
             }
 
             return returnTorrents;
         }
 
-        public List<ClientTorrent> FilesToDownload(List<ShowModel> shows)
+        public List<ClientWebFile> FilesToDownload(List<ShowModel> shows)
         {
-            List<ClientTorrent> downloadFiles = new();
+            List<ClientWebFile> downloadFiles = new();
 
             foreach (ShowModel show in shows)
             {
@@ -209,16 +223,32 @@ namespace MediaLife.Services
                 }
             }
 
-            foreach (ClientTorrent file in downloadFiles)
+            foreach (ClientWebFile file in downloadFiles)
             {
-                db.Log(SessionId, $"Request download of YouTube file - {file.DestinationFileName}");
+                db.Log(SessionId, $"Request download of YouTube file - {file.Show?.Name} - {file.Episode?.Name}");
             }
             
             return downloadFiles;
         }
 
-        public async Task<ClientTorrent?> SearchForTorrent(PirateBay piratebay, ShowModel? show, EpisodeModel episode, bool stripSpecialChars = false)
+        public async Task<ClientTorrent?> SearchForTorrent(PirateBay pirateBay, ShowModel? show, EpisodeModel episode, bool stripSpecialChars = false)
         {
+            bool stalled = false;
+
+            if (episode.HasTorrents)
+            {
+                uint percentComplete = episode.Torrents.Max(t => t.LastPercentage);
+                uint hoursDownloading = episode.Torrents.Max(t => (uint)Math.Floor((DateTime.Now - t.Added).TotalHours));
+                stalled = (percentComplete < 25 && hoursDownloading >= 1)
+                    || (percentComplete < 50 && hoursDownloading >= 2)
+                    || (percentComplete < 100 && hoursDownloading >= 4);
+
+                if (!stalled)
+                {
+                    return new(show, episode, [], stripSpecialChars);
+                }
+            }
+
             try
             {
                 string? search = "back"; //test search
@@ -251,31 +281,36 @@ namespace MediaLife.Services
                 if (search != null)
                 {
                     HttpClient httpClient = new();
-                    List<PirateBayTorrent>? torrents = (await httpClient.GetFromJsonAsync<List<PirateBayTorrent>>($"{piratebay.Url}{HttpUtility.UrlEncode(search)}"))?.ToList();
+                    List<PirateBayTorrent>? torrents = (await httpClient.GetFromJsonAsync<List<PirateBayTorrent>>($"{pirateBay.Url}{HttpUtility.UrlEncode(search)}"))?.ToList();
                     if (torrents == null)
                     {
                         return null;
                     }
 
-                    PirateBayTorrent? torrent = torrents.First();
+                    torrents = [..torrents.Where(t => t.Hash != "0000000000000000000000000000000000000000")];
+                    torrents = [..torrents.Where(t => !episode.Torrents.Select(e => e.Hash).Contains(t.Hash))];
 
-                    if (torrent.info_hash == "0000000000000000000000000000000000000000")
+                    if (torrents.Count > 0)
                     {
-                        torrents.Remove(torrent);
-                        torrent = null;
-                    }
-                    else
-                    {
-                        episode.Torrents.Add(torrent.DbTorrent(episode));
+                        if (stalled)
+                        {
+                            if (torrents.Count > 10) { torrents = torrents[..10]; }
+                        }
+                        else
+                        {
+                            torrents = torrents[..1];
+                        }
                     }
 
-                    return new ClientTorrent(show, episode, torrent, torrents.Count, stripSpecialChars);
+                    episode.Torrents.AddRange(torrents.Select(t => t.DbTorrent(episode)));
+                    return new ClientTorrent(show, episode, torrents, stripSpecialChars);
+
                 }
                 return null;
             }
             catch
             {
-                return new ClientTorrent(show, episode, null, null, stripSpecialChars);
+                return new ClientTorrent(show, episode, null, stripSpecialChars);
             }            
         }
 
@@ -397,7 +432,7 @@ namespace MediaLife.Services
 
         public void UpdateTorrentReferences(List<ClientTorrent> clientTorrents)
         {
-            List<string> clientHashes = clientTorrents.Select(t => t.Hash.ToUpper()).ToList();
+            List<string> clientHashes = clientTorrents.SelectMany(ct => ct.Torrents?.Select(t => t.Hash.ToUpper()) ?? []).ToList();
             
             //Remove torrent references not on the client
             foreach (Torrent torrent in db.Torrents.Where(t => !clientHashes.Contains(t.Hash.ToUpper()) && !t.ManuallyAdded))
@@ -409,6 +444,19 @@ namespace MediaLife.Services
             foreach (Torrent torrent in db.Torrents.Where(t => clientHashes.Contains(t.Hash.ToUpper()) && t.ManuallyAdded))
             {
                 torrent.ManuallyAdded = false;
+            }
+
+            //Update percentage
+            foreach (ClientTorrent clientTorrent in clientTorrents)
+            {
+                foreach (PirateBayTorrent torrent in clientTorrent.Torrents ?? [])
+                {
+                    Torrent? dbTorrent = db.Torrents.FirstOrDefault(t => t.Hash == torrent.Hash);
+                    if (dbTorrent != null)
+                    {
+                        dbTorrent.LastPercentage = (uint)Math.Floor(torrent.PercentComplete);
+                    }
+                }
             }
 
             db.SaveChanges();

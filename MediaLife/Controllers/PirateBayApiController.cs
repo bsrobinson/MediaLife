@@ -86,7 +86,7 @@ namespace MediaLife.Controllers
             ClientService clientService = new(db, Guid.NewGuid());
             ClientTorrent? torrent = clientService.SearchForTorrent(piratebay, null, new()).Result;
 
-            return torrent?.TorrentResultCount > 0 ? true : Problem("Test failed", null, 424);
+            return torrent?.Torrents?.Count > 0 ? true : Problem("Test failed", null, 424);
         }
     }
 }

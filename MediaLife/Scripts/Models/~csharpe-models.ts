@@ -27,19 +27,22 @@ export interface ClientFile {
     valid: boolean;
 }
 
-export interface ClientTorrent {
-    hash: string;
-    percentComplete: number;
-    files: string[];
+export interface DownloadableFile {
     show: ShowModel | null;
     episode: EpisodeModel | null;
-    torrentName: string;
-    torrentResultCount: number | null;
-    strippedSpecialChars: boolean;
-    valid: boolean;
     destinationFolder: string;
+}
+
+export interface ClientTorrent extends DownloadableFile {
+    torrents: PirateBayTorrent[];
+    strippedSpecialChars: boolean;
+    destinationFileNames: string[];
+    videoFiles: string | null[];
+}
+
+export interface ClientWebFile extends DownloadableFile {
+    url: string;
     destinationFileName: string;
-    videoFile: string | null;
 }
 
 export interface ClientActions {
@@ -47,7 +50,7 @@ export interface ClientActions {
     deleteTorrents: ClientTorrent[];
     saveAndDeleteTorrents: ClientTorrent[];
     addTorrents: ClientTorrent[];
-    downloads: ClientTorrent[];
+    downloads: ClientWebFile[];
     deleteFiles: ClientFile[];
     reTagFiles: ClientFile[];
     downloadFileFromCloud: EpisodeModel[];
@@ -87,6 +90,7 @@ export interface UserConfig extends IConfiguration {
     youTubeConfig: YouTubeConfig;
     movieConfig: MovieConfig;
     bookConfig: BookConfig;
+    radioConfig: RadioConfig;
     vlcConfig: VLCConfig;
 }
 
@@ -112,6 +116,9 @@ export interface MovieConfig extends SectionConfig {
 }
 
 export interface BookConfig extends SectionConfig {
+}
+
+export interface RadioConfig extends SectionConfig {
 }
 
 export interface VLCConfig extends IConfiguration {
@@ -270,6 +277,15 @@ export interface ShowUserModel {
 
 export interface EpisodeUserModel extends ShowUserModel {
     watched: string | null;
+}
+
+//File: ../../Models/PirateBayTorrent.cs
+
+export interface PirateBayTorrent {
+    hash: string;
+    name: string;
+    percentComplete: number;
+    files: string[];
 }
 
 //File: ../../Models/EpisodeId.cs

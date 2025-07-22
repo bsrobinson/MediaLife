@@ -176,38 +176,79 @@ namespace MediaLife.Models
     }
 
     [ExportFor(GasparType.FrontEnd)]
-    public class ClientTorrent
+    public class DownloadableFile
     {
-        public string Hash { get; set; } = "";
-        public double PercentComplete { get; set; }
-        public List<string> Files { get; set; } = new();
-
         public ShowModel? Show { get; set; } = null;
         public EpisodeModel? Episode { get; set; } = null;
 
-        public string TorrentName { get; set; } = "";
-        public int? TorrentResultCount { get; set; }
-        public bool StrippedSpecialChars { get; set; }
-
-        public bool Valid => !string.IsNullOrEmpty(Hash);
         public string DestinationFolder => $"/{Show?.SortableName}" + (Episode?.SiteSection == SiteSection.TV ? $"/Series {Episode.SeriesNumber}" : "");
-        public string DestinationFileName => GetFileName();
-        public string? VideoFile => GetVideoFile();
 
-        public ClientTorrent() { }
+        public DownloadableFile() { }
 
-        public ClientTorrent(ShowModel show, EpisodeModel episode) : this(show, episode, null, null, false) { }
-        public ClientTorrent(ShowModel? show, EpisodeModel episode, PirateBayTorrent? torrent, int? torrentResultCount, bool strippedQuotes)
+        public DownloadableFile(ShowModel? show, EpisodeModel? episode)
         {
             Show = show;
             Episode = episode;
-            Hash = torrent?.info_hash ?? "";
-            TorrentName = torrent?.name ?? "";
-            TorrentResultCount = torrentResultCount;
+        }
+
+        public string GetFileName(PirateBayTorrent torrent)
+        {
+            string? videoFile = torrent.GetVideoFile();
+            string torrentName = (videoFile == null) ? torrent.Name : torrent.Name.Replace("." + videoFile.Extension(), "");
+            string extension = (videoFile == null) ? "" : "." + videoFile.Extension();
+
+            return GetFileName(torrentName, extension);
+        }
+
+        public string GetFileName(Uri uri)
+        {
+            string filename = uri.IsFile ? System.IO.Path.GetFileName(uri.LocalPath) : uri.LocalPath;
+            return GetFileName(filename, "");
+        }
+
+        private string GetFileName(string name, string extension)
+        {
+            if (Episode == null)
+            {
+                return "";
+            }
+
+            string? episodeName = Episode?.Name.Replace("/", "-");
+            string year = Episode?.AirDate == null ? "" : ((DateTime)Episode.AirDate).Year.ToString();
+
+            switch (Episode?.SiteSection)
+            {
+                case SiteSection.TV:
+                    return $"{Show?.Name} {Episode.SeriesEpisodeNumber} - {episodeName} ({name}){extension}";
+                case SiteSection.YouTube:
+                    return $"{Show?.Name} - {episodeName} ({Episode.Id}){extension}";
+                case SiteSection.Movies:
+                    return $"{Episode.Number:D2} - {Episode.Name} ({Episode.Certificate}) {year} ({name}){extension}";
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+    }
+
+    [ExportFor(GasparType.FrontEnd)]
+    public class ClientTorrent : DownloadableFile
+    {
+        public List<PirateBayTorrent>? Torrents { get; set; } = null;
+        public bool StrippedSpecialChars { get; set; }
+
+        public List<string> DestinationFileNames => Torrents?.Select(t => GetFileName(t)).ToList() ?? [];
+        public List<string?> VideoFiles => Torrents?.Select(t => t.GetVideoFile()).ToList() ?? [];
+
+        public ClientTorrent() { }
+
+        public ClientTorrent(ShowModel show, EpisodeModel episode) : this(show, episode, [], false) { }
+        public ClientTorrent(ShowModel? show, EpisodeModel episode, List<PirateBayTorrent>? torrents, bool strippedQuotes) : base(show, episode)
+        {
+            Torrents = torrents;
             StrippedSpecialChars = strippedQuotes;
         }
 
-        public Torrent DbTorrent()
+        public Torrent DbTorrent(PirateBayTorrent torrent)
         {
             if (Episode == null)
             {
@@ -218,53 +259,12 @@ namespace MediaLife.Models
             {
                 EpisodeId = Episode.Id,
                 SiteSection = Episode.SiteSection,
-                Hash = Hash,
-                Name = TorrentName,
+                Hash = torrent.Hash,
+                Name = torrent.Name,
                 Added = DateTime.Now,
                 LastPercentage = 0,
                 ManuallyAdded = false,
             };
-        }
-
-        public string GetFileName()
-        {
-            if (Episode == null)
-            {
-                return "";
-            }
-
-            string torrentName = (VideoFile == null) ? TorrentName : TorrentName.Replace("." + VideoFile.Extension(), "");
-            string extension = (VideoFile == null) ? "" : "." + VideoFile.Extension();
-            string? episodeName = Episode?.Name.Replace("/", "-");
-            string year = Episode?.AirDate == null ? "" : ((DateTime)Episode.AirDate).Year.ToString();
-
-            switch (Episode?.SiteSection)
-            {
-                case SiteSection.TV:
-                    return $"{Show?.Name} {Episode.SeriesEpisodeNumber} - {episodeName} ({torrentName}){extension}";
-                case SiteSection.YouTube:
-                    return $"{Show?.Name} - {episodeName} ({Episode.Id}){extension}";
-                case SiteSection.Movies:
-                    return $"{Episode.Number:D2} - {Episode.Name} ({Episode.Certificate}) {year} ({torrentName}){extension}";
-                default:
-                    throw new NotImplementedException();
-            }
-        }
-
-        public string? GetVideoFile()
-        {
-            List<string> videoFiles = new();
-
-            foreach (string file in Files)
-            {
-                string? fileName = file.FileName();
-                if (fileName != null && !fileName.Contains("sample") && fileName.IsVideoFile())
-                {
-                    videoFiles.Add(file);
-                }
-            }
-
-            return videoFiles.Count == 1 ? videoFiles[0] : null;
         }
 
         public void MatchEpisode(List<ShowModel> shows)
@@ -273,7 +273,7 @@ namespace MediaLife.Models
             {
                 foreach (EpisodeModel episode in show.Episodes)
                 {
-                    if (episode.Torrents.Any(t => t.Hash.ToUpper() == Hash.ToUpper()))
+                    if (episode.Torrents.Select(t => t.Hash.ToUpper()).Intersect(Torrents?.Select(t => t.Hash.ToUpper()) ?? []).Any())
                     {
                         Show = show.DeepClone();
                         Episode = episode.DeepClone();
@@ -288,6 +288,18 @@ namespace MediaLife.Models
         }
     }
 
+    [ExportFor(GasparType.FrontEnd)]
+    public class ClientWebFile : DownloadableFile
+    {
+        public string Url { get; set; }
+        public string DestinationFileName => GetFileName(new Uri(Url));
+
+        public ClientWebFile(ShowModel show, EpisodeModel episode): base(show, episode)
+        {
+            Url = $"https://www.youtube.com/watch?v={episode.Id}";
+        }
+    }
+
     [ExportFor(GasparType.TypeScript)]
     public class ClientActions
     {
@@ -295,7 +307,7 @@ namespace MediaLife.Models
         public List<ClientTorrent> DeleteTorrents { get; set; } = new();
         public List<ClientTorrent> SaveAndDeleteTorrents { get; set; } = new();
         public List<ClientTorrent> AddTorrents { get; set; } = new();
-        public List<ClientTorrent> Downloads { get; set; } = new();
+        public List<ClientWebFile> Downloads { get; set; } = new();
         public List<ClientFile> DeleteFiles { get; set; } = new();
         public List<ClientFile> ReTagFiles { get; set; } = new();
         public List<EpisodeModel> DownloadFileFromCloud { get; set; } = new();

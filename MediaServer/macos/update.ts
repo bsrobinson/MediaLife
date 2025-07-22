@@ -4,7 +4,7 @@
 //	brew install yt-dlp
 
 import { execSync } from 'child_process';
-import { ClientActions, ClientData, ClientFile, ClientTorrent, SiteSection } from './cs-models';
+import { ClientActions, ClientData, ClientFile, ClientTorrent, PirateBayTorrent, SiteSection } from './cs-models';
 const homedir = require('os').homedir();
 
 const tvFolder = `${homedir}/Library/Mobile Documents/com~apple~CloudDocs/Media/TV Shows`;
@@ -56,10 +56,10 @@ function getTorrents(): ClientTorrent[] {
 					
 					let torrent = {
 						hash: (info.match(/\n.*?Hash: (.*)\n/) || [])[1],
-						torrentName: (info.match(/\n.*?Name: (.*)\n/) || [])[1],
+						name: (info.match(/\n.*?Name: (.*)\n/) || [])[1],
 						percentComplete: isNaN(percentComplete) ? 0 : percentComplete,
 						files: [] as string[],
-					} as ClientTorrent;
+					} as PirateBayTorrent;
 
 					let namePos = 0;
 					exec(`/opt/homebrew/bin/transmission-remote -t "${id}" -f`).split('\n').forEach(fileLine => {
@@ -71,7 +71,7 @@ function getTorrents(): ClientTorrent[] {
 						}
 					});
 
-					torrents.push(torrent);
+					torrents.push({torrents: [torrent]} as ClientTorrent);
 				}
 			}
 		}
@@ -136,31 +136,38 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 			
 		} else {
 		
-			console.log(`${clientActions.deleteTorrents.length} x deleteTorrents`);
-			clientActions.deleteTorrents.forEach(torrent => {
-				console.log(`  • ${torrent.show?.name} - ${torrent.episode?.seriesEpisodeNumber} ${torrent.episode?.name}`);
-				exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -rad > /dev/null`)
+			console.log(`${clientActions.deleteTorrents.flatMap(t => t.torrents).length} x deleteTorrents`);
+			clientActions.deleteTorrents.forEach(clientTorrent => {
+				clientTorrent.torrents.forEach(torrent => {
+					console.log(`  • ${clientTorrent.show?.name} - ${clientTorrent.episode?.seriesEpisodeNumber} ${clientTorrent.episode?.name}`);
+					exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -rad > /dev/null`)
+				})
 			});
 
 
 			console.log(`${clientActions.saveAndDeleteTorrents.length} x saveAndDeleteTorrents`);
-			clientActions.saveAndDeleteTorrents.forEach(torrent => {
+			clientActions.saveAndDeleteTorrents.forEach(clientTorrent => {
 				let root = '';
-				if (torrent.show?.siteSection == SiteSection.TV) { root = tvFolder; }
-				if (torrent.show?.siteSection == SiteSection.Movies) { root = moviesFolder; }
-				if (root) {
+				if (clientTorrent.show?.siteSection == SiteSection.TV) { root = tvFolder; }
+				if (clientTorrent.show?.siteSection == SiteSection.Movies) { root = moviesFolder; }
+
+				let torrent = clientTorrent.torrents[0]
+				let videoFile = clientTorrent.videoFiles[0]
+				let destinationFileName = clientTorrent.destinationFileNames[0]
+
+				if (root && torrent && destinationFileName) {
 					let info = exec(`/opt/homebrew/bin/transmission-remote -t ${torrent.hash} -i`);
 					if (info) {
-						console.log(`  • ${torrent.show?.name} - ${torrent.episode?.seriesEpisodeNumber} ${torrent.episode?.name}`);
+						console.log(`  • ${clientTorrent.show?.name} - ${clientTorrent.episode?.seriesEpisodeNumber} ${clientTorrent.episode?.name}`);
 					
 						let location = (info.match(/\n.*?Location: (.*)\n/) || [])[1];
-						let source = `${location}/${torrent.videoFile}`;
-						let destFolder = `${root}${torrent.destinationFolder}`;
-						let destFile = torrent.destinationFileName;
+						let source = `${location}/${videoFile}`;
+						let destFolder = `${root}${clientTorrent.destinationFolder}`;
+						let destFile = destinationFileName;
 
-						if (!torrent.videoFile) {
-							source = `${location}/${torrent.torrentName}`;
-							destFolder = `${root}${torrent.destinationFolder}/${torrent.destinationFileName}/`;
+						if (!videoFile) {
+							source = `${location}/${torrent.name}`;
+							destFolder = `${root}${clientTorrent.destinationFolder}/${destinationFileName}/`;
 							destFile = '';
 						}
 						exec(`mkdir -p "${destFolder}" && cp -R "${source}" "${destFolder}/${destFile}"`);
@@ -171,21 +178,21 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 			});
 
 			
-			console.log(`${clientActions.addTorrents.length} x addTorrents`);
-			clientActions.addTorrents.forEach(torrent => {
-				console.log(`  • ${torrent.show?.name} - ${torrent.episode?.seriesEpisodeNumber} ${torrent.episode?.name}`);
-				exec(`/opt/homebrew/bin/transmission-remote -a "magnet:?xt=urn:btih:${torrent.hash}&dn=${torrent.torrentName}" > /dev/null`);
-				exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -L "${torrentLabel}" > /dev/null`);
+			console.log(`${clientActions.addTorrents.flatMap(t => t.torrents).length} x addTorrents`);
+			clientActions.addTorrents.forEach(clientTorrent => {
+				clientTorrent.torrents.forEach(torrent => {
+					console.log(`  • ${clientTorrent.show?.name} - ${clientTorrent.episode?.seriesEpisodeNumber} ${clientTorrent.episode?.name}`);
+					exec(`/opt/homebrew/bin/transmission-remote -a "magnet:?xt=urn:btih:${torrent.hash}&dn=${torrent.name}" > /dev/null`);
+					exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -L "${torrentLabel}" > /dev/null`);
+				})
 			});
 
 			
 			let skipping = clientActions.downloads.length - 10;
 			console.log(`${clientActions.downloads.length - (skipping > 0 ? skipping : 0)} x downloads${skipping > 0 ? ` (skipping ${skipping} more)` : ''}`);
-			clientActions.downloads.slice(0, 10).forEach(torrent => {
-				if (torrent.episode?.siteSection == SiteSection.YouTube) {
-					console.log(`  • ${torrent.show?.name} - ${torrent.episode?.seriesEpisodeNumber} ${torrent.episode?.name}`);
-					exec(`/opt/homebrew/bin/yt-dlp -o "${youtubeFolder}${torrent.destinationFolder}/${torrent.destinationFileName}.mp4" -f mp4 "https://www.youtube.com/watch?v=${torrent.episode.id}" > /dev/null`);
-				}
+			clientActions.downloads.slice(0, 10).forEach(file => {
+				console.log(`  • ${file.show?.name} - ${file.episode?.seriesEpisodeNumber} ${file.episode?.name}`);
+				exec(`/opt/homebrew/bin/yt-dlp -o "${youtubeFolder}${file.destinationFolder}/${file.destinationFileName}.mp4" -f mp4 "${file.url}" > /dev/null`);
 			});
 
 			
