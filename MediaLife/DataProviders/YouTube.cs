@@ -145,10 +145,14 @@ namespace MediaLife.DataProviders
                 {
                     Task<ShowModel?> finishedTask = Task.WhenAny(showTasks).Result;
                     showTasks.Remove(finishedTask);
-                    if (finishedTask.Result != null)
+                    try
                     {
-                        shows.Add(finishedTask.Result);
+                        if (finishedTask.Result != null)
+                        {
+                            shows.Add(finishedTask.Result);
+                        }
                     }
+                    catch {} //bad result; discard
                 }
 
                 return shows;
