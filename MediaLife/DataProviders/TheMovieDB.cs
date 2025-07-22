@@ -39,7 +39,7 @@ namespace MediaLife.DataProviders
                 return new List<ShowModel>();
             }
 
-            List<Task<Movie>> movieDetailTasks = new();
+            List<Task<Movie?>> movieDetailTasks = new();
             List<Task<ShowModel?>> movieShowTasks = new();
 
             List<ShowModel> movies = new();
@@ -87,24 +87,27 @@ namespace MediaLife.DataProviders
             }
             while (movieDetailTasks.Any())
             {
-                Task<Movie> finishedTask = Task.WhenAny(movieDetailTasks).Result;
+                Task<Movie?> finishedTask = Task.WhenAny(movieDetailTasks).Result;
                 movieDetailTasks.Remove(finishedTask);
 
-                int score = 999 - orderedMovieIds.IndexOf(finishedTask.Result.Id.ToString());
-                string id = (finishedTask.Result.BelongsToCollection?.Id ?? finishedTask.Result.Id).ToString();
-                if (!validIds.Contains(id))
+                if (finishedTask.Result != null)
                 {
-                    validIds.Add(id);
+                    int score = 999 - orderedMovieIds.IndexOf(finishedTask.Result.Id.ToString());
+                    string id = (finishedTask.Result.BelongsToCollection?.Id ?? finishedTask.Result.Id).ToString();
+                    if (!validIds.Contains(id))
+                    {
+                        validIds.Add(id);
 
-                    ShowModel? movieInDb = showsService.GetShow(SiteSection.Movies, id);
-                    if (movieInDb != null)
-                    {
-                        movieInDb.SearchScore = score;
-                        movies.Add(movieInDb);
-                    }
-                    else
-                    {
-                        movieShowTasks.Add(GetMovieAsync(finishedTask.Result, score));
+                        ShowModel? movieInDb = showsService.GetShow(SiteSection.Movies, id);
+                        if (movieInDb != null)
+                        {
+                            movieInDb.SearchScore = score;
+                            movies.Add(movieInDb);
+                        }
+                        else
+                        {
+                            movieShowTasks.Add(GetMovieAsync(finishedTask.Result, score));
+                        }
                     }
                 }
             }
