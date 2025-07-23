@@ -64,7 +64,7 @@ namespace MediaLife.Services
 
                     foreach (PirateBayTorrent torrent in clientData.Torrents[i].Torrents ?? [])
                     {
-                        db.Log(SessionId, $"Request Delete Torrent: {clientData.Torrents[i].Show?.Name} - {clientData.Torrents[i].Episode?.Name} ({torrent.Hash} - {torrent.Name})");
+                        db.Log(SessionId, $"Request Delete Torrent: {clientData.Torrents[i].ShowName} - {clientData.Torrents[i].EpisodeName} ({torrent.Hash} - {torrent.Name})");
                     }
                     
                     clientData.Torrents.RemoveAt(i);
@@ -86,7 +86,7 @@ namespace MediaLife.Services
 
                     returnTorrents.Add(returnTorrent);
 
-                    db.Log(SessionId, $"Request Save {torrent.Episode?.SiteSection} Torrent: {torrentToSave.Hash} - {torrentToSave.Name} - {torrent.GetFileName(torrentToSave)}");
+                    db.Log(SessionId, $"Request Save {torrent.Section} Torrent: {torrentToSave.Hash} - {torrentToSave.Name} - {torrent.GetFileName(torrentToSave)}");
                 }
             }
             return returnTorrents;
@@ -151,7 +151,7 @@ namespace MediaLife.Services
                                 if (!string.IsNullOrEmpty(torrent.Hash))
                                 {
                                     db.Torrents.Add(clientTorrent.DbTorrent(torrent));
-                                    db.Log(SessionId, $"Request Add Torrent: {clientTorrent.Show?.Name} - {clientTorrent.Episode?.Name} ({torrent.Hash} - {torrent.Name})");
+                                    db.Log(SessionId, $"Request Add Torrent: {clientTorrent.ShowName} - {clientTorrent.EpisodeName} ({torrent.Hash} - {torrent.Name})");
                                 }
                                 else
                                 {
@@ -159,7 +159,11 @@ namespace MediaLife.Services
                                 }
                             }
 
-                            returnTorrents.Add(returnTorrent);
+                            if (returnTorrent.Torrents?.Any() == true)
+                            {
+                                returnTorrents.Add(returnTorrent);
+                            }
+
 
                             if (clientTorrent.Torrents != null)
                             {
@@ -225,7 +229,7 @@ namespace MediaLife.Services
 
             foreach (ClientWebFile file in downloadFiles)
             {
-                db.Log(SessionId, $"Request download of YouTube file - {file.Show?.Name} - {file.Episode?.Name}");
+                db.Log(SessionId, $"Request download of YouTube file - {file.ShowName} - {file.EpisodeName}");
             }
             
             return downloadFiles;

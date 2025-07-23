@@ -9,7 +9,7 @@ namespace MediaLife.Models
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class BaseSiteObjectModel
     {
-        public string Id { get; set; }
+        public string Id { get; set; } = "";
         public SiteSection SiteSection { get; set; }
         public string Name { get; set; } = "";
     }

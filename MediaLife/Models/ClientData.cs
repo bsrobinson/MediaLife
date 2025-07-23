@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Force.DeepCloner;
 using MediaLife.Extensions;
@@ -178,10 +179,17 @@ namespace MediaLife.Models
     [ExportFor(GasparType.FrontEnd)]
     public class DownloadableFile
     {
+        [JsonIgnore]
         public ShowModel? Show { get; set; } = null;
+        [JsonIgnore]
         public EpisodeModel? Episode { get; set; } = null;
 
-        public string DestinationFolder => $"/{Show?.SortableName}" + (Episode?.SiteSection == SiteSection.TV ? $"/Series {Episode.SeriesNumber}" : "");
+        public SiteSection? Section => Show?.SiteSection;
+        public string? ShowName => Show?.Name;
+        public string? EpisodeName => Episode?.Name;
+        public string? SeriesEpisodeNumber => Episode?.SeriesEpisodeNumber;
+
+        public string DestinationFolder => $"/{Show?.SortableName}" + (Section == SiteSection.TV ? $"/Series {Episode?.SeriesNumber}" : "");
 
         public DownloadableFile() { }
 
@@ -213,15 +221,15 @@ namespace MediaLife.Models
                 return "";
             }
 
-            string? episodeName = Episode?.Name.Replace("/", "-");
-            string year = Episode?.AirDate == null ? "" : ((DateTime)Episode.AirDate).Year.ToString();
+            string? episodeName = Episode.Name.Replace("/", "-");
+            string year = Episode.AirDate == null ? "" : ((DateTime)Episode.AirDate).Year.ToString();
 
-            switch (Episode?.SiteSection)
+            switch (Episode.SiteSection)
             {
                 case SiteSection.TV:
-                    return $"{Show?.Name} {Episode.SeriesEpisodeNumber} - {episodeName} ({name}){extension}";
+                    return $"{ShowName} {Episode.SeriesEpisodeNumber} - {episodeName} ({name}){extension}";
                 case SiteSection.YouTube:
-                    return $"{Show?.Name} - {episodeName} ({Episode.Id}){extension}";
+                    return $"{ShowName} - {episodeName} ({Episode.Id}){extension}";
                 case SiteSection.Movies:
                     return $"{Episode.Number:D2} - {Episode.Name} ({Episode.Certificate}) {year} ({name}){extension}";
                 default:

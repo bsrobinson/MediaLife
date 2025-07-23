@@ -28,8 +28,10 @@ export interface ClientFile {
 }
 
 export interface DownloadableFile {
-    show: ShowModel | null;
-    episode: EpisodeModel | null;
+    section: SiteSection | null;
+    showName: string | null;
+    episodeName: string | null;
+    seriesEpisodeNumber: string | null;
     destinationFolder: string;
 }
 

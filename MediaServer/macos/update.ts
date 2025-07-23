@@ -139,7 +139,7 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 			console.log(`${clientActions.deleteTorrents.flatMap(t => t.torrents).length} x deleteTorrents`);
 			clientActions.deleteTorrents.forEach(clientTorrent => {
 				clientTorrent.torrents.forEach(torrent => {
-					console.log(`  • ${clientTorrent.show?.name} - ${clientTorrent.episode?.seriesEpisodeNumber} ${clientTorrent.episode?.name}`);
+					console.log(`  • ${clientTorrent.showName} - ${clientTorrent.seriesEpisodeNumber} ${clientTorrent.episodeName}`);
 					exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -rad > /dev/null`)
 				})
 			});
@@ -148,8 +148,8 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 			console.log(`${clientActions.saveAndDeleteTorrents.length} x saveAndDeleteTorrents`);
 			clientActions.saveAndDeleteTorrents.forEach(clientTorrent => {
 				let root = '';
-				if (clientTorrent.show?.siteSection == SiteSection.TV) { root = tvFolder; }
-				if (clientTorrent.show?.siteSection == SiteSection.Movies) { root = moviesFolder; }
+				if (clientTorrent.section == SiteSection.TV) { root = tvFolder; }
+				if (clientTorrent.section == SiteSection.Movies) { root = moviesFolder; }
 
 				let torrent = clientTorrent.torrents[0]
 				let videoFile = clientTorrent.videoFiles[0]
@@ -158,7 +158,7 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 				if (root && torrent && destinationFileName) {
 					let info = exec(`/opt/homebrew/bin/transmission-remote -t ${torrent.hash} -i`);
 					if (info) {
-						console.log(`  • ${clientTorrent.show?.name} - ${clientTorrent.episode?.seriesEpisodeNumber} ${clientTorrent.episode?.name}`);
+						console.log(`  • ${clientTorrent.showName} - ${clientTorrent.seriesEpisodeNumber} ${clientTorrent.episodeName}`);
 					
 						let location = (info.match(/\n.*?Location: (.*)\n/) || [])[1];
 						let source = `${location}/${videoFile}`;
@@ -181,7 +181,7 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 			console.log(`${clientActions.addTorrents.flatMap(t => t.torrents).length} x addTorrents`);
 			clientActions.addTorrents.forEach(clientTorrent => {
 				clientTorrent.torrents.forEach(torrent => {
-					console.log(`  • ${clientTorrent.show?.name} - ${clientTorrent.episode?.seriesEpisodeNumber} ${clientTorrent.episode?.name}`);
+					console.log(`  • ${clientTorrent.showName} - ${clientTorrent.seriesEpisodeNumber} ${clientTorrent.episodeName}`);
 					exec(`/opt/homebrew/bin/transmission-remote -a "magnet:?xt=urn:btih:${torrent.hash}&dn=${torrent.name}" > /dev/null`);
 					exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -L "${torrentLabel}" > /dev/null`);
 				})
@@ -191,7 +191,7 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 			let skipping = clientActions.downloads.length - 10;
 			console.log(`${clientActions.downloads.length - (skipping > 0 ? skipping : 0)} x downloads${skipping > 0 ? ` (skipping ${skipping} more)` : ''}`);
 			clientActions.downloads.slice(0, 10).forEach(file => {
-				console.log(`  • ${file.show?.name} - ${file.episode?.seriesEpisodeNumber} ${file.episode?.name}`);
+				console.log(`  • ${file.showName} - ${file.seriesEpisodeNumber} ${file.episodeName}`);
 				exec(`/opt/homebrew/bin/yt-dlp -o "${youtubeFolder}${file.destinationFolder}/${file.destinationFileName}.mp4" -f mp4 "${file.url}" > /dev/null`);
 			});
 
@@ -219,6 +219,8 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 				console.log(`  • ${file.filePath}`);
 				exec(`/usr/bin/brctl download "${file.filePath}"`);
 			});
+
+			console.log('Done')
 
 		}
 	} else {
