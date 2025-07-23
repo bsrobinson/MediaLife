@@ -17,7 +17,7 @@ namespace MediaLife.DataProviders
 
         public async Task<List<ShowModel>> SearchAsync(string query)
         {
-            string searchPage = new HttpClient().GetStringAsync($"http://www.radiofeeds.co.uk/query.asp?feedme={query}").Result;
+            string searchPage = await new HttpClient().GetStringAsync($"http://www.radiofeeds.co.uk/query.asp?feedme={query}");
 
             var stationRows = new Regex(@"<tr.*?</tr>", RegexOptions.Singleline)
                 .Matches(searchPage)
