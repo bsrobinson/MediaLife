@@ -101,6 +101,7 @@ export class HomeIndex {
             'movies': false,
             'books': false,
             'radio': false,
+            'podcast': false,
             'lists': false,
         }
         enabledSiteSectionsString.split('|').forEach(s => {
@@ -108,6 +109,7 @@ export class HomeIndex {
             if (s == SiteSection.YouTube) { enabledSiteSections[SiteSection.YouTube] = true }
             if (s == SiteSection.Movies) { enabledSiteSections[SiteSection.Movies] = true }
             if (s == SiteSection.Books) { enabledSiteSections[SiteSection.Books] = true }
+            if (s == SiteSection.Podcast) { enabledSiteSections[SiteSection.Podcast] = true }
             if (s == SiteSection.Radio) { enabledSiteSections[SiteSection.Radio] = true }
         })
         return enabledSiteSections
@@ -373,6 +375,9 @@ export class HomeIndex {
         
         if (show.siteSection == SiteSection.YouTube || show.siteSection == SiteSection.Radio) {
             poster.addClass('round')
+        }
+        if (show.siteSection == SiteSection.Podcast) {
+            poster.addClass('square')
         }
     }
 

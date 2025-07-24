@@ -1,6 +1,6 @@
 # MediaLife
 
-Your total solution to keep track of your TV, Movies and Books.
+Your total solution to keep track of your TV, Movies, YouTube, Podcasts and Books.
 
 There are two main elements to MediaLife; the first is very much like the services it uses for it's data ([TV Maze](https://www.tvmaze.com) and [The Movie Database](https://www.themoviedb.org/?language=en-GB)), keeping track of your progress through TV shows and Movie and Book series - and popping up when new content is released, but with some advantages:
 

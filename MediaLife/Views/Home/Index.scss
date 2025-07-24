@@ -41,6 +41,16 @@
             top: 120px;
         }
     }
+
+    &.podcast .poster.square {
+        > a {
+            margin-top: 0;
+        }
+
+        .episode-count {
+            top: 134px;
+        }
+    }
 }
 
 .poster {
@@ -54,13 +64,19 @@
     font-size: .9em;
     text-align: left;
 
-    &.round {
+    &.round, &.square {
         > a {
             height: 155px;
-            border-radius: 50%;
             background-size: cover;
             margin-top: 30px;
-            margin-bottom: 37px;
+        }       
+    }
+    
+    &.round {
+        margin-bottom: 37px;
+
+        > a {
+            border-radius: 50%;
         }
 
         .episode-count {

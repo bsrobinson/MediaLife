@@ -102,7 +102,7 @@
 </form>
 
 <div id="page-content">
-    @if (Model.SiteSection == SiteSection.TV && !Model.Show.HideWatched && !Model.Show.HideUnplayable)
+    @if ((Model.SiteSection == SiteSection.TV || Model.SiteSection == SiteSection.Podcast) && !Model.Show.HideWatched && !Model.Show.HideUnplayable)
     {
         <div id="series_list_wrapper"><ul id="series_list"></ul></div>
     }
@@ -115,6 +115,10 @@
         if (Model.SiteSection == SiteSection.Radio)
         {
             posterClass = "round";
+        }
+        if (Model.SiteSection == SiteSection.Podcast)
+        {
+            posterClass = "square";
         }
     }
     <div id="episode_list" class="@(Model.Show.ShowEpisodesAsThumbnails ? "thumbnails" : "") @Model.Show.SiteSection"></div>

@@ -222,7 +222,8 @@ export class HomeShow {
             let maxDate = new Date(8640000000000000);
 
             for (let i = 0; i < episodes.length; i++) {
-                if ((this.data.siteSection != SiteSection.TV || (this.data.siteSection == SiteSection.TV && (this.activeSeries === null || episodes[i].seriesNumber == this.activeSeries)))
+                const useSeries = this.data.siteSection == SiteSection.TV || this.data.siteSection == SiteSection.Podcast
+                if ((!useSeries || (useSeries && (this.activeSeries === null || episodes[i].seriesNumber == this.activeSeries)))
                     && episodes[i].mergedFromShow == null
                     && (!this.data.show.hideWatched || episodes[i].userHasWatched == false)
                     && (!this.data.show.hideUnplayable || episodes[i].filePath != null)

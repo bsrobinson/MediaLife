@@ -93,6 +93,7 @@ export interface UserConfig extends IConfiguration {
     movieConfig: MovieConfig;
     bookConfig: BookConfig;
     radioConfig: RadioConfig;
+    podcastConfig: PodcastConfig;
     vlcConfig: VLCConfig;
 }
 
@@ -108,8 +109,7 @@ export interface TVConfig extends SectionConfig {
 }
 
 export interface YouTubeConfig extends SectionConfig {
-    useProxy: boolean;
-    lastWorkingProxyAddress: string | null;
+    episodeProxy: string | null;
 }
 
 export interface MovieConfig extends SectionConfig {
@@ -121,6 +121,9 @@ export interface BookConfig extends SectionConfig {
 }
 
 export interface RadioConfig extends SectionConfig {
+}
+
+export interface PodcastConfig extends SectionConfig {
 }
 
 export interface VLCConfig extends IConfiguration {
@@ -310,6 +313,7 @@ export enum SiteSection {
     Movies = 'movies',
     Books = 'books',
     Radio = 'radio',
+    Podcast = 'podcast',
 }
 
 export enum PageType {

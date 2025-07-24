@@ -118,7 +118,7 @@ namespace MediaLife.Services
                     }
                     else { return null; }
                 }
-                else if (section != SiteSection.TV && section != SiteSection.YouTube && section != SiteSection.Radio) { throw new NotImplementedException(); }
+                else if (section != SiteSection.TV && section != SiteSection.YouTube && section != SiteSection.Podcast && section != SiteSection.Radio) { throw new NotImplementedException(); }
 
                 show = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
                 episodes = (
@@ -253,6 +253,10 @@ namespace MediaLife.Services
             if (section == SiteSection.Books && idIsNumeric)
             {
                 return await new Goodreads(db).GetBookAsync(numericId);
+            }
+            if (section == SiteSection.Podcast)
+            {
+                return await new PodcastIndex(db).GetPodcastAsync(numericId);
             }
             if (section == SiteSection.Radio)
             {
@@ -1061,6 +1065,10 @@ namespace MediaLife.Services
                 if (section == SiteSection.Books)
                 {
                     return new Goodreads(db).SearchAsync(this, query).Result;
+                }
+                if (section == SiteSection.Podcast)
+                {
+                    return new PodcastIndex(db).SearchAsync(this, query).Result;
                 }
                 if (section == SiteSection.Radio)
                 {

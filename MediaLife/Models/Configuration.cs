@@ -35,6 +35,7 @@ namespace MediaLife.Models
         public MovieConfig MovieConfig { get; set; } = new();
         public BookConfig BookConfig { get; set; } = new();
         public RadioConfig RadioConfig { get; set; } = new();
+        public PodcastConfig PodcastConfig { get; set; } = new();
 
         public VLCConfig VLCConfig { get; set; } = new();
 
@@ -47,6 +48,7 @@ namespace MediaLife.Models
                 case SiteSection.Movies: return MovieConfig;
                 case SiteSection.Books: return BookConfig;
                 case SiteSection.Radio: return RadioConfig;
+                case SiteSection.Podcast: return RadioConfig;
                 case SiteSection.Lists: return new SectionConfig();
                 default:
                     throw new NotImplementedException($"Cannot get config for '{section}' section");
@@ -106,6 +108,18 @@ namespace MediaLife.Models
 
     [ExportFor(GasparType.TypeScript)]
     public class RadioConfig : SectionConfig { }
+
+    [ExportFor(GasparType.TypeScript)]
+    public class PodcastConfig : SectionConfig
+    {
+        ///<summary>API Key for PodcastIndex</summary>
+        [DefaultValue(null), DisplayName("PodcastIndex Api Key")]
+        public string? PodcastIndexApiKey { get; set; }
+
+        ///<summary>API Secret for PodcastIndex</summary>
+        [DefaultValue(null), DisplayName("PodcastIndex Api Secret")]
+        public string? PodcastIndexApiSecret { get; set; }
+    }
 
     [ExportFor(GasparType.TypeScript)]
     public class VLCConfig : IConfiguration

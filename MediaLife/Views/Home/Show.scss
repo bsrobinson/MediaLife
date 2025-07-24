@@ -449,9 +449,11 @@ h1 {
     overflow: hidden;
     position: relative;
 
-    &.round {
+    &.round, &.square {
         height: 210px;
         min-height: 210px;
+    }
+    &.round {
         border-radius: 50%;
     }
     &.wide {

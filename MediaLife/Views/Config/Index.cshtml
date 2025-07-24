@@ -48,18 +48,21 @@
                 Html.FormRowFor(m => Model.UserConfig.YouTubeConfig.DeleteWatched, "For YouTube Shows"),
                 Html.FormRowFor(m => Model.UserConfig.MovieConfig.DeleteWatched, "For Movies"),
                 Html.FormRowFor(m => Model.UserConfig.BookConfig.DeleteWatched, "For Books"),
+                Html.FormRowFor(m => Model.UserConfig.PodcastConfig.DeleteWatched, "For Podcasts"),
             })
             @Html.FieldSet("Download Limit (default when added)", new() {
                 @Html.FormRowFor(m => Model.UserConfig.TVConfig.DownloadLimit, "For TV Shows"),
                 @Html.FormRowFor(m => Model.UserConfig.YouTubeConfig.DownloadLimit, "For YouTube Shows"),
                 @Html.FormRowFor(m => Model.UserConfig.MovieConfig.DownloadLimit, "For Movies"),
                 @Html.FormRowFor(m => Model.UserConfig.BookConfig.DownloadLimit, "For Books"),
+                @Html.FormRowFor(m => Model.UserConfig.PodcastConfig.DownloadLimit, "For Podcasts"),
             })
             @Html.FieldSet("Keep Next Episode Off Cloud", new() {
                 @Html.FormRowFor(m => Model.UserConfig.TVConfig.KeepNextEpisodeOffCloud, "For TV Shows"),
                 @Html.FormRowFor(m => Model.UserConfig.YouTubeConfig.KeepNextEpisodeOffCloud, "For YouTube Shows"),
                 @Html.FormRowFor(m => Model.UserConfig.MovieConfig.KeepNextEpisodeOffCloud, "For Movies"),
                 @Html.FormRowFor(m => Model.UserConfig.BookConfig.KeepNextEpisodeOffCloud, "For Books"),
+                @Html.FormRowFor(m => Model.UserConfig.PodcastConfig.KeepNextEpisodeOffCloud, "For Podcasts"),
             })
             @Html.SubmitRow("Save")
         </form>
@@ -75,11 +78,14 @@
                 @Html.FormRowFor(m => Model.UserConfig.YouTubeConfig.UpdateFromDataProvider, "For YouTube Shows"),
                 @Html.FormRowFor(m => Model.UserConfig.MovieConfig.UpdateFromDataProvider, "For Movies"),
                 @Html.FormRowFor(m => Model.UserConfig.BookConfig.UpdateFromDataProvider, "For Books"),
+                @Html.FormRowFor(m => Model.UserConfig.PodcastConfig.UpdateFromDataProvider, "For Podcasts"),
                 @Html.FormRowFor(m => Model.UserConfig.RadioConfig.UpdateFromDataProvider, "For Radio"),
             })
+            @Html.FormRowFor(m => Model.UserConfig.YouTubeConfig.EpisodeProxy)
             @Html.FormRowFor(m => Model.UserConfig.MovieConfig.MovieReleaseCountryCode, new() { Style = FormRowStyle.OutlineInset })
             @Html.FormRowFor(m => Model.UserConfig.MovieConfig.TheMovieDbApiKey)
-            @Html.FormRowFor(m => Model.UserConfig.YouTubeConfig.EpisodeProxy)
+            @Html.FormRowFor(m => Model.UserConfig.PodcastConfig.PodcastIndexApiKey)
+            @Html.FormRowFor(m => Model.UserConfig.PodcastConfig.PodcastIndexApiSecret)
             @Html.SubmitRow("Save")
         </form>
 

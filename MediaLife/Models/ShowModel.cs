@@ -31,7 +31,7 @@ namespace MediaLife.Models
                 {
                     return [.._episodes.OrderBy(e => e.AirDate).ThenBy(e => e.MergedFromShow == null ? 0 : 1)];
                 }
-                if (SiteSection == SiteSection.TV)
+                if (SiteSection == SiteSection.TV || SiteSection == SiteSection.Podcast)
                 {
                     return _episodes.OrderBy(e => e.MergedFromShow == null).ThenBy(e => e.AirDate ?? DateTime.MaxValue).ThenBy(e => e.Number).ToList();
                 }

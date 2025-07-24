@@ -65,6 +65,7 @@ export class MediaLife {
         if (element<HTMLInputElement>('siteSection_movies').checked) { enabledSiteSections.push(SiteSection.Movies) }
         if (element<HTMLInputElement>('siteSection_books').checked) { enabledSiteSections.push(SiteSection.Books) }
         if (element<HTMLInputElement>('siteSection_radio').checked) { enabledSiteSections.push(SiteSection.Radio) }
+        if (element<HTMLInputElement>('siteSection_podcast').checked) { enabledSiteSections.push(SiteSection.Podcast) }
 
         createCookie('enabled_site_sections', enabledSiteSections.join('|'), 360)
         if (window.page.changeSiteSections) {
@@ -77,6 +78,7 @@ export class MediaLife {
         element<HTMLInputElement>('siteSection_movies').checked = SiteSection.Movies == section
         element<HTMLInputElement>('siteSection_books').checked = SiteSection.Books == section
         element<HTMLInputElement>('siteSection_radio').checked = SiteSection.Radio == section
+        element<HTMLInputElement>('siteSection_podcast').checked = SiteSection.Podcast == section
         this.toggleSiteSection()        
     }
 

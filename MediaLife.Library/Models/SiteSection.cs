@@ -34,6 +34,8 @@ namespace MediaLife.Library.Models
         Books = 30,
         [EnumMember(Value = "radio")]
         Radio = 40,
+        [EnumMember(Value = "podcast")]
+        Podcast = 45,
     }
 
     [ExportFor(GasparType.TypeScript)]

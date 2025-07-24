@@ -20,8 +20,9 @@ export class EpisodeWatchIcon {
 
     constructor(public episodeObj: EpisodeObject, public additionalClasses: string | null = null) {
 
-        this.watchedString = episodeObj.show.siteSection == SiteSection.Books ? 'Read' : 'Watched';
-        this.watchingString = episodeObj.show.siteSection == SiteSection.Books ? 'Reading' : 'Watching';
+        const section = episodeObj.show.siteSection
+        this.watchedString = section == SiteSection.Books ? 'Read' : (section == SiteSection.Podcast ? 'Listened' : 'Watched');
+        this.watchingString = section == SiteSection.Books ? 'Reading' : (section == SiteSection.Podcast ? 'Listening' : 'Watching');
 
         let episode = episodeObj.episode;
 
