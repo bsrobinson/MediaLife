@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MediaLife.DataProviders;
@@ -10,7 +8,6 @@ using MediaLife.Extensions;
 using MediaLife.Library.DAL;
 using MediaLife.Library.Models;
 using MediaLife.Models;
-using Newtonsoft.Json;
 
 namespace MediaLife.Services
 {
@@ -426,9 +423,9 @@ namespace MediaLife.Services
             return false;
         }
 
-        public async Task<bool> UpdateLastUpdatedAsync(Guid updateSessionId)
+        public async Task UpdateLastUpdatedAsync(Guid updateSessionId)
         {
-            foreach (SiteSection section in Enum.GetValues(typeof(SiteSection))) //PARELLEL!!
+            foreach (SiteSection section in Enum.GetValues(typeof(SiteSection)))
             {
                 try
                 {
@@ -453,7 +450,6 @@ namespace MediaLife.Services
                     db.Log(updateSessionId, e.Message, e);
                 }
             }
-            return true;
         }
 
         public async Task<string?> UpdateShowAsync(SiteSection section, string showId)

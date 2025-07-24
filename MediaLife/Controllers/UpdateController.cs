@@ -35,6 +35,7 @@ using MediaLife.Models;
 using System;
 using WCKDRZR.Gaspar;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace MediaLife.Controllers
 {
@@ -56,7 +57,7 @@ namespace MediaLife.Controllers
         public void UpdateLastUpdated()
         {
             showSrv.HousekeepLogs(configSrv.Config.LogDays);
-            _ = showSrv.UpdateLastUpdatedAsync(clientSrv.SessionId).Result;
+            Task.Run(() => showSrv.UpdateLastUpdatedAsync(clientSrv.SessionId));
         }
 
         [ExportFor(GasparType.TypeScript)]
@@ -74,7 +75,7 @@ namespace MediaLife.Controllers
                     clientSrv.LogReceivedPayload(JsonSerializer.Serialize(clientData));
                     clientSrv.LogClientData(clientData, "Received");
                     
-                    _ = showSrv.UpdateLastUpdatedAsync(clientSrv.SessionId).Result;
+                    Task.Run(() => showSrv.UpdateLastUpdatedAsync(clientSrv.SessionId));
 
                     List<ShowModel> dbData = showSrv.AnonShows();
                     List<EpisodeModel> dbEpisodes = dbData.SelectMany(s => s.Episodes).ToList();
