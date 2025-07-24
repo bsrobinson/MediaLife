@@ -80,7 +80,7 @@ namespace MediaLife.Models
 
         public List<EpisodeId> EpisodeIds => (from e in Episodes select new EpisodeId(e.Id, e.SiteSection)).ToList();
 
-        internal List<EpisodeModel> UserUnwatched => Episodes.Where(e => !e.Skip && !e.UserHasWatched && (e.AirDate <= DateTime.Now || e.HasTorrents || e.FilePath != null || Episodes.Any(e2 => e2.AirDate > DateTime.Now && e2.UserHasWatched))).ToList();
+        internal List<EpisodeModel> UserUnwatched => Episodes.Where(e => !e.Skip && !e.UserHasWatched && (e.AirDate <= DateTime.Now || e.AirDate == null || e.HasTorrents || e.FilePath != null || Episodes.Any(e2 => e2.AirDate > DateTime.Now && e2.UserHasWatched))).ToList();
         internal List<EpisodeModel> Unwatched => Episodes.Where(e => !e.Skip && e.WatchStatus == WatchedStatus.Unwatched && (e.AirDate <= DateTime.Now || e.HasTorrents || e.FilePath != null || Episodes.Any(e2 => e2.AirDate > DateTime.Now && e2.UserHasWatched))).ToList();
         private List<EpisodeModel> UserPlayable => UserUnwatched.Where(e => e.FilePath != null).ToList();
         private EpisodeModel? UserActivelyWatching => UserUnwatched.FirstOrDefault(e => e.UserHasStartedWatching);

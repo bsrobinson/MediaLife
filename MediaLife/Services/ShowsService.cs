@@ -238,7 +238,7 @@ namespace MediaLife.Services
             return null;
         }
 
-        public async Task<ShowModel?> GetShowFromProviderAsync(SiteSection section, string showId, Guid? updateSessionId = null)
+        public async Task<ShowModel?> GetShowFromProviderAsync(SiteSection section, string showId)
         {
             bool idIsNumeric = int.TryParse(showId, out int numericId);
             if (section == SiteSection.TV && idIsNumeric)
@@ -247,7 +247,7 @@ namespace MediaLife.Services
             }
             if (section == SiteSection.YouTube)
             {
-                return await new YouTube(db, updateSessionId).GetShowAsync(showId);
+                return await new YouTube(db).GetShowAsync(showId);
             }
             if (section == SiteSection.Movies && idIsNumeric)
             {
@@ -428,7 +428,7 @@ namespace MediaLife.Services
 
         public async Task<bool> UpdateLastUpdatedAsync(Guid updateSessionId)
         {
-            foreach (SiteSection section in Enum.GetValues(typeof(SiteSection)))
+            foreach (SiteSection section in Enum.GetValues(typeof(SiteSection))) //PARELLEL!!
             {
                 try
                 {
@@ -439,7 +439,7 @@ namespace MediaLife.Services
                         if (show != null)
                         {
                             db.Log(SessionId, "Updating for " + section.ToString() + " - " + show.Name);
-                            string? updateErrorMessage = await UpdateShowAsync(show.SiteSection, show.ShowId, updateSessionId);
+                            string? updateErrorMessage = await UpdateShowAsync(show.SiteSection, show.ShowId);
                             if (updateErrorMessage != null)
                             {
                                 Exception error = new Exception("Update for " + section.ToString() + " failed - " + updateErrorMessage);
@@ -456,7 +456,7 @@ namespace MediaLife.Services
             return true;
         }
 
-        public async Task<string?> UpdateShowAsync(SiteSection section, string showId, Guid? updateSessionId = null)
+        public async Task<string?> UpdateShowAsync(SiteSection section, string showId)
         {
             if (section == SiteSection.Lists && uint.TryParse(showId, out uint numericId))
             {
@@ -466,7 +466,7 @@ namespace MediaLife.Services
             Show? dbShow = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
             if (dbShow != null)
             {
-                ShowModel? showModel = await GetShowFromProviderAsync(section, showId, updateSessionId);
+                ShowModel? showModel = await GetShowFromProviderAsync(section, showId);
 
                 if (showModel != null)
                 {
@@ -487,6 +487,17 @@ namespace MediaLife.Services
                         }
                     }
                     db.Episodes.RemoveRange(episodesToDelete);
+
+                    //Get YouTube Episode Dates - slow and need proxy!
+                    if (section == SiteSection.YouTube)
+                    {
+                        Episode? missingDate = dbEpisodes.FirstOrDefault(e => e.AirDate == null);
+                        if (missingDate != null)
+                        {
+                            DateTime airDate = await new YouTube(db, useProxy: true).GetPublishDateForEpisode(missingDate.EpisodeId);
+                            db.Episodes.Single(e => e.EpisodeId == missingDate.EpisodeId).AirDate = airDate;
+                        }
+                    }
 
                     //Update show name
                     if (showModel.Name != null && dbShow.Name != showModel.Name)
@@ -530,6 +541,21 @@ namespace MediaLife.Services
                 return "Provider failed to return show";
             }
             return "Cannot find show in database";
+        }
+
+        public async Task<DateTime?> SetYouTubePublishedDate(string episodeId)
+        {
+            Episode episode = db.Episodes.Single(e => e.EpisodeId == episodeId);
+            if (episode.SiteSection == SiteSection.YouTube && episode.AirDate == null)
+            {
+                DateTime airDate = await new YouTube(db, useProxy: true).GetPublishDateForEpisode(episodeId);
+                episode.AirDate = airDate;
+                db.SaveChanges();
+
+                return airDate;
+            }
+
+            return null;
         }
 
         public bool UpdateList(uint listId)
@@ -999,7 +1025,8 @@ namespace MediaLife.Services
             return UsersShowsAndLists(user, [..
                 from e in db.Episodes
                 join userEp in db.UserEpisodes on new { e.EpisodeId, e.SiteSection, user.UserId  } equals new { userEp.EpisodeId, userEp.SiteSection, userEp.UserId } into x from userEp in x.DefaultIfEmpty()
-                where e.AirDate != null && e.AirDate < DateTime.Now && !e.Skip
+                where (e.AirDate != null && e.AirDate < DateTime.Now) || e.SiteSection == SiteSection.YouTube
+                where !e.Skip
                 group new { e, userEp } by e.ShowId into grp
                 where grp.Count() > grp.Count(g => g.userEp != null && g.userEp.Watched != null)
                 where grp.Count(g => g.userEp != null) > 0

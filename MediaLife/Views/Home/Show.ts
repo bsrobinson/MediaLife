@@ -1,4 +1,5 @@
-import { element, elementOrNull, elementsOfClass, firstOfClass, firstOfClassOrNull, makeElement } from "../../Scripts/BRLibraries/DOM";
+import '../../Scripts/Extensions/ArrayExtensions'
+import { element, elementOrNull, firstOfClass, firstOfClassOrNull, makeElement } from "../../Scripts/BRLibraries/DOM";
 import { windowSize } from "../../Scripts/BRLibraries/WindowSize";
 import { EpisodeFileIcon } from "../../Scripts/EpisodeFileIcon";
 import { EpisodeObject } from "../../Scripts/EpisodeObject";
@@ -75,8 +76,30 @@ export class HomeShow {
                     }
                     this.drawEpisodes();
                     this.drawPoster();
+
+                    this.setYouTubePublishedDate()
                 }
             })
+        }
+    }
+    
+    setYouTubePublishedDate() {
+        if (this.data.show.siteSection == SiteSection.YouTube) {
+            const episode = this.data.show.episodes.find(e => e.airDate == null)
+            if (episode) {
+                this.service.setYouTubePublishedDate(episode.id).then(response => {
+                    if (response.data) {
+                        episode.airDate = response.data
+
+                        this.data.show.episodes.sortByMultiple([
+                            { key: e => e.airDate ?? '' },
+                            { key: e => e.mergedFromShow == null ? 0 : 1 },
+                        ]);
+                        this.drawEpisodes();
+                        this.setYouTubePublishedDate()
+                    }
+                })
+            }
         }
     }
 

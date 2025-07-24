@@ -119,6 +119,18 @@ namespace MediaLife.Controllers
         }
 
         [ExportFor(GasparType.TypeScript)]
+        [HttpPost("[action]/{episodeId}")]
+        public ActionResult<DateTime?> SetYouTubePublishedDate(string episodeId)
+        {
+            DateTime? airDate = service.SetYouTubePublishedDate(episodeId).Result;
+            if (airDate != null)
+            {
+                return airDate;
+            }
+            return Problem();
+        }
+
+        [ExportFor(GasparType.TypeScript)]
         [HttpPost("{section}/poster/{showId}")]
         public ActionResult<ShowModel> SetShowPoster(SiteSection section, string showId, [FromBody] string posterUrl)
         {

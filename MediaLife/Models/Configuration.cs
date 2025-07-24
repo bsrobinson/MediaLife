@@ -84,13 +84,9 @@ namespace MediaLife.Models
     [ExportFor(GasparType.TypeScript)]
     public class YouTubeConfig : SectionConfig
     {
-        ///<summary>Use Proxy for YouTube Connections</summary>
-        [DefaultValue(null), DisplayName("Use Proxy Server for YouTube")]
-        public bool UseProxy { get; set; }
-
-        ///<summary>Internal - cached last good proxy address</summary>
-        [DefaultValue(null)]
-        public string? LastWorkingProxyAddress { get; set;}
+        ///<summary>Proxy Server Address for YouTube Episode (for Published Date)</summary>
+        [DefaultValue(null), DisplayName("Proxy Server Address for YouTube Episode")]
+        public string? EpisodeProxy { get; set; }
     }
 
     [ExportFor(GasparType.TypeScript)]
