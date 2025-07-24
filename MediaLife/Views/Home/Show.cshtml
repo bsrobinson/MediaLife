@@ -5,7 +5,10 @@
 
 <div class="title">
     <h1 id="showName" class="edit-list-hide">@Model.Show.Name</h1>
-    <div id="unwatched_count" class="@(Model.Show.UserComplete ? "complete" : "")">@(Model.Show.UserComplete ? @Html.Icon("check") : Model.Show.UserUnwatchedCount)</div>
+    @if (Model.Show.SiteSection != SiteSection.Radio)
+    {
+        <div id="unwatched_count" class="@(Model.Show.UserComplete ? "complete" : "")">@(Model.Show.UserComplete ? @Html.Icon("check") : Model.Show.UserUnwatchedCount)</div>
+    }
     <input type="text" id="editListTitle" class="edit-list-show" value="@Model.Show.Name" onchange="page.editedListChanged();" />
     @if (Model.SiteSection == SiteSection.Books)
     {

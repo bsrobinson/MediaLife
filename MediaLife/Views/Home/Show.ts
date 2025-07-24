@@ -554,13 +554,15 @@ export class HomeShow {
 
 
     updateEpisodeCount() {
-        let count = this.data.show.userUnwatchedCount
-        element('unwatched_count').toggleClassIfTrue('complete', count == 0)
-        if (count == 0) {
-            element('unwatched_count').empty()
-            element('unwatched_count').appendIcon('check')
-        } else {
-            element('unwatched_count').html(count.toString())
+        if (this.data.show.siteSection != SiteSection.Radio) {
+            let count = this.data.show.userUnwatchedCount
+            element('unwatched_count').toggleClassIfTrue('complete', count == 0)
+            if (count == 0) {
+                element('unwatched_count').empty()
+                element('unwatched_count').appendIcon('check')
+            } else {
+                element('unwatched_count').html(count.toString())
+            }
         }
     }
 

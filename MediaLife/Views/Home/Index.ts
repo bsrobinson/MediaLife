@@ -411,7 +411,9 @@ export class HomeIndex {
                 new EpisodeWatchIcon(new EpisodeObject(show, show.episodeAfterNext as tsEpisodeModel));
             }
 
-            row.appendElement('div', { class: 'episode-count', html: show.userUnwatchedCount.toString() });
+            if (show.siteSection != SiteSection.Radio) {
+                row.appendElement('div', { class: 'episode-count', html: show.userUnwatchedCount.toString() });
+            }
         }
 
         let addToListContent = row.appendElement('span', { class: 'add-to-list-show' });
