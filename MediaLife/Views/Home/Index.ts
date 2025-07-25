@@ -359,11 +359,15 @@ export class HomeIndex {
 
             } else if (show.poster) {
 
-                if (show.siteSection == SiteSection.Podcast && show.nextEpisode?.poster != null) {
-                    image.style.backgroundImage = "url('" + show.nextEpisode.poster + "')";
+                if (show.siteSection == SiteSection.Podcast && show.episodePosters.length > 0) {
+                    image.style.backgroundImage = "url('" + show.episodePosters[0] + "')";
                 } else {
                     image.style.backgroundImage = "url('" + show.poster + "')";
                 }
+
+            } else if (show.episodePosters.length > 0) {
+
+                image.style.backgroundImage = "url('" + show.episodePosters[0] + "')";
 
             } else {
 

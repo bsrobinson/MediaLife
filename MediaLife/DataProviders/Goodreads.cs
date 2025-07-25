@@ -31,7 +31,7 @@ namespace MediaLife.DataProviders
             List<int> orderedIds = new();
             List<int> validIds = new();
 
-            foreach (SearchBook book in (await client.SearchBooksAsync(query)))
+            foreach (SearchBook book in await client.SearchBooksAsync(query))
             {
                 if (book.Url != null)
                 {
