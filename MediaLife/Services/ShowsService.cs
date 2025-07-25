@@ -427,13 +427,14 @@ namespace MediaLife.Services
             return false;
         }
 
-        public async Task UpdateLastUpdatedAsync(Guid updateSessionId)
+        public async Task<bool> UpdateLastUpdatedAsync(Guid updateSessionId)
         {
+            ConfigService configSrv = new(db);
+            
             foreach (SiteSection section in Enum.GetValues(typeof(SiteSection)))
             {
                 try
                 {
-                    ConfigService configSrv = new(db);
                     if (configSrv.Config.UserConfig.SectionConfig(section).UpdateFromDataProvider)
                     {
                         Show? show = db.Shows.OrderBy(s => s.Updated).FirstOrDefault(s => s.SiteSection == section);
@@ -454,6 +455,8 @@ namespace MediaLife.Services
                     db.Log(updateSessionId, e.Message, e);
                 }
             }
+
+            return true;
         }
 
         public async Task<string?> UpdateShowAsync(SiteSection section, string showId)

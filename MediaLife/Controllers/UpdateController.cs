@@ -57,7 +57,7 @@ namespace MediaLife.Controllers
         public void UpdateLastUpdated()
         {
             showSrv.HousekeepLogs(configSrv.Config.LogDays);
-            Task.Run(() => showSrv.UpdateLastUpdatedAsync(clientSrv.SessionId));
+            _ = showSrv.UpdateLastUpdatedAsync(clientSrv.SessionId).Result;
         }
 
         [ExportFor(GasparType.TypeScript)]
@@ -75,14 +75,14 @@ namespace MediaLife.Controllers
                     clientSrv.LogReceivedPayload(JsonSerializer.Serialize(clientData));
                     clientSrv.LogClientData(clientData, "Received");
                     
-                    Task.Run(() => showSrv.UpdateLastUpdatedAsync(clientSrv.SessionId));
+                    _ = showSrv.UpdateLastUpdatedAsync(clientSrv.SessionId).Result;
 
                     List<ShowModel> dbData = showSrv.AnonShows();
                     List<EpisodeModel> dbEpisodes = dbData.SelectMany(s => s.Episodes).ToList();
 
                     clientData.MatchEpisodes(dbData);
 
-                    int dbFileCount = dbEpisodes.Count(e => e.FilePath != null);
+                    int dbFileCount = dbEpisodes.Count(e => e.FilePath != null && !e.FilePath.StartsWith("http"));
                     int clientFilePercentage = (int)(clientData.Files.Count / (double)dbFileCount * 100);
                     int? fileThreshold = configSrv.Config.UserConfig.ClientFileThresholdPercent;
 
