@@ -308,8 +308,11 @@ export class HomeIndex {
                 this.addPoster(listName + '_posters', showList[i]);
                 previousValue = showList[i][order];
             }
+
+            let listSiteSections = [...new Set(showList.map(s => s.siteSection))]
+            listSiteSections = listSiteSections.filter(s => s != SiteSection.YouTube && s != SiteSection.Podcast && s != SiteSection.Radio)
             
-            element(listName + '_posters').className = 'posters ' + [...new Set(showList.map(s => s.siteSection))].join('-')
+            element(listName + '_posters').className = 'posters ' + (listSiteSections.length == 0 ? 'short' : '')
         }
     }
 
@@ -356,7 +359,11 @@ export class HomeIndex {
 
             } else if (show.poster) {
 
-                image.style.backgroundImage = "url('" + show.poster + "')";
+                if (show.siteSection == SiteSection.Podcast && show.nextEpisode?.poster != null) {
+                    image.style.backgroundImage = "url('" + show.nextEpisode.poster + "')";
+                } else {
+                    image.style.backgroundImage = "url('" + show.poster + "')";
+                }
 
             } else {
 

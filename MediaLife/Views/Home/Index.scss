@@ -31,24 +31,23 @@
         justify-content: center;
     }
 
-    &.youtube .poster.round, &.radio .poster.round {
-        > a {
-            margin-top: 0;
-            margin-bottom: 0;
+    &.short {
+        .poster.round {
+            > a {
+                margin-top: 0;
+                margin-bottom: 0;
+            }
+            .episode-count {
+                top: 120px;
+            }
         }
-
-        .episode-count {
-            top: 120px;
-        }
-    }
-
-    &.podcast .poster.square {
-        > a {
-            margin-top: 0;
-        }
-
-        .episode-count {
-            top: 134px;
+        .poster.square {
+            > a {
+                margin-top: 0;
+            }
+            .episode-count {
+                top: 134px;
+            }
         }
     }
 }
@@ -82,6 +81,12 @@
         .episode-count {
             top: 145px;
             right: 5px;
+        }
+    }
+    
+    &.square {
+        .episode-count {
+            top: 165px;
         }
     }
     

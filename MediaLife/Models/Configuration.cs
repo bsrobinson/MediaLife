@@ -48,7 +48,7 @@ namespace MediaLife.Models
                 case SiteSection.Movies: return MovieConfig;
                 case SiteSection.Books: return BookConfig;
                 case SiteSection.Radio: return RadioConfig;
-                case SiteSection.Podcast: return RadioConfig;
+                case SiteSection.Podcast: return PodcastConfig;
                 case SiteSection.Lists: return new SectionConfig();
                 default:
                     throw new NotImplementedException($"Cannot get config for '{section}' section");
