@@ -117,7 +117,8 @@ namespace MediaLife.Services
                         }
                     }
                 }
-                if (torrentTasks.Count > 0)
+                
+                if (torrentTasks.Count == 0)
                 {
                     //Test search; error if no results
                     torrentTasks.Add(SearchForTorrent(pirateBay, null, new()));
@@ -126,6 +127,7 @@ namespace MediaLife.Services
                 int errorsBeforeRun = pirateBay.ConsecutiveErrors;
                 DateTime? lastSuccessBeforeRun = pirateBay.LastSuccess;
 
+                int totalBaseTorrentCount = 0;
                 int totalResultCount = 0;
                 int? testRunCount = null;
                 while (torrentTasks.Any())
@@ -163,34 +165,34 @@ namespace MediaLife.Services
                             {
                                 returnTorrents.Add(returnTorrent);
                             }
+                        }
 
-
-                            if (clientTorrent.Torrents != null)
-                            {
-                                pirateBay.ConsecutiveErrors = 0;
-                                pirateBay.LastSuccess = DateTime.Now;
-                                totalResultCount += clientTorrent.Torrents.Count;
-                                if (clientTorrent.Show == null) { testRunCount = clientTorrent.Torrents.Count; }
-                            }
-                            else
-                            {
-                                pirateBay.ConsecutiveErrors++;
-                                pirateBay.LastError = DateTime.Now;
-                            }
+                        if (clientTorrent.Torrents != null)
+                        {
+                            pirateBay.ConsecutiveErrors = 0;
+                            pirateBay.LastSuccess = DateTime.Now;
+                            totalResultCount += clientTorrent.Torrents.Count;
+                            totalBaseTorrentCount += clientTorrent.BaseTorrentCount;
+                            if (clientTorrent.Show == null) { testRunCount = clientTorrent.Torrents.Count; }
+                        }
+                        else
+                        {
+                            pirateBay.ConsecutiveErrors++;
+                            pirateBay.LastError = DateTime.Now;
                         }
                     }
                 }
 
-                if (testRunCount == 0 && totalResultCount == 0)
+                if (testRunCount == 0 && totalBaseTorrentCount == 0)
                 {
                     pirateBay.ConsecutiveErrors = errorsBeforeRun + 1;
                     pirateBay.LastSuccess = lastSuccessBeforeRun;
                     pirateBay.LastError = DateTime.Now;
                 }
-                pirateBay.ResultsInLastRun = totalResultCount;
+                pirateBay.ResultsInLastRun = totalBaseTorrentCount;
                 db.SaveChanges();
 
-                db.Log(SessionId, $"Found {totalResultCount} (incl. {testRunCount} test) results when searching Pirate Bay");
+                db.Log(SessionId, $"Found {totalBaseTorrentCount} ({totalResultCount} after removing existing) {(testRunCount > 0 ? " (incl. {testRunCount} test) " : "")} results when searching Pirate Bay");
             }
             else
             {
@@ -249,7 +251,7 @@ namespace MediaLife.Services
 
                 if (!stalled)
                 {
-                    return new(show, episode, [], stripSpecialChars);
+                    return new(show, episode, [], stripSpecialChars, 0);
                 }
             }
 
@@ -292,7 +294,10 @@ namespace MediaLife.Services
                     }
 
                     torrents = [..torrents.Where(t => t.Hash != "0000000000000000000000000000000000000000")];
+                    int baseTorrentCount = torrents.Count;
+
                     torrents = [..torrents.Where(t => !episode.Torrents.Select(e => e.Hash).Contains(t.Hash))];
+                    // db.Log(SessionId, $"Searched Pirate Bay for \"{search}\" - found {baseTorrentCount} results ({torrents.Count} after removing existing)");
 
                     if (torrents.Count > 0)
                     {
@@ -306,15 +311,15 @@ namespace MediaLife.Services
                         }
                     }
 
-                    episode.Torrents.AddRange(torrents.Select(t => t.DbTorrent(episode)));
-                    return new ClientTorrent(show, episode, torrents, stripSpecialChars);
 
+                    episode.Torrents.AddRange(torrents.Select(t => t.DbTorrent(episode)));
+                    return new ClientTorrent(show, episode, torrents, stripSpecialChars, baseTorrentCount);
                 }
                 return null;
             }
             catch
             {
-                return new ClientTorrent(show, episode, null, stripSpecialChars);
+                return new ClientTorrent(show, episode, null, stripSpecialChars, 0);
             }            
         }
 

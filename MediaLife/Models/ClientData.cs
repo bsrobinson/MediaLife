@@ -243,17 +243,19 @@ namespace MediaLife.Models
     {
         public List<PirateBayTorrent>? Torrents { get; set; } = null;
         public bool StrippedSpecialChars { get; set; }
+        public int BaseTorrentCount { get; set; }
 
         public List<string> DestinationFileNames => Torrents?.Select(t => GetFileName(t)).ToList() ?? [];
         public List<string?> VideoFiles => Torrents?.Select(t => t.GetVideoFile()).ToList() ?? [];
 
         public ClientTorrent() { }
 
-        public ClientTorrent(ShowModel show, EpisodeModel episode) : this(show, episode, [], false) { }
-        public ClientTorrent(ShowModel? show, EpisodeModel episode, List<PirateBayTorrent>? torrents, bool strippedQuotes) : base(show, episode)
+        public ClientTorrent(ShowModel show, EpisodeModel episode) : this(show, episode, [], false, 0) { }
+        public ClientTorrent(ShowModel? show, EpisodeModel episode, List<PirateBayTorrent>? torrents, bool strippedQuotes, int baseTorrentCount) : base(show, episode)
         {
             Torrents = torrents;
             StrippedSpecialChars = strippedQuotes;
+            BaseTorrentCount = baseTorrentCount;
         }
 
         public Torrent DbTorrent(PirateBayTorrent torrent)
