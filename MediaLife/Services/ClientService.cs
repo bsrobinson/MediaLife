@@ -401,7 +401,7 @@ namespace MediaLife.Services
         public void UpdateFilePaths(List<ClientFile> files, List<EpisodeModel> dbEpisodes)
         {
             //Remove file paths not on the client
-            foreach (string? path in dbEpisodes.Where(e => e.SiteSection != SiteSection.Radio).Select(e => e.FilePath).Except(files.Select(f => f.Path)))
+            foreach (string? path in dbEpisodes.Where(e => e.FilePath?.StartsWith("http") == false).Select(e => e.FilePath).Except(files.Select(f => f.Path)))
             {
                 if (!string.IsNullOrEmpty(path))
                 {
