@@ -229,7 +229,7 @@ namespace MediaLife.Models
                 case SiteSection.TV:
                     return $"{ShowName} {Episode.SeriesEpisodeNumber} - {episodeName} ({name}){extension}";
                 case SiteSection.YouTube:
-                    return $"{ShowName} - {episodeName} ({Episode.Id}){extension}";
+                    return $"{ShowName} {Episode.AirDate?.ToString("yyyy-MM-dd") ?? ""} - {episodeName.Replace("\"", "")} ({Episode.Id}){extension}";
                 case SiteSection.Movies:
                     return $"{Episode.Number:D2} - {Episode.Name} ({Episode.Certificate}) {year} ({name}){extension}";
                 default:
