@@ -40,9 +40,6 @@ namespace MediaLife.DataProviders
                     );
                 }
             }
-            else
-            {
-            }
         }
 
         public async Task<List<ShowModel>> SearchAsync(ShowsService showsService, string query)
