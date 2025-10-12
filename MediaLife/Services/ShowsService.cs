@@ -490,14 +490,21 @@ namespace MediaLife.Services
                     }
                     db.Episodes.RemoveRange(episodesToDelete);
 
-                    //Get YouTube Episode Dates - slow and need proxy!
+                    //Get YouTube Episode Dates - slow and needs proxy!
                     if (section == SiteSection.YouTube)
                     {
                         Episode? missingDate = dbEpisodes.FirstOrDefault(e => e.AirDate == null);
                         if (missingDate != null)
                         {
-                            DateTime airDate = await new YouTube(db, useProxy: true).GetPublishDateForEpisode(missingDate.EpisodeId);
-                            db.Episodes.Single(e => e.EpisodeId == missingDate.EpisodeId).AirDate = airDate;
+                            try
+                            {
+                                DateTime airDate = await new YouTube(db, useProxy: true).GetPublishDateForEpisode(missingDate.EpisodeId);
+                                db.Episodes.Single(e => e.EpisodeId == missingDate.EpisodeId).AirDate = airDate;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Failed to get episode date for {missingDate.Name} - {ex.Message}");
+                            }
                         }
                     }
 
@@ -550,11 +557,18 @@ namespace MediaLife.Services
             Episode episode = db.Episodes.Single(e => e.EpisodeId == episodeId);
             if (episode.SiteSection == SiteSection.YouTube && episode.AirDate == null)
             {
-                DateTime airDate = await new YouTube(db, useProxy: true).GetPublishDateForEpisode(episodeId);
-                episode.AirDate = airDate;
-                db.SaveChanges();
+                try
+                {
+                    DateTime airDate = await new YouTube(db, useProxy: true).GetPublishDateForEpisode(episodeId);
+                    episode.AirDate = airDate;
+                    db.SaveChanges();
 
-                return airDate;
+                    return airDate;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to get episode date for {episode.Name} - {ex.Message}");
+                }
             }
 
             return null;
