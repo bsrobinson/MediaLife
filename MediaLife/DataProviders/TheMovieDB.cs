@@ -182,7 +182,7 @@ namespace MediaLife.DataProviders
             ShowModel model = new()
             {
                 Name = movieCollection.Name ?? movieCollection.Parts[0].Title,
-                Poster = FullPosterPath(movieCollection.PosterPath ?? movieCollection.Parts[0].PosterPath)
+                Poster = FullPosterPath(movieCollection.PosterPath ?? (movieCollection.Parts.Count > 0 ? movieCollection.Parts[0].PosterPath : ""))
             };
 
             foreach (SearchMovie part in movieCollection.Parts)
