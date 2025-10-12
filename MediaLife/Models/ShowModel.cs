@@ -29,7 +29,7 @@ namespace MediaLife.Models
             {
                 if (_episodes.Any(e => e.MergedFromShow != null) || SiteSection == SiteSection.YouTube)
                 {
-                    return [.._episodes.OrderBy(e => e.AirDate).ThenBy(e => e.MergedFromShow == null ? 0 : 1)];
+                    return [.._episodes.OrderBy(e => e.AirDate ?? DateTime.MaxValue).ThenBy(e => e.MergedFromShow == null ? 0 : 1)];
                 }
                 if (SiteSection == SiteSection.TV || SiteSection == SiteSection.Podcast)
                 {

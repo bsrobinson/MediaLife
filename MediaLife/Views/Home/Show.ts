@@ -94,16 +94,15 @@ export class HomeShow {
             const episode = this.data.show.episodes.find(e => e.airDate == null)
             if (episode) {
                 this.service.setYouTubePublishedDate(episode.id).then(response => {
-                    if (response.data) {
-                        episode.airDate = response.data
+                    episode.airDate = response.data ?? '1970-01-01';
 
-                        this.data.show.episodes.sortByMultiple([
-                            { key: e => e.airDate ?? '' },
-                            { key: e => e.mergedFromShow == null ? 0 : 1 },
-                        ]);
-                        this.drawEpisodes();
-                        this.setYouTubePublishedDate()
-                    }
+                    this.data.show.episodes.sortByMultiple([
+                        { key: e => e.airDate ?? new Date() },
+                        { key: e => e.mergedFromShow == null ? 0 : 1 },
+                    ]);
+                    this.drawEpisodes();
+
+                    this.setYouTubePublishedDate()
                 })
             }
         }
