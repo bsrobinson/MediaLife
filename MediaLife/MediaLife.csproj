@@ -4,7 +4,6 @@
         <TargetFramework>net8.0</TargetFramework>
         <RootNamespace>MediaLife</RootNamespace>
         <nullable>enable</nullable>
-        <RunGaspar>false</RunGaspar>
     </PropertyGroup>
 
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug' And !Exists('../node_modules')">
@@ -39,7 +38,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.11" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="7.0.0" />
-        <PackageReference Include="WckdRzr.Gaspar" Version="2.7.0" />
+        <PackageReference Include="WckdRzr.Gaspar" Version="3.4.10" />
         <PackageReference Include="TvMaze.Api.Client" Version="0.1.75" />
         <PackageReference Include="DeepCloner" Version="0.10.4" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />

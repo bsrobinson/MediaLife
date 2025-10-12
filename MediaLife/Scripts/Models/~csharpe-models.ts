@@ -36,10 +36,11 @@ export interface DownloadableFile {
 }
 
 export interface ClientTorrent extends DownloadableFile {
-    torrents: PirateBayTorrent[];
+    torrents: PirateBayTorrent[] | null;
     strippedSpecialChars: boolean;
+    baseTorrentCount: number;
     destinationFileNames: string[];
-    videoFiles: string | null[];
+    videoFiles: string[];
 }
 
 export interface ClientWebFile extends DownloadableFile {
@@ -124,6 +125,8 @@ export interface RadioConfig extends SectionConfig {
 }
 
 export interface PodcastConfig extends SectionConfig {
+    podcastIndexApiKey: string | null;
+    podcastIndexApiSecret: string | null;
 }
 
 export interface VLCConfig extends IConfiguration {
@@ -134,7 +137,7 @@ export interface VLCConfig extends IConfiguration {
 //File: ../../Models/VLCStatus.cs
 
 export interface VLCStatus {
-    state: string | null;
+    state: string;
     time: number;
     length: number;
     position: number;

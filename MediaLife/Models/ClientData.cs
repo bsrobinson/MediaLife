@@ -176,7 +176,7 @@ namespace MediaLife.Models
 
     }
 
-    [ExportFor(GasparType.FrontEnd)]
+    [ExportFor(GasparType.TypeScript)]
     public class DownloadableFile
     {
         [JsonIgnore]
@@ -238,7 +238,7 @@ namespace MediaLife.Models
         }
     }
 
-    [ExportFor(GasparType.FrontEnd)]
+    [ExportFor(GasparType.TypeScript)]
     public class ClientTorrent : DownloadableFile
     {
         public List<PirateBayTorrent>? Torrents { get; set; } = null;
@@ -298,7 +298,7 @@ namespace MediaLife.Models
         }
     }
 
-    [ExportFor(GasparType.FrontEnd)]
+    [ExportFor(GasparType.TypeScript)]
     public class ClientWebFile : DownloadableFile
     {
         public string Url { get; set; }
