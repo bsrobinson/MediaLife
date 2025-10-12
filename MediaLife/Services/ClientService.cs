@@ -376,7 +376,7 @@ namespace MediaLife.Services
                 if (show.KeepAllDownloaded) 
                 {
                     //Keep all offline
-                    foreach (EpisodeModel episode in show.Episodes.Where(e => e.InCloud == true))
+                    foreach (EpisodeModel episode in show.Episodes.Where(e => e.InCloud == true && e.FilePath != null))
                     {
                         episodes.Add(episode);
                         db.Log(SessionId, $"Request Download from Cloud (keep all offline): {episode.FilePath}");
