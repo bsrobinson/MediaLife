@@ -35,6 +35,12 @@ export class HomeShow {
 
     init() {
 
+        if (this.data.user.simpleMode) {
+            if (this.data.show.siteSection != SiteSection.TV) {
+                element('episode_list').addClass('thumbnails')
+            }
+        }
+
         let lastSeries = this.data.show.episodes.find(e => !e.skip && e.mergedFromShow == null && !e.userHasWatched)?.seriesNumber
         let maxSeries = Math.max(...this.data.show.episodes.map(e => e.seriesNumber));
         if (!lastSeries) {
@@ -105,7 +111,11 @@ export class HomeShow {
 
     drawPoster() {
 
-        if (!this.data.show.showEpisodesAsThumbnails) {
+        let hidePoster = this.data.user.simpleMode && this.data.show.siteSection != SiteSection.TV
+
+        element('posterWrapper').hideIfTrue(hidePoster)
+
+        if (!hidePoster) {
 
             element('poster').innerHTML = '';
             element('poster').style.backgroundImage = '';
@@ -170,9 +180,8 @@ export class HomeShow {
         episodeList.empty();
         elementOrNull('series_list_wrapper')?.toggleClassIfTrue('hide', this.data.user.simpleMode && this.data.show.userUnwatchedCount > 0)
         element('content').toggleClassIfTrue('simple-mode', this.data.user.simpleMode && this.data.show.userUnwatchedCount > 0)
-        element('content').toggleClassIfTrue('simple-mode-thumbnails', this.data.user.simpleMode && this.data.show.userUnwatchedCount > 0 && this.data.show.showEpisodesAsThumbnails)
 
-        if (this.data.user.simpleMode && !this.data.show.showEpisodesAsThumbnails && this.data.show.userUnwatchedCount > 0) {
+        if (this.data.user.simpleMode && this.data.show.siteSection == SiteSection.TV && this.data.show.userUnwatchedCount > 0) {
 
             let watching = this.data.show.episodes.find(e => e.userStartedWatching && !e.userHasWatched) as tsEpisodeModel
             if (watching) {
@@ -225,15 +234,15 @@ export class HomeShow {
                 const useSeries = this.data.siteSection == SiteSection.TV || this.data.siteSection == SiteSection.Podcast
                 if ((!useSeries || (useSeries && (this.activeSeries === null || episodes[i].seriesNumber == this.activeSeries)))
                     && episodes[i].mergedFromShow == null
-                    && (!this.data.show.hideWatched || episodes[i].userHasWatched == false)
+                    && (!this.data.show.hideWatched || (episodes[i].userHasWatched == false && !episodes[i].skip))
                     && (!this.data.show.hideUnplayable || episodes[i].filePath != null)
                 ) {
-                    episodeList.appendChild(this.episodeRow(episodes[i] as tsEpisodeModel, this.data.show.showEpisodesAsThumbnails) as HTMLElement);
+                    episodeList.appendChild(this.episodeRow(episodes[i] as tsEpisodeModel) as HTMLElement);
                     episodeShown = true;
                     
                     let nextParentEpisode = episodes.find((e, index) => index > i && e.mergedFromShow == null)
                     episodes.filter(e => e.mergedFromShow != null && (e.airDate ?? maxDate) >= (episodes[i].airDate ?? maxDate) && (e.airDate ?? maxDate) < (nextParentEpisode?.airDate ?? maxDate)).forEach(ep => {
-                        episodeList.appendChild(this.episodeRow(ep as tsEpisodeModel, this.data.show.showEpisodesAsThumbnails) as HTMLElement);
+                        episodeList.appendChild(this.episodeRow(ep as tsEpisodeModel) as HTMLElement);
                     })
                 }
             }
@@ -251,9 +260,9 @@ export class HomeShow {
         }
     }
 
-    episodeRow(episode: tsEpisodeModel, thumbnail: boolean) {
+    episodeRow(episode: tsEpisodeModel) {
 
-        if (thumbnail) {
+        if (this.data.user.simpleMode && this.data.show.siteSection != SiteSection.TV) {
             return this.episodeThumbnail(episode)
         }
 
@@ -373,6 +382,7 @@ export class HomeShow {
         if (!episode.obj) {
             episode.obj = new EpisodeObject(this.data.show as tsShowModel, episode);
         }
+        
         icons.appendChild(new EpisodeFileIcon(episode.obj, 'search-page').node);
         icons.appendChild(new EpisodeWatchIcon(episode.obj, 'search-page').node);
         
@@ -570,7 +580,11 @@ export class HomeShow {
 
     simpleModeOff() {
         this.data.user.simpleMode = false;
+        element('episode_list').removeClass('thumbnails')
+        window.episodeFileIcons = {}
+        window.episodeWatchIcons = {}
         this.drawEpisodes()
+        this.drawPoster()
     }
 
 
@@ -714,7 +728,7 @@ export class HomeShow {
                     for (let i = 0; i < episodes.length; i++) {
                         let ep = this.data.show.episodes.find(e => e.id == episodes[i].id);
                         if (ep) {
-                            element('episode_row' + episodes[i].id).replaceWith(this.episodeRow(ep as tsEpisodeModel, false));
+                            element('episode_row' + episodes[i].id).replaceWith(this.episodeRow(ep as tsEpisodeModel));
                         }
                     }
                 });

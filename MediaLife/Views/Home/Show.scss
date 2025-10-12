@@ -212,6 +212,8 @@ h1 {
         grid-template-columns: repeat(auto-fill, 200px);
         grid-template-rows: repeat(auto-fit, 326px);
         justify-content: space-around;
+        max-width: 100%;
+        min-width: 100%;
         
         &.YouTube {
             grid-template-rows: repeat(auto-fit, 144px);
@@ -260,11 +262,6 @@ h1 {
                 background-color: #fa0;
             }
         }
-    }
-
-    &.simple-mode-thumbnails #episode_list {
-        max-width: 100%;
-        min-width: 100%;
     }
 }
 

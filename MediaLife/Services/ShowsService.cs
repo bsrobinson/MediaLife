@@ -195,7 +195,7 @@ namespace MediaLife.Services
                 {
                     showUsers = [.. db.UserLists.Where(u => u.ListId.ToString() == showId).Select(u => new UserShow() {
                         ShowId = string.Empty, UserId = u.UserId, SiteSection = section,
-                        WatchFromNextPlayable = false, ShowEpisodesAsThumbnails = false, HideWatched = false, HideUnplayable = false, Added = DateTime.MinValue, 
+                        WatchFromNextPlayable = false, HideWatched = false, HideUnplayable = false, Added = DateTime.MinValue, 
                     })];
                 }
                 else
@@ -380,7 +380,6 @@ namespace MediaLife.Services
                     SiteSection = section,
                     Added = DateTime.Now,
                     WatchFromNextPlayable = false,
-                    ShowEpisodesAsThumbnails = false,
                     HideWatched = false,
                     HideUnplayable = false,
                 };
@@ -682,7 +681,6 @@ namespace MediaLife.Services
                     {
                         userShow.RecommendedBy = model.RecommendedBy;
                         userShow.WatchFromNextPlayable = model.WatchFromNextPlayable;
-                        userShow.ShowEpisodesAsThumbnails = model.ShowEpisodesAsThumbnails;
                         userShow.HideWatched = model.HideWatched;
                         userShow.HideUnplayable = model.HideUnplayable;
                         db.SaveChanges();

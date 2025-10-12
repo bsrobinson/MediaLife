@@ -218,7 +218,6 @@ export interface ShowModel extends BaseSiteObjectModel {
     downloadLimit: number | null;
     downloadSeriesOffset: number | null;
     keepAllDownloaded: boolean;
-    showEpisodesAsThumbnails: boolean;
     recommendedBy: string | null;
     hideWatched: boolean;
     hideUnplayable: boolean;
@@ -261,7 +260,6 @@ export interface ShowSettings {
     watchFromNextPlayable: boolean;
     downloadAllTogether: boolean;
     keepAllDownloaded: boolean;
-    showEpisodesAsThumbnails: boolean;
     skipUntilSeries: number;
     users: ShowUserModel[];
 }
@@ -346,7 +344,6 @@ export interface UserShow {
     added: string;
     recommendedBy: string | null;
     watchFromNextPlayable: boolean;
-    showEpisodesAsThumbnails: boolean;
     hideWatched: boolean;
     hideUnplayable: boolean;
 }

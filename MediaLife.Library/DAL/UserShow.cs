@@ -25,8 +25,6 @@ namespace MediaLife.Library.DAL
 
         public required bool WatchFromNextPlayable { get; set; }
 
-        public required bool ShowEpisodesAsThumbnails { get; set; }
-
         public required bool HideWatched { get; set; }
 
         public required bool HideUnplayable { get; set; }
