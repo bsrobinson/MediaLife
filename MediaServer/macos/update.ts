@@ -11,16 +11,25 @@ const tvFolder = `${homedir}/Library/Mobile Documents/com~apple~CloudDocs/Media/
 const moviesFolder = `${homedir}/Library/Mobile Documents/com~apple~CloudDocs/Media/Movies`;
 const youtubeFolder = `${homedir}/Library/Mobile Documents/com~apple~CloudDocs/Media/YouTube`;
 
+const youtubeCookieFile = `${homedir}/Library/Mobile Documents/com~apple~CloudDocs/Media/~MediaLifeUpdate/YouTubeCookies.txt`;
+
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 const tvAppRootUrl = 'https://_medialife_webapp_homepage';
 const unwatchedTag = 'Blue';
 const torrentLabel = 'Purple';
 
-function exec(command: string) {
+const downloadFromWebLimit = 10;
+const dowloadFromCloudLimit = 1;
+
+function exec(command: string, returnError: boolean = false): string {
 	try {
 		return execSync(command, { encoding: 'utf8' });
 	}
-	catch {
-		return '';
+	catch (e) {
+		if (returnError) {
+			return (e as object).toString()
+		}
+		return ''
 	}
 }
 
@@ -142,7 +151,7 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 		
 			console.log(`${clientActions.deleteTorrents.flatMap(t => t.torrents).length} x deleteTorrents`);
 			clientActions.deleteTorrents.forEach(clientTorrent => {
-				clientTorrent.torrents.forEach(torrent => {
+				clientTorrent.torrents?.forEach(torrent => {
 					console.log(`  • ${clientTorrent.showName} - ${clientTorrent.seriesEpisodeNumber} ${clientTorrent.episodeName}`);
 					exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -rad > /dev/null`)
 				})
@@ -151,32 +160,34 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 
 			console.log(`${clientActions.saveAndDeleteTorrents.length} x saveAndDeleteTorrents`);
 			clientActions.saveAndDeleteTorrents.forEach(clientTorrent => {
-				let root = '';
-				if (clientTorrent.section == SiteSection.TV) { root = tvFolder; }
-				if (clientTorrent.section == SiteSection.Movies) { root = moviesFolder; }
+				if (clientTorrent.torrents != null && clientTorrent.torrents.length > 0) {
+					let root = '';
+					if (clientTorrent.section == SiteSection.TV) { root = tvFolder; }
+					if (clientTorrent.section == SiteSection.Movies) { root = moviesFolder; }
 
-				let torrent = clientTorrent.torrents[0]
-				let videoFile = clientTorrent.videoFiles[0]
-				let destinationFileName = clientTorrent.destinationFileNames[0]
+					let torrent = clientTorrent.torrents[0]
+					let videoFile = clientTorrent.videoFiles[0]
+					let destinationFileName = clientTorrent.destinationFileNames[0]
 
-				if (root && torrent && destinationFileName) {
-					let info = exec(`/opt/homebrew/bin/transmission-remote -t ${torrent.hash} -i`);
-					if (info) {
-						console.log(`  • ${clientTorrent.showName} - ${clientTorrent.seriesEpisodeNumber} ${clientTorrent.episodeName}`);
-					
-						let location = (info.match(/\n.*?Location: (.*)\n/) || [])[1];
-						let source = `${location}/${videoFile}`;
-						let destFolder = `${root}${clientTorrent.destinationFolder}`;
-						let destFile = destinationFileName;
+					if (root && torrent && destinationFileName) {
+						let info = exec(`/opt/homebrew/bin/transmission-remote -t ${torrent.hash} -i`);
+						if (info) {
+							console.log(`  • ${clientTorrent.showName} - ${clientTorrent.seriesEpisodeNumber} ${clientTorrent.episodeName}`);
+						
+							let location = (info.match(/\n.*?Location: (.*)\n/) || [])[1];
+							let source = `${location}/${videoFile}`;
+							let destFolder = `${root}${clientTorrent.destinationFolder}`;
+							let destFile = destinationFileName;
 
-						if (!videoFile) {
-							source = `${location}/${torrent.name}`;
-							destFolder = `${root}${clientTorrent.destinationFolder}/${destinationFileName}/`;
-							destFile = '';
+							if (!videoFile) {
+								source = `${location}/${torrent.name}`;
+								destFolder = `${root}${clientTorrent.destinationFolder}/${destinationFileName}/`;
+								destFile = '';
+							}
+							exec(`mkdir -p "${destFolder}" && cp -R "${source}" "${destFolder}/${destFile}"`);
+							exec(`/opt/homebrew/bin/tag -a "Orange,${unwatchedTag}" "${destFolder}/${destFile}"`);
+							exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -rad > /dev/null`);
 						}
-						exec(`mkdir -p "${destFolder}" && cp -R "${source}" "${destFolder}/${destFile}"`);
-						exec(`/opt/homebrew/bin/tag -a "Orange,${unwatchedTag}" "${destFolder}/${destFile}"`);
-						exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -rad > /dev/null`);
 					}
 				}
 			});
@@ -184,19 +195,33 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 			
 			console.log(`${clientActions.addTorrents.flatMap(t => t.torrents).length} x addTorrents`);
 			clientActions.addTorrents.forEach(clientTorrent => {
-				clientTorrent.torrents.forEach(torrent => {
-					console.log(`  • ${clientTorrent.showName} - ${clientTorrent.seriesEpisodeNumber} ${clientTorrent.episodeName}`);
-					exec(`/opt/homebrew/bin/transmission-remote -a "magnet:?xt=urn:btih:${torrent.hash}&dn=${torrent.name}" > /dev/null`);
-					exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -L "${torrentLabel}" > /dev/null`);
+				clientTorrent.torrents?.forEach(torrent => {
+					if (clientTorrent.section != SiteSection.Movies) {
+						console.log(`  • ${clientTorrent.showName} - ${clientTorrent.seriesEpisodeNumber} ${clientTorrent.episodeName}`);
+						exec(`/opt/homebrew/bin/transmission-remote -a "magnet:?xt=urn:btih:${torrent.hash}&dn=${torrent.name}" > /dev/null`);
+						exec(`/opt/homebrew/bin/transmission-remote -t "${torrent.hash}" -L "${torrentLabel}" > /dev/null`);
+					}
 				})
 			});
 
 			
-			let skipping = clientActions.downloads.length - 10;
+			let skipping = clientActions.downloads.length - downloadFromWebLimit;
 			console.log(`${clientActions.downloads.length - (skipping > 0 ? skipping : 0)} x downloads${skipping > 0 ? ` (skipping ${skipping} more)` : ''}`);
-			clientActions.downloads.slice(0, 10).forEach(file => {
-				console.log(`  • ${file.showName} - ${file.seriesEpisodeNumber} ${file.episodeName}`);
-				exec(`/opt/homebrew/bin/yt-dlp -o "${youtubeFolder}${file.destinationFolder}/${file.destinationFileName}.mp4" -f mp4 "${file.url}" > /dev/null`);
+			clientActions.downloads.slice(0, downloadFromWebLimit).forEach(file => {
+				try
+				{
+					console.log(`  • ${file.showName} - ${file.seriesEpisodeNumber} ${file.episodeName}`);
+					const ytDlpCommand = `/opt/homebrew/bin/yt-dlp -o "${youtubeFolder}${file.destinationFolder}/${file.destinationFileName}.mp4" -t mp4 "${file.url}"`
+					//const ytDlpResponse = exec(`${ytDlpCommand} > /dev/null`, true);
+					//if (ytDlpResponse.includes('Sign in to confirm')) {
+						console.log('    Video requires login; adding cookies')
+						exec(`${ytDlpCommand} --cookies "${youtubeCookieFile}" > /dev/null`);
+					//}
+				}
+				catch
+				{
+					console.log('    - ERROR: Failed to download')
+				}
 			});
 
 			
@@ -218,10 +243,18 @@ fetch(`${tvAppRootUrl}/Update/client`, { method: 'POST', body: JSON.stringify(cl
 			});
 
 			
+			let downloadsRequested = 0
+			let stopMessageLogged = false
 			console.log(`${clientActions.downloadFileFromCloud.length} x downloadFileFromCloud`);
 			clientActions.downloadFileFromCloud.forEach(file => {
-				console.log(`  • ${file.filePath}`);
-				exec(`/usr/bin/brctl download "${file.filePath}"`);
+				if (downloadsRequested < dowloadFromCloudLimit) {
+					console.log(`  • ${file.filePath}`);
+					exec(`/usr/bin/brctl download "${file.filePath}"`);
+					downloadsRequested++
+				} else if (!stopMessageLogged) {
+					console.log(`Download limit (${dowloadFromCloudLimit}) reached, will not download more files now`)
+					stopMessageLogged = true
+				}
 			});
 
 			console.log('Done')
