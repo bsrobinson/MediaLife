@@ -175,7 +175,11 @@ namespace MediaLife.Models
 
         public bool ShouldDelete()
         {
-            return Show?.DeleteWatched == true && Episode?.WatchStatus == WatchedStatus.EveryoneWatched && Episode.Users.Max(u => u.Watched) < DateTime.Now.AddDays(-7);
+            return Show?.DeleteWatched == true
+                && (
+                    (Episode?.WatchStatus == WatchedStatus.EveryoneWatched && Episode.Users.Max(u => u.Watched) < DateTime.Now.AddDays(-7))
+                    || Episode?.Skip == true
+                );
         }
 
     }
