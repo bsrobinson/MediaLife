@@ -232,17 +232,18 @@ export class HomeShow {
             for (let i = 0; i < episodes.length; i++) {
                 const useSeries = this.data.siteSection == SiteSection.TV || this.data.siteSection == SiteSection.Podcast
                 if ((!useSeries || (useSeries && (this.activeSeries === null || episodes[i].seriesNumber == this.activeSeries)))
-                    && episodes[i].mergedFromShow == null
+                    // && episodes[i].mergedFromShow == null
                     && (!this.data.show.hideWatched || (episodes[i].userHasWatched == false && !episodes[i].skip))
                     && (!this.data.show.hideUnplayable || episodes[i].filePath != null)
                 ) {
                     episodeList.appendChild(this.episodeRow(episodes[i] as tsEpisodeModel) as HTMLElement);
                     episodeShown = true;
                     
-                    let nextParentEpisode = episodes.find((e, index) => index > i && e.mergedFromShow == null)
-                    episodes.filter(e => e.mergedFromShow != null && (e.airDate ?? maxDate) >= (episodes[i].airDate ?? maxDate) && (e.airDate ?? maxDate) < (nextParentEpisode?.airDate ?? maxDate)).forEach(ep => {
-                        episodeList.appendChild(this.episodeRow(ep as tsEpisodeModel) as HTMLElement);
-                    })
+                    //commented out to make Jonathan Pie work (with hide watched) - but maybe delete??
+                    // let nextParentEpisode = episodes.find((e, index) => index > i && e.mergedFromShow == null)
+                    // episodes.filter(e => e.mergedFromShow != null && (e.airDate ?? maxDate) >= (episodes[i].airDate ?? maxDate) && (e.airDate ?? maxDate) < (nextParentEpisode?.airDate ?? maxDate)).forEach(ep => {
+                    //     episodeList.appendChild(this.episodeRow(ep as tsEpisodeModel) as HTMLElement);
+                    // })
                 }
             }
             if (!episodeShown) {
