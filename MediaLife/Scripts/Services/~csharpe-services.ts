@@ -229,7 +229,7 @@ export namespace MediaLifeService {
             return new GasparServiceHelper().fetch(`/${section}/update/${showId}`, { method: 'POST', credentials: 'include' }, false, null, showError);
         }
         setYouTubePublishedDate(episodeId: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<string | null>> {
-            return new GasparServiceHelper().fetch(`/SetYouTubePublishedDate/${episodeId}`, { method: 'POST', credentials: 'include' }, false, null, showError);
+            return new GasparServiceHelper().fetch(`/SetYouTubePublishedDate/${episodeId}`, { method: 'POST', credentials: 'include' }, true, null, showError);
         }
         setShowPoster(section: SiteSection, showId: string, posterUrl: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel>> {
             return new GasparServiceHelper().fetch(`/${section}/poster/${showId}`, { method: 'POST', body: JSON.stringify(posterUrl), headers: { 'Content-Type': 'application/json' }, credentials: 'include' }, false, null, showError);
