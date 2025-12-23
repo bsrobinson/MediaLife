@@ -254,7 +254,7 @@ namespace MediaLife.Services
             {
                 return await new Goodreads(db).GetBookAsync(numericId);
             }
-            if (section == SiteSection.Podcast)
+            if (section == SiteSection.Podcast && idIsNumeric)
             {
                 return await new PodcastIndex(db).GetPodcastAsync(numericId);
             }
@@ -503,7 +503,7 @@ namespace MediaLife.Services
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"Failed to get episode date for {missingDate.Name} - {ex.Message}");
+                                db.Log(SessionId, $"Failed to get episode date for {missingDate.Name} - {ex.Message}", ex);
                             }
                         }
                     }
@@ -568,7 +568,7 @@ namespace MediaLife.Services
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to get episode date for {episode.Name} - {ex.Message}");
+                    db.Log(SessionId, $"Failed to get episode date for {episode.Name} - {ex.Message}", ex);
                 }
             }
 
