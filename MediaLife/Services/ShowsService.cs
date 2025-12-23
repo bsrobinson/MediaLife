@@ -444,14 +444,14 @@ namespace MediaLife.Services
                             if (updateErrorMessage != null)
                             {
                                 Exception error = new Exception("Update for " + section.ToString() + " failed - " + updateErrorMessage);
-                                db.Log(SessionId, error.Message, error);
+                                db.Log(SessionId, error);
                             }
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    db.Log(updateSessionId, e.Message, e);
+                    db.Log(updateSessionId, e);
                 }
             }
 
@@ -503,7 +503,7 @@ namespace MediaLife.Services
                             }
                             catch (Exception ex)
                             {
-                                db.Log(SessionId, $"Failed to get episode date for {missingDate.Name} - {ex.Message}", ex);
+                                db.Log(SessionId, ex, $"Failed to get episode date for {missingDate.Name}");
                             }
                         }
                     }
@@ -568,7 +568,7 @@ namespace MediaLife.Services
                 }
                 catch (Exception ex)
                 {
-                    db.Log(SessionId, $"Failed to get episode date for {episode.Name} - {ex.Message}", ex);
+                    db.Log(SessionId, ex, $"Failed to get episode date for {episode.Name}");
                 }
             }
 

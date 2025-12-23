@@ -6,15 +6,39 @@ namespace MediaLife.Extensions
 {
 	public static class MySqlContextExtension
     {
-        public static void Log(this MySqlContext db, Guid sessionId, string message, Exception? exception = null)
+        public static void Log(this MySqlContext db, Guid sessionId, string message)
         {
             db.Log.Add(new Log
             {
                 SessionId = sessionId.ToString(),
                 Timestamp = DateTime.Now,
                 Message = message,
-                Error = exception != null,
-                StackTrace = exception?.StackTrace,
+                Error = false,
+                StackTrace = null,
+                Emailed = false,
+            });
+            db.SaveChanges();
+        }
+        
+        public static void Log(this MySqlContext db, Guid sessionId, Exception exception, string? messagePrefix = null)
+        {
+            string message = exception.Message;
+            string stackTrace = exception.StackTrace ?? "";
+
+            if (exception.InnerException != null)
+            {
+                message = exception.InnerException.Message;
+                stackTrace = $"{stackTrace}\n\nInner Exception: {exception.InnerException.Message}\n{exception.InnerException.StackTrace}";
+            }
+            if (messagePrefix != null) { message = $"{messagePrefix} - {message}"; }
+
+            db.Log.Add(new Log
+            {
+                SessionId = sessionId.ToString(),
+                Timestamp = DateTime.Now,
+                Message = message,
+                Error = true,
+                StackTrace = stackTrace,
                 Emailed = false,
             });
             db.SaveChanges();

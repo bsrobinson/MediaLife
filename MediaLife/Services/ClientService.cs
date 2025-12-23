@@ -31,9 +31,10 @@ namespace MediaLife.Services
             db.Log(SessionId, $"{label} {clientData.Files.Count} Files");
             db.Log(SessionId, $"{label} {clientData.Torrents.Count} Torrents");
         }
-        public void LogError(Exception exception, string messagePrefix = "")
+        public void LogError(Exception exception, string? messagePrefix = null)
         {
-            db.Log(SessionId, $"{messagePrefix}{(messagePrefix != "" ? ": " : "")}{exception.Message}", exception);
+            db.ChangeTracker.Clear();
+            db.Log(SessionId, exception, messagePrefix);
         }
         public void LogDisabled()
         {
