@@ -1,3 +1,42 @@
+#play_location {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    right: 30px;
+    width: 140px;
+    margin: auto;
+    padding: 8px 15px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    color: white;
+    z-index: 99;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.4rem;
+    transition: 0.3s ease;
+    cursor: pointer;
+
+    a {
+        color: white;
+    }
+
+    &.vlc-open {
+        border-radius: 10px 10px 0 0;
+        bottom: 150px;
+    }
+    
+    &.in-menu {
+        z-index: 9999;
+        left: -271px;
+        right: auto;
+
+        &.menu-open {
+            left: 113px;
+        }
+    }
+}
+
 #vlc_player {
     position: fixed;
     bottom: 30px;
@@ -242,5 +281,5 @@
 }
 
 #content.vlc-open {
-    padding-bottom: 150px;
+    padding-bottom: 180px;
 }

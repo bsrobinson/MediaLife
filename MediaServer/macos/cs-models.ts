@@ -274,6 +274,13 @@ export interface BaseSiteObjectModel {
     name: string;
 }
 
+//File: ../../MediaLife/Models/PlayLocation.cs
+
+export enum PlayLocation {
+    Server = 'server',
+    Client = 'client',
+}
+
 //File: ../../MediaLife/Models/ShowUserModel.cs
 
 export interface ShowUserModel {

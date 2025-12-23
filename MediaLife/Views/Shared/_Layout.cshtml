@@ -187,6 +187,11 @@
 
     </div>
 
+    <div id="play_location" class="hide" onclick="site.togglePlayLocation()">
+        @Html.Icon(new BrandIcon("youtube"))
+        <a href="http://192.168.1.200:8082/1693e7c4bd274005a8a9fa1ab4e9eb35" id="play_location_text"></a>
+    </div>
+
     <div id="vlc_player" class="hide info-only">
         <div class="move-button move-to-menu-button" onclick="vlc.moveToMenu()">
             @Html.Icon(new SolidIcon("caret-left"))

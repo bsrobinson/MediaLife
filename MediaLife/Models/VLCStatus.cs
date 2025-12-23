@@ -9,7 +9,7 @@ namespace MediaLife.Models
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class VLCStatus
     {
-        public string? State { get; set; }
+        public string State { get; set; } = "stopped";
         public int Time { get; set; }
         public int Length { get; set; }
         public float Position { get; set; }
