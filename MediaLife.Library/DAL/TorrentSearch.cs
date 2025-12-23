@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using WCKDRZR.Gaspar;
 
@@ -7,7 +8,7 @@ namespace MediaLife.Library.DAL
 {
     [ExportFor(GasparType.TypeScript)]
     [PrimaryKey(nameof(Id))]
-    public class PirateBay
+    public class TorrentSearchEngine
     {
         public uint Id { get; set; }
 
@@ -24,5 +25,15 @@ namespace MediaLife.Library.DAL
 
         public required int ResultsInLastRun { get; set; }
 
+        [Column(TypeName = "nvarchar(12)")]
+        public TorrentSearchEngineType Type { get; set; }
+
+    }
+
+    [ExportFor(GasparType.TypeScript)]
+    public enum TorrentSearchEngineType
+    {
+        PirateBay,
+        Knaben,
     }
 }

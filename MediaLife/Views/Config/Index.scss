@@ -174,11 +174,11 @@ form {
 }
 
 
-#piratebay {
+#torrentSearchEngines {
     margin-top: 1.5rem;
     padding: 1rem;
 
-    #piratebay_table {
+    #torrentSearchEngines_table {
         position: relative;
 
         &.saving {
@@ -258,7 +258,7 @@ form {
         }
     }
 
-    #piratebay_add_link {
+    .torrentSearchEngines-add-link {
         position: absolute;
         max-width: 500px;
         margin: 2em auto;

@@ -8,13 +8,19 @@ using WCKDRZR.Gaspar;
 namespace MediaLife.Models
 {
     [ExportFor(GasparType.TypeScript)]
-    public class PirateBayTorrent
+    public class SearchEngineTorrent
     {
-        [JsonPropertyName("info_hash")]
+        [JsonPropertyName("info_hash")] //for Pirate Bay
         public string Hash { get; set; } = "";
 
-        [JsonPropertyName("name")]
+        [JsonPropertyName("name")] //for Pirate Bay
         public string Name { get; set; } = "";
+
+        [JsonPropertyName("hash")] //for KnabenTorrent
+        public string KnabenHash { set { Hash = value; } }
+
+        [JsonPropertyName("title")] //for KnabenTorrent
+        public string KnabenName { set { Name = value; } }
 
         public double PercentComplete { get; set; } = 0;
         public List<string> Files { get; set; } = [];

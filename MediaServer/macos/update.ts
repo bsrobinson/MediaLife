@@ -4,7 +4,7 @@
 //	brew install yt-dlp
 
 import { execSync } from 'child_process';
-import { ClientActions, ClientData, ClientFile, ClientTorrent, PirateBayTorrent, SiteSection } from './cs-models';
+import { ClientActions, ClientData, ClientFile, ClientTorrent, SearchEngineTorrent, SiteSection } from './cs-models';
 const homedir = require('os').homedir();
 
 const tvFolder = `${homedir}/Library/Mobile Documents/com~apple~CloudDocs/Media/TV Shows`;
@@ -72,7 +72,7 @@ function getTorrents(): ClientTorrent[] {
 						name: (info.match(/\n.*?Name: (.*)\n/) || [])[1],
 						percentComplete: isNaN(percentComplete) ? 0 : percentComplete,
 						files: [] as string[],
-					} as PirateBayTorrent;
+					} as SearchEngineTorrent;
 
 					let namePos = 0;
 					exec(`/opt/homebrew/bin/transmission-remote -t "${id}" -f`).split('\n').forEach(fileLine => {

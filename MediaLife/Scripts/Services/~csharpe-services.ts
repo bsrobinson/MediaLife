@@ -8,7 +8,7 @@
 //** full configuration in: ../../gaspar.config.json
 //**
 
-import { ClientData, ClientActions, User, UserAccount, Configuration, VLCStatus, ShowModel, SiteSection, EpisodeModel, UserShow, ShowSettings, EpisodeId, PirateBay } from "../Models/~csharpe-models";
+import { ClientData, ClientActions, User, UserAccount, Configuration, VLCStatus, ShowModel, SiteSection, EpisodeModel, UserShow, ShowSettings, EpisodeId, TorrentSearchEngine } from "../Models/~csharpe-models";
 import { ServiceErrorHandler } from "./service-error-handler";
 
 export class ServiceResponse<T> {
@@ -75,9 +75,10 @@ export class GasparServiceHelper {
 }
 export namespace JsonPropertyKeys {
     export function ClientData(): JsonPropertyKeyMap { return { 'torrents': { m: JsonPropertyKeys.ClientTorrent() } } }
-    export function ClientTorrent(): JsonPropertyKeyMap { return { 'torrents': { m: JsonPropertyKeys.PirateBayTorrent() } } }
+    export function ClientTorrent(): JsonPropertyKeyMap { return { 'torrents': { m: JsonPropertyKeys.SearchEngineTorrent() } } }
     export function ClientActions(): JsonPropertyKeyMap { return { 'deleteTorrents': { m: JsonPropertyKeys.ClientTorrent() }, 'saveAndDeleteTorrents': { m: JsonPropertyKeys.ClientTorrent() }, 'addTorrents': { m: JsonPropertyKeys.ClientTorrent() } } }
-    export function PirateBayTorrent(): JsonPropertyKeyMap { return { 'hash': { k: 'info_hash' }, 'name': { k: 'name' } } }
+    export function KnabenTorrentWrapper(): JsonPropertyKeyMap { return { 'hits': { k: 'hits', m: JsonPropertyKeys.SearchEngineTorrent() } } }
+    export function SearchEngineTorrent(): JsonPropertyKeyMap { return { 'hash': { k: 'info_hash' }, 'name': { k: 'name' }, 'knabenHash': { k: 'hash' }, 'knabenName': { k: 'title' } } }
     
     export function toJson<T>(obj: T, map: JsonPropertyKeyMap): T {
         if (obj === null) {
@@ -263,6 +264,29 @@ export namespace MediaLifeService {
         }
     }
     
+    //File: ../../Controllers/TorrentSearchEngineApiController.cs
+
+    export class TorrentSearchEngineApiController {
+        get(showError = ServiceErrorMessage.None): Promise<ServiceResponse<TorrentSearchEngine[]>> {
+            return new GasparServiceHelper().fetch(`/TorrentSearchEngineApi`, { method: 'GET', credentials: 'include' }, false, null, showError);
+        }
+        addPirateBay(newUrl: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<TorrentSearchEngine>> {
+            return new GasparServiceHelper().fetch(`/TorrentSearchEngineApi/AddPirateBay`, { method: 'POST', body: JSON.stringify(newUrl), headers: { 'Content-Type': 'application/json' }, credentials: 'include' }, false, null, showError);
+        }
+        addKnaben(newUrl: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<TorrentSearchEngine>> {
+            return new GasparServiceHelper().fetch(`/TorrentSearchEngineApi/AddKnaben`, { method: 'POST', body: JSON.stringify(newUrl), headers: { 'Content-Type': 'application/json' }, credentials: 'include' }, false, null, showError);
+        }
+        activate(id: number, showError = ServiceErrorMessage.None): Promise<ServiceResponse<boolean>> {
+            return new GasparServiceHelper().fetch(`/TorrentSearchEngineApi/${id}`, { method: 'PUT', credentials: 'include' }, false, null, showError);
+        }
+        delete(id: number, showError = ServiceErrorMessage.None): Promise<ServiceResponse<TorrentSearchEngine>> {
+            return new GasparServiceHelper().fetch(`/TorrentSearchEngineApi/${id}`, { method: 'DELETE', credentials: 'include' }, false, null, showError);
+        }
+        test(id: number, showError = ServiceErrorMessage.None): Promise<ServiceResponse<boolean>> {
+            return new GasparServiceHelper().fetch(`/TorrentSearchEngineApi/Test/${id}`, { method: 'GET', credentials: 'include' }, false, null, showError);
+        }
+    }
+    
     //File: ../../Controllers/LoginController.cs
 
     export class LoginController {
@@ -271,26 +295,6 @@ export namespace MediaLifeService {
         }
         resetPassKey(showError = ServiceErrorMessage.None): Promise<ServiceResponse<string[]>> {
             return new GasparServiceHelper().fetch(`/Login/ResetPassKey`, { method: 'POST', credentials: 'include' }, false, null, showError);
-        }
-    }
-    
-    //File: ../../Controllers/PirateBayApiController.cs
-
-    export class PirateBayApiController {
-        get(showError = ServiceErrorMessage.None): Promise<ServiceResponse<PirateBay[]>> {
-            return new GasparServiceHelper().fetch(`/PirateBayApi`, { method: 'GET', credentials: 'include' }, false, null, showError);
-        }
-        add(newUrl: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<PirateBay>> {
-            return new GasparServiceHelper().fetch(`/PirateBayApi`, { method: 'POST', body: JSON.stringify(newUrl), headers: { 'Content-Type': 'application/json' }, credentials: 'include' }, false, null, showError);
-        }
-        activate(id: number, showError = ServiceErrorMessage.None): Promise<ServiceResponse<boolean>> {
-            return new GasparServiceHelper().fetch(`/PirateBayApi/${id}`, { method: 'PUT', credentials: 'include' }, false, null, showError);
-        }
-        delete(id: number, showError = ServiceErrorMessage.None): Promise<ServiceResponse<PirateBay>> {
-            return new GasparServiceHelper().fetch(`/PirateBayApi/${id}`, { method: 'DELETE', credentials: 'include' }, false, null, showError);
-        }
-        test(id: number, showError = ServiceErrorMessage.None): Promise<ServiceResponse<boolean>> {
-            return new GasparServiceHelper().fetch(`/PirateBayApi/Test/${id}`, { method: 'GET', credentials: 'include' }, false, null, showError);
         }
     }
     

@@ -8,7 +8,7 @@
     <ul class="menu">
         <li>@Html.Icon(new SolidIcon("user") { FixedWidth = true }, "Accounts", "#accounts", "menu-link")</li>
         <li>@Html.Icon(new SolidIcon("desktop") { FixedWidth = true }, "Client Updates", "#client", "menu-link")</li>
-        <li>@Html.Icon(new SolidIcon("skull-crossbones") { FixedWidth = true }, "Pirate Bay", "#piratebay", "menu-link")</li>
+        <li>@Html.Icon(new SolidIcon("skull-crossbones") { FixedWidth = true }, "Torrents", "#torrentSearchEngines", "menu-link")</li>
         <li>@Html.Icon(new SolidIcon("binary") { FixedWidth = true }, "Data Providers", "#providers", "menu-link")</li>
         <li>@Html.Icon(new SolidIcon("traffic-cone") { FixedWidth = true }, "VLC", "#vlc", "menu-link")</li>
     </ul>
@@ -67,9 +67,10 @@
             @Html.SubmitRow("Save")
         </form>
 
-        <div id="piratebay" class="content-page">
-            <div id="piratebay_table"></div>
-            <a href="JavaScript:;" id="piratebay_add_link" class="hide" onclick="page.pirateBayConfig.add()">Add Pirate Bay</a>
+        <div id="torrentSearchEngines" class="content-page">
+            <div id="torrentSearchEngines_table"></div>
+            <a href="JavaScript:;" class="torrentSearchEngines-add-link" class="hide" onclick="page.torrentSearchEngineConfig.addPirateBay()">Add Pirate Bay</a>
+            <a href="JavaScript:;" class="torrentSearchEngines-add-link" class="hide" onclick="page.torrentSearchEngineConfig.addKnaben()">Add Knaben</a>
         </div>
 
         <form id="providers" class="content-page" onsubmit="page.saveForm(this); return false;">

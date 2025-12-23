@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using Flurl.Util;
 using Force.DeepCloner;
 using MediaLife.Extensions;
 using MediaLife.Library.DAL;
@@ -63,7 +64,7 @@ namespace MediaLife.Services
                 {
                     returnTorrents.Add(clientData.Torrents[i].DeepClone());
 
-                    foreach (PirateBayTorrent torrent in clientData.Torrents[i].Torrents ?? [])
+                    foreach (SearchEngineTorrent torrent in clientData.Torrents[i].Torrents ?? [])
                     {
                         db.Log(SessionId, $"Request Delete Torrent: {clientData.Torrents[i].ShowName} - {clientData.Torrents[i].EpisodeName} ({torrent.Hash} - {torrent.Name})");
                     }
@@ -79,7 +80,7 @@ namespace MediaLife.Services
             List<ClientTorrent> returnTorrents = new();
             foreach (ClientTorrent torrent in clientData.Torrents)
             {
-                PirateBayTorrent? torrentToSave = torrent.Torrents?.FirstOrDefault(t => t.PercentComplete == 100);
+                SearchEngineTorrent? torrentToSave = torrent.Torrents?.FirstOrDefault(t => t.PercentComplete == 100);
                 if (torrentToSave != null)
                 {
                     ClientTorrent returnTorrent = torrent.DeepClone();
@@ -97,8 +98,8 @@ namespace MediaLife.Services
         {
             List<ClientTorrent> returnTorrents = new();
 
-            PirateBay? pirateBay = db.PirateBay.FirstOrDefault(p => p.Active);
-            if (pirateBay != null)
+            TorrentSearchEngine? torrentSearchEngine = db.TorrentSearchEngines.FirstOrDefault(p => p.Active);
+            if (torrentSearchEngine != null)
             {
                 List<Task<ClientTorrent?>> torrentTasks = new();
 
@@ -107,13 +108,13 @@ namespace MediaLife.Services
                     List<EpisodeModel> missingFiles = show.Unwatched.Where(e => e.FilePath == null).ToList();
                     if (missingFiles.Count > 0 && (show.DownloadLimit == null || show.Unwatched.Count - missingFiles.Count < show.DownloadLimit))
                     {
-                        torrentTasks.Add(SearchForTorrent(pirateBay, show, missingFiles.First()));
+                        torrentTasks.Add(SearchForTorrent(torrentSearchEngine, show, missingFiles.First()));
                         
                         if (show.DownloadAllTogether)
                         {
                             foreach (EpisodeModel episode in missingFiles.Skip(1))
                             {
-                                torrentTasks.Add(SearchForTorrent(pirateBay, show, episode));
+                                torrentTasks.Add(SearchForTorrent(torrentSearchEngine, show, episode));
                             }
                         }
                     }
@@ -122,11 +123,11 @@ namespace MediaLife.Services
                 if (torrentTasks.Count == 0)
                 {
                     //Test search; error if no results
-                    torrentTasks.Add(SearchForTorrent(pirateBay, null, new()));
+                    torrentTasks.Add(SearchForTorrent(torrentSearchEngine, null, new()));
                 }
 
-                int errorsBeforeRun = pirateBay.ConsecutiveErrors;
-                DateTime? lastSuccessBeforeRun = pirateBay.LastSuccess;
+                int errorsBeforeRun = torrentSearchEngine.ConsecutiveErrors;
+                DateTime? lastSuccessBeforeRun = torrentSearchEngine.LastSuccess;
 
                 int totalBaseTorrentCount = 0;
                 int totalResultCount = 0;
@@ -141,7 +142,7 @@ namespace MediaLife.Services
                     {
                         if (clientTorrent.Torrents?.Count == 0 && (Regex.Match(clientTorrent.Show.Name, "[^A-Za-z0-9\\s]").Success || Regex.Match(clientTorrent.Episode.Name, "[^A-Za-z0-9\\s]").Success) && !clientTorrent.StrippedSpecialChars)
                         {
-                            torrentTasks.Add(SearchForTorrent(pirateBay, clientTorrent.Show, clientTorrent.Episode, true));
+                            torrentTasks.Add(SearchForTorrent(torrentSearchEngine, clientTorrent.Show, clientTorrent.Episode, true));
                         }
 
                         if (clientTorrent.Show != null)
@@ -149,7 +150,7 @@ namespace MediaLife.Services
                             clientData.Torrents.Add(clientTorrent);
                             ClientTorrent returnTorrent = clientTorrent.DeepClone();
 
-                            foreach (PirateBayTorrent torrent in clientTorrent.Torrents ?? [])
+                            foreach (SearchEngineTorrent torrent in clientTorrent.Torrents ?? [])
                             {
                                 if (!string.IsNullOrEmpty(torrent.Hash))
                                 {
@@ -170,34 +171,34 @@ namespace MediaLife.Services
 
                         if (clientTorrent.Torrents != null)
                         {
-                            pirateBay.ConsecutiveErrors = 0;
-                            pirateBay.LastSuccess = DateTime.Now;
+                            torrentSearchEngine.ConsecutiveErrors = 0;
+                            torrentSearchEngine.LastSuccess = DateTime.Now;
                             totalResultCount += clientTorrent.Torrents.Count;
                             totalBaseTorrentCount += clientTorrent.BaseTorrentCount;
                             if (clientTorrent.Show == null) { testRunCount = clientTorrent.Torrents.Count; }
                         }
                         else
                         {
-                            pirateBay.ConsecutiveErrors++;
-                            pirateBay.LastError = DateTime.Now;
+                            torrentSearchEngine.ConsecutiveErrors++;
+                            torrentSearchEngine.LastError = DateTime.Now;
                         }
                     }
                 }
 
                 if (testRunCount == 0 && totalBaseTorrentCount == 0)
                 {
-                    pirateBay.ConsecutiveErrors = errorsBeforeRun + 1;
-                    pirateBay.LastSuccess = lastSuccessBeforeRun;
-                    pirateBay.LastError = DateTime.Now;
+                    torrentSearchEngine.ConsecutiveErrors = errorsBeforeRun + 1;
+                    torrentSearchEngine.LastSuccess = lastSuccessBeforeRun;
+                    torrentSearchEngine.LastError = DateTime.Now;
                 }
-                pirateBay.ResultsInLastRun = totalBaseTorrentCount;
+                torrentSearchEngine.ResultsInLastRun = totalBaseTorrentCount;
                 db.SaveChanges();
 
-                db.Log(SessionId, $"Found {totalBaseTorrentCount} ({totalResultCount} after removing existing) {(testRunCount > 0 ? " (incl. {testRunCount} test) " : "")} results when searching Pirate Bay");
+                db.Log(SessionId, $"Found {totalBaseTorrentCount} ({totalResultCount} after removing existing) {(testRunCount > 0 ? " (incl. {testRunCount} test) " : "")} results when searching torrents");
             }
             else
             {
-                db.Log(SessionId, "No active Pirate Bay entries");
+                db.Log(SessionId, "No active torrent entries");
             }
 
             //Add manual torrents
@@ -238,7 +239,7 @@ namespace MediaLife.Services
             return downloadFiles;
         }
 
-        public async Task<ClientTorrent?> SearchForTorrent(PirateBay pirateBay, ShowModel? show, EpisodeModel episode, bool stripSpecialChars = false)
+        public async Task<ClientTorrent?> SearchForTorrent(TorrentSearchEngine torrentSearchEngine, ShowModel? show, EpisodeModel episode, bool stripSpecialChars = false)
         {
             bool stalled = false;
 
@@ -287,8 +288,7 @@ namespace MediaLife.Services
 
                 if (search != null)
                 {
-                    HttpClient httpClient = new();
-                    List<PirateBayTorrent>? torrents = (await httpClient.GetFromJsonAsync<List<PirateBayTorrent>>($"{pirateBay.Url}{HttpUtility.UrlEncode(search)}"))?.ToList();
+                    List<SearchEngineTorrent>? torrents = await GetFromSource(torrentSearchEngine, search);
                     if (torrents == null)
                     {
                         return null;
@@ -298,7 +298,7 @@ namespace MediaLife.Services
                     int baseTorrentCount = torrents.Count;
 
                     torrents = [..torrents.Where(t => !episode.Torrents.Select(e => e.Hash).Contains(t.Hash))];
-                    // db.Log(SessionId, $"Searched Pirate Bay for \"{search}\" - found {baseTorrentCount} results ({torrents.Count} after removing existing)");
+                    // db.Log(SessionId, $"Searched torrents for \"{search}\" - found {baseTorrentCount} results ({torrents.Count} after removing existing)");
 
                     if (torrents.Count > 0)
                     {
@@ -322,6 +322,32 @@ namespace MediaLife.Services
             {
                 return new ClientTorrent(show, episode, null, stripSpecialChars, 0);
             }            
+        }
+
+        public async Task<List<SearchEngineTorrent>?> GetFromSource(TorrentSearchEngine torrentSearchEngine, string search)
+        {
+            string url = torrentSearchEngine.Url;
+            switch (torrentSearchEngine.Type)
+            {
+                case TorrentSearchEngineType.PirateBay: return await GetFromPirateBayApi(url, search);
+                case TorrentSearchEngineType.Knaben: return await GetFromKnabenApi(url, search);
+                default: return [];
+            }
+        }
+
+        public async Task<List<SearchEngineTorrent>?> GetFromPirateBayApi(string url, string search)
+        {
+            HttpClient httpClient = new();
+            return (await httpClient.GetFromJsonAsync<List<SearchEngineTorrent>>($"{url}{HttpUtility.UrlEncode(search)}"))?.ToList();
+        }
+        
+        public async Task<List<SearchEngineTorrent>?> GetFromKnabenApi(string url, string search)
+        {
+            HttpClient client = new HttpClient();
+            HttpRequestMessage request = new(HttpMethod.Post, "https://api.knaben.org/v1");
+            request.Content = new StringContent($"{{\"query\":\"{search}\"}}", null, "application/json");
+            HttpResponseMessage response = await client.SendAsync(request);
+            return response.IsSuccessStatusCode ? (await response.Content.ReadFromJsonAsync<KnabenTorrentWrapper>())?.Hits ?? [] : [];
         }
 
 
@@ -461,7 +487,7 @@ namespace MediaLife.Services
             //Update percentage
             foreach (ClientTorrent clientTorrent in clientTorrents)
             {
-                foreach (PirateBayTorrent torrent in clientTorrent.Torrents ?? [])
+                foreach (SearchEngineTorrent torrent in clientTorrent.Torrents ?? [])
                 {
                     Torrent? dbTorrent = db.Torrents.FirstOrDefault(t => t.Hash == torrent.Hash);
                     if (dbTorrent != null)

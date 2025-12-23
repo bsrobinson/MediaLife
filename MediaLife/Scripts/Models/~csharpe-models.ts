@@ -37,7 +37,7 @@ export interface DownloadableFile {
 }
 
 export interface ClientTorrent extends DownloadableFile {
-    torrents: PirateBayTorrent[] | null;
+    torrents: SearchEngineTorrent[] | null;
     strippedSpecialChars: boolean;
     baseTorrentCount: number;
     destinationFileNames: string[];
@@ -58,6 +58,12 @@ export interface ClientActions {
     deleteFiles: ClientFile[];
     reTagFiles: ClientFile[];
     downloadFileFromCloud: EpisodeModel[];
+}
+
+//File: ../../Models/KnabenTorrentWrapper.cs
+
+export interface KnabenTorrentWrapper {
+    hits: SearchEngineTorrent[];
 }
 
 //File: ../../Models/PageModels.cs
@@ -157,6 +163,17 @@ export interface VLC_Category {
 
 export interface VLC_Meta {
     filename: string | null;
+}
+
+//File: ../../Models/SearchEngineTorrent.cs
+
+export interface SearchEngineTorrent {
+    hash: string;
+    name: string;
+    knabenHash: string;
+    knabenName: string;
+    percentComplete: number;
+    files: string[];
 }
 
 //File: ../../Models/EpisodeModel.cs
@@ -294,15 +311,6 @@ export interface EpisodeUserModel extends ShowUserModel {
     watched: string | null;
 }
 
-//File: ../../Models/PirateBayTorrent.cs
-
-export interface PirateBayTorrent {
-    hash: string;
-    name: string;
-    percentComplete: number;
-    files: string[];
-}
-
 //File: ../../Models/EpisodeId.cs
 
 export interface EpisodeId {
@@ -384,18 +392,6 @@ export interface UserEpisode {
     startedWatching: string | null;
 }
 
-//File: ../../../MediaLife.Library/DAL/PirateBay.cs
-
-export interface PirateBay {
-    id: number;
-    url: string;
-    active: boolean;
-    consecutiveErrors: number;
-    lastError: string | null;
-    lastSuccess: string | null;
-    resultsInLastRun: number;
-}
-
 //File: ../../../MediaLife.Library/DAL/Show.cs
 
 export interface Show {
@@ -437,6 +433,24 @@ export interface List {
     listId: number;
     name: string;
     created: string;
+}
+
+//File: ../../../MediaLife.Library/DAL/TorrentSearch.cs
+
+export interface TorrentSearchEngine {
+    id: number;
+    url: string;
+    active: boolean;
+    consecutiveErrors: number;
+    lastError: string | null;
+    lastSuccess: string | null;
+    resultsInLastRun: number;
+    type: TorrentSearchEngineType;
+}
+
+export enum TorrentSearchEngineType {
+    PirateBay = 0,
+    Knaben = 1,
 }
 
 //File: ../../../MediaLife.Library/DAL/ListEntry.cs

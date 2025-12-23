@@ -207,7 +207,7 @@ namespace MediaLife.Models
             Episode = episode;
         }
 
-        public string GetFileName(PirateBayTorrent torrent)
+        public string GetFileName(SearchEngineTorrent torrent)
         {
             string? videoFile = torrent.GetVideoFile();
             string torrentName = (videoFile == null) ? torrent.Name : torrent.Name.Replace("." + videoFile.Extension(), "");
@@ -249,7 +249,7 @@ namespace MediaLife.Models
     [ExportFor(GasparType.TypeScript)]
     public class ClientTorrent : DownloadableFile
     {
-        public List<PirateBayTorrent>? Torrents { get; set; } = null;
+        public List<SearchEngineTorrent>? Torrents { get; set; } = null;
         public bool StrippedSpecialChars { get; set; }
         public int BaseTorrentCount { get; set; }
 
@@ -259,14 +259,14 @@ namespace MediaLife.Models
         public ClientTorrent() { }
 
         public ClientTorrent(ShowModel show, EpisodeModel episode) : this(show, episode, [], false, 0) { }
-        public ClientTorrent(ShowModel? show, EpisodeModel episode, List<PirateBayTorrent>? torrents, bool strippedQuotes, int baseTorrentCount) : base(show, episode)
+        public ClientTorrent(ShowModel? show, EpisodeModel episode, List<SearchEngineTorrent>? torrents, bool strippedQuotes, int baseTorrentCount) : base(show, episode)
         {
             Torrents = torrents;
             StrippedSpecialChars = strippedQuotes;
             BaseTorrentCount = baseTorrentCount;
         }
 
-        public Torrent DbTorrent(PirateBayTorrent torrent)
+        public Torrent DbTorrent(SearchEngineTorrent torrent)
         {
             if (Episode == null)
             {

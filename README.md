@@ -10,7 +10,7 @@ There are two main elements to MediaLife; the first is very much like the servic
 
 - **Family viewing modes** (coming soon)
 
-The second element to MediaLife is the way it can hook into your MediaLibrary.  I will show you what files you have and allow you to play the files on your media server running [VLC](https://www.videolan.org).  It will also use PirateBay to obtain new files and automatically delete them after marked as watched.
+The second element to MediaLife is the way it can hook into your MediaLibrary.  I will show you what files you have and allow you to play the files on your media server running [VLC](https://www.videolan.org).  It will also use PirateBay or Knaben to obtain new files and automatically delete them after marked as watched.
 
 ## Running MediaLife
 

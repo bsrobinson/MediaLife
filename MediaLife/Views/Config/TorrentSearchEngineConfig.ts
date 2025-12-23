@@ -1,12 +1,14 @@
-import { element, elementOrNull } from '../../Scripts/BRLibraries/DOM'
-import { FadeAnimation, Icon, IconStyle, SolidIcon } from '../../Scripts/BRLibraries/Icon';
-import { PirateBay } from '../../Scripts/Models/~csharpe-models';
-import { MediaLifeService, ServiceErrorMessage } from '../../Scripts/Services/~csharpe-services';
+import { element, elementOrNull, elementsOfClass } from '../../Scripts/BRLibraries/DOM'
+import { Icon, SolidIcon } from '../../Scripts/BRLibraries/Icon';
+import { TorrentSearchEngine, TorrentSearchEngineType } from '../../Scripts/Models/~csharpe-models';
+import { MediaLifeService, ServiceErrorMessage, ServiceResponse } from '../../Scripts/Services/~csharpe-services';
 
-export class PirateBayConfig {
+export class TorrentSearchEngineConfig {
 
-    data: PirateBay[] = [];
-    service = new MediaLifeService.PirateBayApiController();
+    TorrentSearchEngineType = TorrentSearchEngineType
+
+    data: TorrentSearchEngine[] = [];
+    service = new MediaLifeService.TorrentSearchEngineApiController();
 
     constructor() {
 
@@ -37,7 +39,7 @@ export class PirateBayConfig {
             let row = elementOrNull('row_' + item.id);
             if (!row) {
 
-                row = element('piratebay_table').appendElement('div', { id: 'row_' + item.id, class: 'row' });
+                row = element('torrentSearchEngines_table').appendElement('div', { id: 'row_' + item.id, class: 'row' });
 
                 let div = row.appendElement('div');
                 div.appendIcon(new Icon('ellipsis'), { class: 'test-icon' })
@@ -47,10 +49,14 @@ export class PirateBayConfig {
                 url.appendElement('a', { href: urlDomain, html: urlDomain, target: '_blank' });
                 url.appendElement('a', { href: pbUrl, html: urlPath, target: '_blank' });
 
+                const type = TorrentSearchEngineType[item.type]
+
                 if (item.lastSuccess != null && new Date(item.lastSuccess) > new Date(item.lastError || 0)) {
-                    div.appendElement('div', { class: 'metrics', html: 'Last Success: ' + this.relativeDate(item.lastSuccess) + ' (' + item.resultsInLastRun + ' results)' });
+                    div.appendElement('div', { class: 'metrics', html: type + ': Last Success: ' + this.relativeDate(item.lastSuccess) + ' (' + item.resultsInLastRun + ' results)' });
                 } else if (item.lastError != null) {
-                    div.appendElement('div', { class: 'metrics', html: 'Last Error: ' + this.relativeDate(item.lastError) + ' (' + item.consecutiveErrors + ' fails)' });
+                    div.appendElement('div', { class: 'metrics', html: type + ': Last Error: ' + this.relativeDate(item.lastError) + ' (' + item.consecutiveErrors + ' fails)' });
+                } else {
+                    div.appendElement('div', { class: 'metrics', html: type });
                 }
 
                 let buttons = row.appendElement('div', { style: 'font-size: 1.4rem' });
@@ -64,8 +70,12 @@ export class PirateBayConfig {
             cumulativeTop += row.offsetHeight * 1.5;
         });
 
-        element('piratebay_add_link').style.marginTop = (cumulativeTop) + 'px'
-        element('piratebay_add_link').removeClass('hide');
+        cumulativeTop += 20
+        elementsOfClass('torrentSearchEngines-add-link').forEach(e => {
+            e.style.marginTop = (cumulativeTop) + 'px'
+            cumulativeTop += 32
+        })
+        elementsOfClass('torrentSearchEngines-add-link').forEach(e => e.removeClass('hide'))
         element('settings_content').style.minHeight = (cumulativeTop + 160) + 'px'
     }
 
@@ -111,19 +121,26 @@ export class PirateBayConfig {
         });
     }
 
-    add() {
-
+    addPirateBay() {
         let url = prompt('Enter new Pirate Bay api url');
         if (url) {
-            this.service.add(url).then(response => {
-                if (response.data) {
-                    this.data.push(response.data);
-                    this.draw();
-                    this.test(response.data.id);
-                }
-            });
+            this.service.addPirateBay(url).then(r => this.addResponse(r));
         }
+    }
 
+    addKnaben() {
+        let url = prompt('Enter new Knaben api url');
+        if (url) {
+            this.service.addKnaben(url).then(r => this.addResponse(r));
+        }
+    }
+
+    addResponse(response: ServiceResponse<TorrentSearchEngine>) {
+        if (response.data) {
+            this.data.push(response.data);
+            this.draw();
+            this.test(response.data.id);
+        }
     }
 
     deleteEntry(event: Event) {
@@ -153,7 +170,7 @@ export class PirateBayConfig {
             let row = event.target.parentOfClass('row');
             if (row) {
                 let id = parseInt(row.id.slice(4));
-                element('piratebay_table').addClass('saving');
+                element('torrentSearchEngines_table').addClass('saving');
 
                 this.service.activate(id).then(response => {
                     if (response.data) {
@@ -170,7 +187,7 @@ export class PirateBayConfig {
                         this.draw();
                     }
 
-                    element('piratebay_table').removeClass('saving');
+                    element('torrentSearchEngines_table').removeClass('saving');
                 });
             }
         }

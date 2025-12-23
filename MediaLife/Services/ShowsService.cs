@@ -30,18 +30,18 @@ namespace MediaLife.Services
             db.SaveChanges();
         }
 
-        public string? PirateBayIssue()
+        public string? TorrentSearchIssue()
         {
-            PirateBay? piratebay = db.PirateBay.FirstOrDefault(p => p.Active);
-            if (piratebay == null)
+            TorrentSearchEngine? torrentSearchEngine = db.TorrentSearchEngines.FirstOrDefault(p => p.Active);
+            if (torrentSearchEngine == null)
             {
-                return "There is no active Pirate Bay url";
+                return "There is no active torrent search url";
             }
             else
             {
-                if (piratebay.LastSuccess < DateTime.Now.AddDays(-1))
+                if (torrentSearchEngine.LastSuccess < DateTime.Now.AddDays(-1))
                 {
-                    return "Last Pirate Bay success was more than a day ago";
+                    return "Last torrent search success was more than a day ago";
                 }
             }
             return null;

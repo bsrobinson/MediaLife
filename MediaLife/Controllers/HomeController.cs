@@ -23,7 +23,7 @@ namespace MediaLife.Controllers
 
         public ViewResult Index()
         {
-            ViewBag.PirateBayIssue = service.PirateBayIssue();
+            ViewBag.TorrentSearchIssue = service.TorrentSearchIssue();
             ViewBag.ShowUpdateIssue = service.ShowUpdateIssue();
 
             ViewData["jsData"] = new ListPageModel(User.Obj(), PageType.Shows);

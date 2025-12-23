@@ -4,18 +4,18 @@ import { MediaLifeService } from '../../Scripts/Services/~csharpe-services';
 import { windowSize } from '../../Scripts/BRLibraries/WindowSize';
 import { FormValidation } from '../../Scripts/BRLibraries/FormValidation';
 import { UsersConfig } from './UsersConfig';
-import { PirateBayConfig } from './PirateBayConfig';
-import { PirateBay } from '../../Scripts/Models/~csharpe-models';
+import { TorrentSearchEngineConfig } from './TorrentSearchEngineConfig';
+import { TorrentSearchEngine } from '../../Scripts/Models/~csharpe-models';
 
 export class ConfigIndex {
 
     service = new MediaLifeService.ConfigController();
     usersConfig: UsersConfig | null = null;
-    pirateBayConfig: PirateBayConfig | null = null;
+    torrentSearchEngineConfig: TorrentSearchEngineConfig | null = null;
 
     lastHash: string | null = null;
 
-    constructor(private site: MediaLife, private data: PirateBay[]) {
+    constructor(private site: MediaLife, private data: TorrentSearchEngine[]) {
     }
 
     init() {
@@ -60,8 +60,8 @@ export class ConfigIndex {
                         this.usersConfig = new UsersConfig();
                     }
             
-                    if (pageId == 'piratebay') {
-                        this.pirateBayConfig = new PirateBayConfig();
+                    if (pageId == 'torrentSearchEngines') {
+                        this.torrentSearchEngineConfig = new TorrentSearchEngineConfig();
                     }
 
                     page.addClass('loaded');
@@ -86,7 +86,7 @@ export class ConfigIndex {
     }
 
     windowResize() {
-        this.pirateBayConfig?.draw();
+        this.torrentSearchEngineConfig?.draw();
     }
 
 }

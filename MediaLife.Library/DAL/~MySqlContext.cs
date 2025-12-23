@@ -12,7 +12,7 @@ namespace MediaLife.Library.DAL
         public virtual DbSet<List> Lists { get; set; }
         public virtual DbSet<Log> Log { get; set; }
         public virtual DbSet<LoggedPayload> LoggedPayloads { get; set; }
-        public virtual DbSet<PirateBay> PirateBay { get; set; }
+        public virtual DbSet<TorrentSearchEngine> TorrentSearchEngines { get; set; }
         public virtual DbSet<Show> Shows { get; set; }
         public virtual DbSet<Torrent> Torrents { get; set; }
         public virtual DbSet<TvNetwork> TvNetworks { get; set; }
