@@ -152,7 +152,7 @@ namespace MediaLife.Services
 
                             foreach (SearchEngineTorrent torrent in clientTorrent.Torrents ?? [])
                             {
-                                if (!string.IsNullOrEmpty(torrent.Hash))
+                                if (!string.IsNullOrEmpty(torrent.Hash) && !db.Torrents.Any(t => t.Hash == torrent.Hash))
                                 {
                                     db.Torrents.Add(clientTorrent.DbTorrent(torrent));
                                     db.Log(SessionId, $"Request Add Torrent: {clientTorrent.ShowName} - {clientTorrent.EpisodeName} ({torrent.Hash} - {torrent.Name})");
