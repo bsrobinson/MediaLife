@@ -535,6 +535,7 @@ namespace MediaLife.Services
                             if (dbEpisode.Number != episode.Number) { dbEpisode.Number = episode.Number; }
                             if (episode.Name != null && dbEpisode.Name != episode.Name) { dbEpisode.Name = episode.Name; }
                             if (episode.AirDate != null && dbEpisode.AirDate != episode.AirDate) { dbEpisode.AirDate = episode.AirDate; }
+                            if (episode.DurationSeconds != null && dbEpisode.DurationSeconds != episode.DurationSeconds) { dbEpisode.DurationSeconds = episode.DurationSeconds; }
                             if (episode.Poster != null && dbEpisode.Poster != episode.Poster) { dbEpisode.Poster = episode.Poster; }
                             if (episode.Certificate != null && dbEpisode.Certificate != episode.Certificate) { dbEpisode.Certificate = episode.Certificate; }
                             if (episode.Author != null && dbEpisode.Author != episode.Author) { dbEpisode.Author = episode.Author; }

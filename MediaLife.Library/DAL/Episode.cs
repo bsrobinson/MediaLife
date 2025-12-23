@@ -26,6 +26,8 @@ namespace MediaLife.Library.DAL
 
         public DateTime? AirDate { get; set; }
 
+        public double? DurationSeconds { get; set; }
+
         [MaxLength(2014)]
         public string? Poster { get; set; }
 

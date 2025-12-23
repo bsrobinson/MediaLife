@@ -417,14 +417,16 @@ namespace MediaLife.Services
                     if (dbEpisode != null)
                     {
                         //Add client file paths
-                        if (dbEpisode.FilePath != file.Episode.FilePath || dbEpisode.InCloud != file.Episode.InCloud)
+                        if (dbEpisode.FilePath != file.Episode.FilePath || dbEpisode.InCloud != file.Episode.InCloud || dbEpisode.DurationSeconds != file.Episode.DurationSeconds)
                         {
                             Episode thisDbEpisode = db.Episodes.Single(e => e.EpisodeId == dbEpisode.Id && e.SiteSection == file.FileType);
                             thisDbEpisode.FilePath = file.Episode.FilePath;
                             thisDbEpisode.InCloud = file.InCloud;
+                            thisDbEpisode.DurationSeconds = file.DurationSeconds;
 
                             dbEpisode.FilePath = file.Episode.FilePath;
                             dbEpisode.InCloud = file.Episode.InCloud;
+                            dbEpisode.DurationSeconds = file.Episode.DurationSeconds;
                         }
 
                         //Remove completed download requests

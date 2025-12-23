@@ -343,6 +343,16 @@ h1 {
     }
 }
 
+.duration {
+    font-size: 0.75em;
+    color: #666;
+    align-self: baseline;
+    margin-right: 0.3rem;
+    white-space: nowrap;
+    margin-left: 1rem;
+    margin-top: 2.5px;
+}
+
 .episode-thumbnail {
     position: relative;
     width: 194px;

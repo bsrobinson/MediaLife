@@ -53,6 +53,7 @@ namespace MediaLife.Models
         public string? Path { get; set; }
         public List<string> Tags { get; set; } = new();
         public bool InCloud { get; set; }
+        public double? DurationSeconds { get; set; }
 
         public ShowModel? Show { get; set; }
         public EpisodeModel? Episode { get; set; }
@@ -103,6 +104,7 @@ namespace MediaLife.Models
                                     {
                                         Episode.FilePath = Path;
                                         Episode.InCloud = InCloud;
+                                        Episode.DurationSeconds = DurationSeconds;
                                     }
                                 }
                                 Show.Episodes = new();
@@ -121,6 +123,7 @@ namespace MediaLife.Models
                             {
                                 Episode.FilePath = Path;
                                 Episode.InCloud = InCloud;
+                                Episode.DurationSeconds = DurationSeconds;
                                 Show = show.DeepClone();
                                 Show.Episodes = new();
                                 return;
@@ -139,6 +142,7 @@ namespace MediaLife.Models
                             {
                                 Episode.FilePath = Path;
                                 Episode.InCloud = InCloud;
+                                Episode.DurationSeconds = DurationSeconds;
                                 Show = show.DeepClone();
                                 Show.Episodes = new();
                                 return;

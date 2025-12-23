@@ -20,6 +20,7 @@ namespace MediaLife.Models
         public string? Author { get; set; }
 
         public DateTime? AirDate { get; set; }
+        public double? DurationSeconds { get; set; }
         public DateTime? UserWatched => Me?.Watched;
         public DateTime? UserStartedWatching { get; set; }
         public bool Skip { get; set; }
@@ -79,6 +80,7 @@ namespace MediaLife.Models
             Number = episode.Number;
             Name = episode.Name;
             AirDate = episode.AirDate;
+            DurationSeconds = episode.DurationSeconds;
             Poster = episode.Poster;
             Certificate = episode.Certificate;
             Author = episode.Author;
@@ -105,6 +107,7 @@ namespace MediaLife.Models
                 Number = Number,
                 Name = Name,
                 AirDate = AirDate,
+                DurationSeconds = DurationSeconds,
                 Poster = Poster,
                 Certificate = Certificate,
                 Author = Author,

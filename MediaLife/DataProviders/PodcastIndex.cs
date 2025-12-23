@@ -99,6 +99,7 @@ namespace MediaLife.DataProviders
                             Name = e.Title,
                             Poster = e.Image?.ToString(),
                             AirDate = e.DatePublished,
+                            DurationSeconds = e.Duration,
                             FilePath = e.EnclosureUrl?.ToString(),
                         }
                     ).OrderBy(s => s.AirDate).ToList()

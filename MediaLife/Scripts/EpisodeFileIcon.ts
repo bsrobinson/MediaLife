@@ -24,8 +24,16 @@ export class EpisodeFileIcon {
             this.node = window.episodeFileIcons[thisId].node;
         }
         else {
+            let title = episode.filePath
+            if (episode.durationSeconds) {
+                let hours = Math.floor(episode.durationSeconds / 3600);
+                let minutes = Math.floor((episode.durationSeconds % 3600) / 60);
+                let seconds = Math.floor(episode.durationSeconds % 60);
+                title += `\nDuration: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
             window.episodeFileIcons[thisId] = this;
-            this.node = makeIcon('', { class: 'episode-file-icon', htmlAttributes: { title: episode.filePath } });            
+            this.node = makeIcon('', { class: 'episode-file-icon', htmlAttributes: { title: title } });
             this.updateClass();
         }
 

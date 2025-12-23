@@ -32,8 +32,12 @@ function getFilesInFolder(section: SiteSection, folder: string): ClientFile[] {
 	
 	findFiles.forEach(file => {
 		if (file.path) {
-			file.tags = exec(`/opt/homebrew/bin/tag -l -N '${file.path.replace(/'/g, `'\\''`)}'`).trim().split(',');
-			file.inCloud = exec(`/bin/ls -lO '${file.path.replace(/'/g, `'\\''`)}'`).includes('dataless');
+			const path = file.path.replace(/'/g, `'\\''`)
+			file.tags = exec(`/opt/homebrew/bin/tag -l -N '${path}'`).trim().split(',');
+			file.inCloud = exec(`/bin/ls -lO '${path}'`).includes('dataless');
+			if (!file.inCloud) {
+				file.durationSeconds = parseFloat(exec(`/opt/homebrew/bin/ffprobe -i '${path}' -show_entries format=duration -v quiet -of csv="p=0"`).trim())
+			}
 		}
 	});
 	console.log(`Found files: ${findFiles.length}`)

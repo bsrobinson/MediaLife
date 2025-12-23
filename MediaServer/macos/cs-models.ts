@@ -22,6 +22,7 @@ export interface ClientFile {
     path: string | null;
     tags: string[];
     inCloud: boolean;
+    durationSeconds: number | null;
     show: ShowModel | null;
     episode: EpisodeModel | null;
     valid: boolean;
@@ -167,6 +168,7 @@ export interface EpisodeModel extends BaseSiteObjectModel {
     certificate: string | null;
     author: string | null;
     airDate: string | null;
+    durationSeconds: number | null;
     userWatched: string | null;
     userStartedWatching: string | null;
     skip: boolean;
