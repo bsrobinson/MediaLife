@@ -218,10 +218,16 @@ namespace MediaLife.DataProviders
                 List<ReleaseDatesContainer> releases = client.GetMovieReleaseDatesAsync(movieId).Result.Results;
                 if (releases != null)
                 {
-                    List<ReleaseDateItem>? countryReleases = releases.FirstOrDefault(r => r.Iso_3166_1 == country)?.ReleaseDates;
+                    List<ReleaseDateItem>? countryReleases = releases.FirstOrDefault(r => r.Iso_3166_1 == country)?.ReleaseDates.OrderBy(r => r.ReleaseDate).ToList();
                     if (countryReleases != null)
                     {
-                        return countryReleases.FirstOrDefault(r => !string.IsNullOrEmpty(r.Certification));
+                        ReleaseDateItem? firstRelease = countryReleases.FirstOrDefault();
+                        if (firstRelease != null && string.IsNullOrEmpty(firstRelease.Certification))
+                        {
+                            firstRelease.Certification = countryReleases.FirstOrDefault(r => !string.IsNullOrEmpty(r.Certification))?.Certification ?? "";
+                        }
+                        return firstRelease;
+                        
                     }
                 }
             }
