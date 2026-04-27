@@ -462,6 +462,8 @@ h1 {
     }
     &.round {
         border-radius: 50%;
+        background-position: center;
+        background-size: auto 100%;
     }
     &.wide {
         width: 260px;

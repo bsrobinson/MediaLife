@@ -274,7 +274,7 @@ export class HomeShow {
         if (row) {
             row.innerHTML = '';
         } else {
-            row = makeElement<HTMLElement>('div', { id: 'episode_row' + episode.id, events: { mouseenter: (e: Event) => this.hoverEpisode(e), mouseleave: () => this.hoverOffEpisode() } });
+            row = makeElement<HTMLElement>('div', { id: 'episode_row' + episode.id, events: { mouseenter: (e: Event) => this.hoverEpisode(e), mouseleave: (e: Event) => this.hoverOffEpisode(e) } });
         }
         row.className = 'episode-row' + ((airDate == null || airDate > new Date()) && !available ? ' future' + (episode.userHasWatched ? '-but-watched' : '') : '');
 
@@ -300,6 +300,15 @@ export class HomeShow {
             if (airDate) {
                 name.appendElement('span', { class: 'date', html: airDate.format('Y') });
             }
+        }
+        if (this.data.siteSection == SiteSection.YouTube) {
+            name.appendButton('Open in YouTube', {
+                icon: new Icon('arrow-up-right-from-square'), labelAsTitle: true, colour: 'transparent', thin: true, classes: 'hide',
+                htmlAttributes: { id: `open_youtube_button_${episode.id}`, style: 'padding:0; margin-left:1rem;' },
+                click: () => {
+                    window.open(`https://www.youtube.com/watch?v=${episode.id}`);
+                }
+            });
         }
         if (episode.inLists && episode.inLists.length > 0) {
             let listSpn = name.appendElement('span', { class: 'lists' });
@@ -412,11 +421,16 @@ export class HomeShow {
                 element('poster').innerHTML = '';
                 element('poster').style.backgroundImage = "url('" + episode.poster + "')";
             }
+            elementOrNull('open_youtube_button_' + id)?.unhide();
         }
     }
 
-    hoverOffEpisode() {
-        this.drawPoster();
+    hoverOffEpisode(event: Event) {
+        if (event.target instanceof HTMLElement) {
+            let id = event.target.id.slice(11);
+            this.drawPoster();
+            elementOrNull('open_youtube_button_' + id)?.hide();
+        }
     }
 
     addShow() {
