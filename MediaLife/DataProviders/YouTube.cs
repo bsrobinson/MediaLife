@@ -150,6 +150,7 @@ namespace MediaLife.DataProviders
                 Number = 0,
                 Name = v.Title,
                 Poster = StripQuery(v.Thumbnails.FirstOrDefault()?.Url),
+                DurationSeconds = v.Duration?.TotalSeconds,
             }).OrderBy(s => s.AirDate).ToList();
 
             return episodes;
