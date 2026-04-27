@@ -325,7 +325,7 @@ export class HomeShow {
         }
         const fileIcon = new EpisodeFileIcon(episode.obj, 'edit-list-hide add-to-list-hide').node
         if (episode.durationSeconds != null && !fileIcon.containsClass('hide')) {
-            icons.appendElement('span', { class: 'duration', html: this.durationString(episode.durationSeconds) });
+            icons.appendElement('span', { class: 'duration', html: this.site.durationString(episode.durationSeconds) });
         }
         icons.appendChild(fileIcon);
         if (this.data.siteSection != SiteSection.Radio) {
@@ -343,17 +343,6 @@ export class HomeShow {
         }
 
         return row;
-    }
-
-    durationString(seconds: number) {
-        let hrs = Math.floor(seconds / 3600)
-        let mins = Math.floor((seconds % 3600) / 60)
-        let secs = Math.floor(seconds % 60)
-        if (secs > 30) { mins += 1; }
-        if (hrs == 0 && mins == 0) {
-            return secs + ' sec' + (secs != 1 ? 's' : '')
-        }
-        return (hrs > 0 ? hrs + ' hr' + (hrs != 1 ? 's ' : ' ') : '') + (mins > 0 ? mins + ' min' + (mins != 1 ? 's' : '') : '')
     }
 
     episodeThumbnail(episode: tsEpisodeModel) {

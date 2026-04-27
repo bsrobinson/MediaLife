@@ -430,6 +430,10 @@ export class HomeIndex {
             if (show.siteSection != SiteSection.Radio) {
                 row.appendElement('div', { class: 'episode-count', html: show.userUnwatchedCount.toString() });
             }
+
+            if (ep.durationSeconds != null) {
+                row.appendElement('div', { class: 'episode-duration', html: this.site.durationString(ep.durationSeconds) });
+            }
         }
 
         let addToListContent = row.appendElement('span', { class: 'add-to-list-show' });

@@ -37,7 +37,7 @@
                 margin-top: 0;
                 margin-bottom: 0;
             }
-            .episode-count {
+            .episode-count, .episode-duration {
                 top: 120px;
             }
         }
@@ -45,7 +45,7 @@
             > a {
                 margin-top: 0;
             }
-            .episode-count {
+            .episode-count, .episode-duration {
                 top: 134px;
             }
         }
@@ -82,10 +82,14 @@
             top: 145px;
             right: 5px;
         }
+        .episode-duration {
+            top: 166px;
+            left: 0;
+        }
     }
     
     &.square {
-        .episode-count {
+        .episode-count, .episode-duration {
             top: 165px;
         }
     }
@@ -151,6 +155,18 @@
         line-height: 2em;
         border-radius: 50%;
         color: white;
+    }
+
+    .episode-duration {
+        position: absolute;
+        top: 196px;
+        left: 4px;
+        background: rgba(0, 0, 0, 0.5333333333);
+        line-height: 2em;
+        border-radius: 4px;
+        color: white;
+        padding: 0 0.4em;
+        font-size: 0.6rem;
     }
 
     .name {

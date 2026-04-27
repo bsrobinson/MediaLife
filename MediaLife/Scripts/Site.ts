@@ -135,5 +135,16 @@ export class MediaLife {
     hideProgressBar() {
         element('site_progress_bar').addClass('hide');
     }
+
+    durationString(seconds: number) {
+        let hrs = Math.floor(seconds / 3600)
+        let mins = Math.floor((seconds % 3600) / 60)
+        let secs = Math.floor(seconds % 60)
+        if (secs > 45) { mins += 1; }
+        if (hrs == 0 && mins == 0) {
+            return secs + ' sec' + (secs != 1 ? 's' : '')
+        }
+        return (hrs > 0 ? hrs + ' hr' + (hrs != 1 ? 's ' : ' ') : '') + (mins > 0 ? mins + ' min' + (mins != 1 ? 's' : '') : '')
+    }
     
 }
