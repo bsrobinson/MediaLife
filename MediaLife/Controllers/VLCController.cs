@@ -71,9 +71,7 @@ namespace MediaLife.Controllers
         {
             if (_playLocation == PlayLocation.Server)
             {
-                Close();
-                StatusPage("command=in_play&input=" + HttpUtility.UrlEncode(path.Replace("+", "␚")).Replace("+", " ").Replace("␚", "+"));
-                return StatusPage();
+                return OpenOnServer(path); 
             }
             if (_playLocation == PlayLocation.Client)
             {
@@ -81,6 +79,12 @@ namespace MediaLife.Controllers
                 return Play();
             }
             return BadRequest();
+        }
+        public VLCStatus? OpenOnServer(string path)
+        {
+            Close();
+            StatusPage("command=in_play&input=" + HttpUtility.UrlEncode(path.Replace("+", "␚")).Replace("+", " ").Replace("␚", "+"));
+            return StatusPage();
         }
 
         [HttpGet("[controller]/[action]")]
@@ -179,7 +183,7 @@ namespace MediaLife.Controllers
         }
 
 
-        private VLCStatus? StatusPage(string? qs = null)
+        public VLCStatus? StatusPage(string? qs = null)
         {
             string? statusResponse = GetVLCData("requests/status.json", qs);
             if (statusResponse != null)

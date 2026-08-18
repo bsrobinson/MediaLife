@@ -7,7 +7,6 @@ using MediaLife.Attributes;
 using System;
 using WCKDRZR.Gaspar;
 using MediaLife.Library.Models;
-using Newtonsoft.Json;
 
 namespace MediaLife.Controllers
 {
