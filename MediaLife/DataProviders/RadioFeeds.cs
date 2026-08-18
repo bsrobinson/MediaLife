@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
@@ -44,7 +46,7 @@ namespace MediaLife.DataProviders
                                 Id = idMatch.Groups[1].Value,
                                 SiteSection = SiteSection.Radio,
                                 Name = nameMatch.Groups[2].Value,
-                                FilePath = streamMatch.Groups[1].Value,
+                                FilePath = ParsePlsContent(streamMatch.Groups[1].Value),
                             }
                         ]
                     });
@@ -65,6 +67,42 @@ namespace MediaLife.DataProviders
             }
 
             return null;
+        }
+
+        private static string ParsePlsContent(string feedUrl)
+        {
+            if (!feedUrl.Contains(".pls", StringComparison.OrdinalIgnoreCase))
+            {
+                return feedUrl;
+            }
+
+            try
+            {
+                string playlistContent = new HttpClient().GetStringAsync(feedUrl).Result;
+
+                // Split content into individual lines
+                using StringReader reader = new StringReader(playlistContent);
+                string? line;
+
+                while ((line = reader.ReadLine()) != null)
+                {
+                    // Clean up white spaces
+                    line = line.Trim();
+
+                    // .pls format uses 'File1=', 'File2=', etc., to store the actual stream paths
+                    if (line.StartsWith("File1=", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Extract everything after the '=' sign
+                        return line.Substring(6).Trim();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching playlist: {ex.Message}");
+            }
+            
+            return feedUrl;            
         }
     }
 }
