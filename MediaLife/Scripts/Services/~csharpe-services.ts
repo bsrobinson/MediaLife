@@ -179,6 +179,9 @@ export namespace MediaLifeService {
         open(path: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
             return new GasparServiceHelper().fetch(`/VLC/Open?path=${path || ""}`, { method: 'GET', credentials: 'include' }, false, null, showError);
         }
+        openOnServer(path: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
+            return new GasparServiceHelper().fetch(`/?path=${path || ""}`, { method: 'GET', credentials: 'include' }, false, null, showError);
+        }
         close(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
             return new GasparServiceHelper().fetch(`/VLC/Close`, { method: 'GET', credentials: 'include' }, false, null, showError);
         }
@@ -199,6 +202,9 @@ export namespace MediaLifeService {
         }
         seekTo(percent: number, showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
             return new GasparServiceHelper().fetch(`/VLC/SeekTo/${percent}`, { method: 'GET', credentials: 'include' }, false, null, showError);
+        }
+        statusPage(qs: string | null = null, showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
+            return new GasparServiceHelper().fetch(`/?qs=${qs || 0}`, { method: 'GET', credentials: 'include' }, false, null, showError);
         }
         getShow(filename: string | null, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel | null>> {
             return new GasparServiceHelper().fetch(`/?filename=${filename || 0}`, { method: 'GET', credentials: 'include' }, false, null, showError);
