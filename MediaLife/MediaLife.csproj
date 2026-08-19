@@ -38,14 +38,14 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.11" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="7.0.0" />
-        <PackageReference Include="WckdRzr.Gaspar" Version="3.4.11" />
+        <PackageReference Include="WckdRzr.Gaspar" Version="3.8.0" />
         <PackageReference Include="TvMaze.Api.Client" Version="0.1.75" />
         <PackageReference Include="DeepCloner" Version="0.10.4" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
         <PackageReference Include="TMDbLib" Version="1.9.2" />
         <PackageReference Include="GoodreadsScrapper" Version="1.1.1" />
         <PackageReference Include="PodcastIndexSharp" Version="2.0.0" />
-        <PackageReference Include="YoutubeExplode" Version="6.5.7" />
+        <PackageReference Include="YoutubeExplode" Version="6.6.1" />
     </ItemGroup>
 
     <ItemGroup>
