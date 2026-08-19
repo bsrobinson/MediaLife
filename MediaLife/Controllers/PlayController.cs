@@ -32,13 +32,18 @@ namespace MediaLife.Controllers
             {
                 return BadRequest();
             }
+            Show? show = db.Shows.FirstOrDefault(s => s.ShowId == episode.ShowId && s.SiteSection == section);
+            if (show == null)
+            {
+                return NotFound();
+            }
 
             VLCController vlcController = new VLCController(db, httpContext);
             
             int openRetryCount = 0;
             while (openRetryCount < 10)
             {
-                vlcController.OpenOnServer(episode.FilePath);
+                vlcController.OpenOnServer(episode.FilePath, show?.Volume);
 
                 int statusRetryCount = 0;
                 while (statusRetryCount < 10)

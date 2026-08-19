@@ -67,11 +67,11 @@ namespace MediaLife.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
-        public ActionResult<VLCStatus?> Open([FromQuery] string path)
+        public ActionResult<VLCStatus?> Open([FromQuery] string path, [FromQuery] int? volume) 
         {
             if (_playLocation == PlayLocation.Server)
             {
-                return OpenOnServer(path); 
+                return OpenOnServer(path, volume); 
             }
             if (_playLocation == PlayLocation.Client)
             {
@@ -80,10 +80,15 @@ namespace MediaLife.Controllers
             }
             return BadRequest();
         }
-        public VLCStatus? OpenOnServer(string path)
+        public VLCStatus? OpenOnServer(string path, int? volume)
         {
             Close();
             StatusPage("command=in_play&input=" + HttpUtility.UrlEncode(path.Replace("+", "␚")).Replace("+", " ").Replace("␚", "+"));
+            if (volume.HasValue && volume > 0)
+            {
+                int volumeValue = (int)Math.Round(volume.Value * 255 / 100d);
+                StatusPage("command=volume&val=" + volumeValue);
+            }
             return StatusPage();
         }
 
@@ -126,6 +131,34 @@ namespace MediaLife.Controllers
             if (_playLocation == PlayLocation.Client)
             {
                 return StreamCommand($"command=control%20{_streamName}%20pause");
+            }
+            return BadRequest();
+        }
+
+        [HttpGet("[controller]/[action]")]
+        public ActionResult<VLCStatus?> VolumeUp()
+        {
+            if (_playLocation == PlayLocation.Server)
+            {
+                return StatusPage("command=volume&val=+5");
+            }
+            if (_playLocation == PlayLocation.Client)
+            {
+                return StreamCommand($"command=control%20{_streamName}%20volume%20+5");
+            }
+            return BadRequest();
+        }
+
+        [HttpGet("[controller]/[action]")]
+        public ActionResult<VLCStatus?> VolumeDown()
+        {
+            if (_playLocation == PlayLocation.Server)
+            {
+                return StatusPage("command=volume&val=-5");
+            }
+            if (_playLocation == PlayLocation.Client)
+            {
+                return StreamCommand($"command=control%20{_streamName}%20volume%20-5");
             }
             return BadRequest();
         }
@@ -213,6 +246,7 @@ namespace MediaLife.Controllers
                         }
                     }
                     status.Show = GetShow(filename);
+                    status.Volume = (int)Math.Round(status.Volume * 100 / 255d);
                 }
 
                 return status;
@@ -234,7 +268,6 @@ namespace MediaLife.Controllers
                 XmlSerializer serializer = new(typeof(VLCStreamStatus));
                 using (StringReader reader = new(statusResponse))
                 {
-                    
                     var streamStatus = (VLCStreamStatus?)serializer.Deserialize(reader);
                     var stream = streamStatus?.Broadcast?.Instances.Instance.FirstOrDefault();
 
@@ -249,6 +282,7 @@ namespace MediaLife.Controllers
                         State = stream.State,
                         Time = stream.Time / 1000000,
                         Length = stream.Length / 1000000,
+                        Volume = (int)Math.Round(stream.Volume * 100 / 255d),
                         Position = (float)stream.Position,
                         Fullscreen = false,
                         Information = new() { Category = new() { Meta = new() { 

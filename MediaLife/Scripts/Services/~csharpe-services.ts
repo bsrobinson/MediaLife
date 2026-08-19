@@ -176,11 +176,11 @@ export namespace MediaLifeService {
         status(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
             return new GasparServiceHelper().fetch(`/VLC`, { method: 'GET', credentials: 'include' }, false, null, showError);
         }
-        open(path: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
-            return new GasparServiceHelper().fetch(`/VLC/Open?path=${path || ""}`, { method: 'GET', credentials: 'include' }, false, null, showError);
+        open(path: string, volume: number | null, showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
+            return new GasparServiceHelper().fetch(`/VLC/Open?path=${path || ""}&volume=${volume || 0}`, { method: 'GET', credentials: 'include' }, false, null, showError);
         }
-        openOnServer(path: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
-            return new GasparServiceHelper().fetch(`/?path=${path || ""}`, { method: 'GET', credentials: 'include' }, false, null, showError);
+        openOnServer(path: string, volume: number | null, showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
+            return new GasparServiceHelper().fetch(`/?path=${path || ""}&volume=${volume || 0}`, { method: 'GET', credentials: 'include' }, false, null, showError);
         }
         close(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
             return new GasparServiceHelper().fetch(`/VLC/Close`, { method: 'GET', credentials: 'include' }, false, null, showError);
@@ -190,6 +190,12 @@ export namespace MediaLifeService {
         }
         pause(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
             return new GasparServiceHelper().fetch(`/VLC/Pause`, { method: 'GET', credentials: 'include' }, false, null, showError);
+        }
+        volumeUp(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
+            return new GasparServiceHelper().fetch(`/VLC/VolumeUp`, { method: 'GET', credentials: 'include' }, false, null, showError);
+        }
+        volumeDown(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
+            return new GasparServiceHelper().fetch(`/VLC/VolumeDown`, { method: 'GET', credentials: 'include' }, false, null, showError);
         }
         fullscreen(showError = ServiceErrorMessage.None): Promise<ServiceResponse<VLCStatus | null>> {
             return new GasparServiceHelper().fetch(`/VLC/Fullscreen`, { method: 'GET', credentials: 'include' }, false, null, showError);
@@ -252,6 +258,9 @@ export namespace MediaLifeService {
         }
         updateEpisode(section: SiteSection, updateAllUsers: boolean, showId: string, episode: EpisodeModel, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel>> {
             return new GasparServiceHelper().fetch(`/${section}/UpdateEpisode/${updateAllUsers}/${showId}`, { method: 'PUT', body: JSON.stringify(episode), headers: { 'Content-Type': 'application/json' }, credentials: 'include' }, false, null, showError);
+        }
+        saveVolume(section: SiteSection, showId: string, volume: number, showError = ServiceErrorMessage.None): Promise<ServiceResponse<ShowModel>> {
+            return new GasparServiceHelper().fetch(`/${section}/SaveVolume/${showId}/${volume}`, { method: 'PUT', credentials: 'include' }, false, null, showError);
         }
         addTorrentHash(episode: EpisodeModel, hash: string, showError = ServiceErrorMessage.None): Promise<ServiceResponse<EpisodeModel>> {
             return new GasparServiceHelper().fetch(`/AddTorrentHash/${hash}`, { method: 'POST', body: JSON.stringify(episode), headers: { 'Content-Type': 'application/json' }, credentials: 'include' }, false, null, showError);

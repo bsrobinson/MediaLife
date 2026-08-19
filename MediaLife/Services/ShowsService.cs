@@ -784,6 +784,19 @@ namespace MediaLife.Services
             return null;
         }
 
+        public ShowModel? SaveVolume(SiteSection section, string showId, User user, int volume)
+        {
+            Show? show = db.Shows.SingleOrDefault(s => s.ShowId == showId && s.SiteSection == section);
+            if (show == null)
+            {
+                return null;
+            }
+            show.Volume = volume;
+            db.SaveChanges();
+
+            return GetShow(section, showId, user);
+        }
+
 
         public EpisodeModel? AddTorrentHash(EpisodeModel episode, string hash, User user)
         {

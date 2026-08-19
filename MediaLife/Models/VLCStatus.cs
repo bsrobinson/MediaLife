@@ -12,6 +12,7 @@ namespace MediaLife.Models
         public string State { get; set; } = "stopped";
         public int Time { get; set; }
         public int Length { get; set; }
+        public int Volume { get; set; }
         public float Position { get; set; }
         public bool Fullscreen { get; set; }
         public VLC_Information? Information { get; set; }

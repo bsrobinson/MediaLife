@@ -56,6 +56,9 @@ public class Instance {
 	[XmlAttribute(AttributeName="state")] 
 	public required string State { get; set; } 
 
+	[XmlAttribute(AttributeName="volume")] 
+	public int Volume { get; set; } 
+
 	[XmlAttribute(AttributeName="position")] 
 	public double Position { get; set; } 
 

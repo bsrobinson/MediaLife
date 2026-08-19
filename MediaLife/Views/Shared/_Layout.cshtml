@@ -220,7 +220,11 @@
                     <div id="vlc-scrubber-time-remaining" class="time"></div>
                 </div>
                 <div class="vlc-buttons">
-                    <div class="vlc-side-controls"></div>
+                    <div class="vlc-side-controls left">
+                        @Html.Icon(new SolidIcon("minus"), action: "vlc.volumeDown()")
+                        <div id="vlc-volume-amount"></div>
+                        @Html.Icon(new SolidIcon("plus"), action: "vlc.volumeUp()")
+                    </div>
                     <div class="vlc-central-controls">
                         @Html.Icon(new SolidIcon("backward-step"), action: "vlc.previous()")
                         @Html.Icon(new SolidIcon("rotate-left"), action: "vlc.skipBack()")
@@ -229,7 +233,7 @@
                         @Html.Icon(new SolidIcon("rotate-right"), action: "vlc.skip()")
                         @Html.Icon(new SolidIcon("forward-step"), action: "vlc.next()", htmlAttributes: new() { { "id", "vlc_next_episode_button" } })
                     </div>
-                    <div class="vlc-side-controls">
+                    <div class="vlc-side-controls right">
                         @Html.Icon(new SolidIcon("up-right-and-down-left-from-center"), action: "vlc.fullscreen()", classes: "fullscreen")
                         @Html.Icon(new SolidIcon("down-left-and-up-right-to-center"), action: "vlc.fullscreen()", classes: "fullscreen-exit")
                     </div>

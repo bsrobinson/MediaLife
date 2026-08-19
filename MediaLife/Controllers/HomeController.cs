@@ -187,6 +187,18 @@ namespace MediaLife.Controllers
             return NotFound();
         }
 
+        [ExportFor(GasparType.TypeScript)]
+        [HttpPut("{section}/[action]/{showId}/{volume}")]
+        public ActionResult<ShowModel> SaveVolume(SiteSection section, string showId, int volume)
+        {
+            ShowModel? show = service.SaveVolume(section, showId, User.Obj(), volume);
+            if (show != null)
+            {
+                return show;
+            }
+            return NotFound();
+        }
+
 
         [ExportFor(GasparType.TypeScript)]
         [HttpPost("[action]/{hash}")]

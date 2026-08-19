@@ -7,6 +7,7 @@ import { MediaLifeService, ServiceErrorMessage, ServiceResponse } from "./Servic
 export class VLCClient {
 
     service = new MediaLifeService.VLCController();
+    homeService = new MediaLifeService.HomeController();
 
     initialising: boolean = false;
     queuedOpen: EpisodeObject | null = null;
@@ -48,13 +49,13 @@ export class VLCClient {
         }
         
         if (episodeObj.episode.filePath) {
-            this.callServer(this.service.open(encodeURIComponent(episodeObj.episode.filePath)));
+            this.callServer(this.service.open(encodeURIComponent(episodeObj.episode.filePath), episodeObj.show.volume));
         }
     }
 
     play() {
         if (this.status && this.status.state == 'stopped' && this.status.show) {
-            this.callServer(this.service.open(this.status.show.episodes[this.status.show.episodeIndex].filePath || ''));
+            this.callServer(this.service.open(this.status.show.episodes[this.status.show.episodeIndex].filePath || '', this.status.show.volume));
         } else {
             this.callServer(this.service.play());
         }
@@ -119,7 +120,26 @@ export class VLCClient {
         }
     }
 
-    callServer(func: Promise<ServiceResponse<VLCStatus | null>> | null = null) {
+    volumeUp() {
+        this.callServer(this.service.volumeUp(), status => this.saveSetVolume(status));
+    }
+
+    volumeDown() {
+        this.callServer(this.service.volumeDown(), status => this.saveSetVolume(status));
+    }
+    
+    saveSetVolume(status: VLCStatus) {
+        if (status.show) {
+            this.homeService.saveVolume(status.show.siteSection, status.show.id, status.volume).then(response => {
+                if (response.data && this.status) {
+                    this.status.show = response.data
+                    this.status.volume = response.data.volume || 0
+                }
+            })
+        }
+    }
+
+    callServer(func: Promise<ServiceResponse<VLCStatus | null>> | null = null, callback: ((data: VLCStatus) => void) | null = null) {
         if (this.initialising) {
             this.updateStatus();
         } else {
@@ -135,6 +155,10 @@ export class VLCClient {
 
                         this.tickInterval = setInterval(() => this.tickTime(), 1000);
                         this.serverRefreshInterval = setInterval(() => this.callServer(), 30000);
+
+                        if (callback) {
+                            callback(response.data);
+                        }
                     }
 
                     this.initialising = false;
@@ -180,6 +204,9 @@ export class VLCClient {
                 element('vlc_player').removeClass('info-only');
                 element('vlc_player').toggleClassIfTrue('playing', this.status.state == 'playing');
                 element('vlc_player').toggleClassIfTrue('fullscreen', this.status.fullscreen);
+                
+                element('vlc-volume-amount').innerHTML = this.status.volume + '%';
+                element('vlc-volume-amount').toggleClassIfTrue('saved', this.status.show?.volume == this.status.volume);
 
                 let filename = this.status.information?.category?.meta?.filename;
                 if (filename) {

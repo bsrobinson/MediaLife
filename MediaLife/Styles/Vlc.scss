@@ -85,10 +85,16 @@
         text-overflow: ellipsis;
     }
 
+    #vlc-volume-amount {
+        font-size: 0.8rem;
+        &.saved {
+            font-weight: bold;
+        }
+    }
+
     .vlc-buttons {
         display: flex;
         justify-content: space-between;
-        margin: 0 10px;
         white-space: nowrap;
         
         a {
@@ -116,7 +122,11 @@
         }
 
         .vlc-side-controls {
-            a {
+            &.left {
+                display: flex;
+                align-items: center;
+            }
+            &.right a {
                 justify-content: end;
             }
             @media (max-width: 500px) {

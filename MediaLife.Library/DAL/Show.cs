@@ -41,5 +41,6 @@ namespace MediaLife.Library.DAL
         public int? DownloadLimit { get; set; }
 
         public required bool KeepAllDownloaded { get; set; }
+        public int? Volume { get; set; }
     }
 }

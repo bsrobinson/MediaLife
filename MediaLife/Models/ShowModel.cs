@@ -55,6 +55,7 @@ namespace MediaLife.Models
         public int? DownloadSeriesOffset { get; set; }
         [Display(Name = "Keep All Downloaded")]
         public bool KeepAllDownloaded { get; set; }
+        public int? Volume { get; set; }
 
         [Display(Name = "Recommended By")]
         public string? RecommendedBy { get; set; }
@@ -146,6 +147,7 @@ namespace MediaLife.Models
             WatchFromNextPlayable = userShow?.WatchFromNextPlayable ?? false;
             DownloadAllTogether = show.DownloadAllTogether;
             KeepAllDownloaded = show.KeepAllDownloaded;
+            Volume = show.Volume;
             DownloadLimit = show.DownloadLimit;
             DownloadSeriesOffset = show.DownloadSeriesOffset;
             Users = showUsers ?? [];

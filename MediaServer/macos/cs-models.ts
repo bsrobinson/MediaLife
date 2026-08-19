@@ -147,6 +147,7 @@ export interface VLCStatus {
     state: string;
     time: number;
     length: number;
+    volume: number;
     position: number;
     fullscreen: boolean;
     information: VLC_Information | null;
@@ -237,6 +238,7 @@ export interface ShowModel extends BaseSiteObjectModel {
     downloadLimit: number | null;
     downloadSeriesOffset: number | null;
     keepAllDownloaded: boolean;
+    volume: number | null;
     recommendedBy: string | null;
     hideWatched: boolean;
     hideUnplayable: boolean;
@@ -408,6 +410,7 @@ export interface Show {
     downloadSeriesOffset: number | null;
     downloadLimit: number | null;
     keepAllDownloaded: boolean;
+    volume: number | null;
 }
 
 //File: ../../MediaLife.Library/DAL/User.cs
