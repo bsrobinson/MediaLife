@@ -1,6 +1,4 @@
-﻿import { ElementAttributes } from "./BRLibraries/DOM";
-
-export class IconMenu {
+﻿export class IconMenu {
 
     //**
     //** this class is only used by the watch icon, and still uses 'watch icon terminology'
@@ -12,43 +10,42 @@ export class IconMenu {
     menuHoverTimeout: NodeJS.Timeout | null = null;
     touchTimer: NodeJS.Timeout | null = null;
 
-    constructor(public id: string, public parentNode: HTMLElement, public button: HTMLElement, public icons: HTMLElement[]) {
+    constructor(public id: string, public parentNode: HTMLElement, public button: HTMLElement, public icons: HTMLElement[], public menuClass: string, public defaultClickClass: string) {
 
         if (!window.iconMenus) {
             window.iconMenus = {};
         }
         let thisId = `__ICON_MENU_${id}`;
         if (window.iconMenus[thisId]) {
-            this.menuNode = window.iconMenus[thisId].menuNode;
+            window.iconMenus[thisId].menuNode.empty();
         }
-        else {
 
-            window.iconMenus[thisId] = this;
+        window.iconMenus[thisId] = this;
 
-            this.parentNode.onmouseenter = () => this.menuButtonEnter();
-            this.parentNode.onmouseleave = () => this.menuButtonLeave();
-            button.ontouchstart = (e: Event) => this.touchStart(e);
+        this.parentNode.onmouseenter = () => this.menuButtonEnter();
+        this.parentNode.onmouseleave = () => this.menuButtonLeave();
+        button.ontouchstart = (e: Event) => this.touchStart(e);
 
-            this.menuNode = this.parentNode.appendElement('div', {
-                class: 'watched-menu',
-                events: {
-                    mouseenter: () => this.mouseEnterMenu(),
-                    mouseleave: () => this.mouseLeaveMenu()
-                }
-            });
-            this.icons.forEach(icon => {
+        this.menuNode = this.parentNode.appendElement('div', {
+            class: this.menuClass,
+            events: {
+                mouseenter: () => this.mouseEnterMenu(),
+                mouseleave: () => this.mouseLeaveMenu()
+            }
+        });
+        this.icons.forEach(icon => {
 
-                // icon.html(icon.html() || icon.title);
-                icon.className = 'menu-item ' + icon.className;
+            // icon.html(icon.html() || icon.title);
+            icon.className = 'menu-item ' + icon.className;
 
-                // icon.events = icon.events || {};
-                icon.onmouseenter = (e: Event) => this.mouseEnterMenuItem(e);
-                icon.onmouseleave = (e: Event) => this.mouseLeaveMenuItem(e);
+            // icon.events = icon.events || {};
+            icon.onmouseenter = (e: Event) => this.mouseEnterMenuItem(e);
+            icon.onmouseleave = (e: Event) => this.mouseLeaveMenuItem(e);
 
-                this.menuNode.appendChild(icon);
-            });
-            this.menuNode.appendElement('div', { class: 'active-mark' });
-        }
+            this.menuNode.appendChild(icon);
+        });
+        this.menuNode.appendElement('div', { class: 'active-mark' });
+    
     }
 
     menuButtonEnter() {
@@ -66,8 +63,10 @@ export class IconMenu {
         this.menuHoverTimeout = setTimeout(() => {
             this.parentNode.addClass('hover');
         }, 500);
-        this.displayActiveMenuItem(this.parentNode.getElementsByClassName('watched')[0] as HTMLElement);
-
+        let menuItem = this.parentNode.getElementsByClassName(this.defaultClickClass)[0] as HTMLElement | undefined;
+        if (menuItem) {
+           this.displayActiveMenuItem(menuItem);
+        }
     }
 
     menuButtonLeave() {
@@ -78,16 +77,16 @@ export class IconMenu {
         this.hideActiveMarks();
     }
 
-    mouseEnterMenu() {
+    mouseEnterMenu() {  
         if (this.menuHoverTimeout) {
             clearTimeout(window.watchMenuTimeout);
         }
-        document.body.addClass('all-watch-menus-open');
+        document.body.addClass(`${this.menuClass}-all-open`);
     }
 
     mouseLeaveMenu() {
-        window.watchMenuTimeout = setTimeout(function () {
-            document.body.removeClass('all-watch-menus-open');
+        window.watchMenuTimeout = setTimeout(() => {
+            document.body.removeClass(`${this.menuClass}-all-open`);
         }, 100);
     }
 

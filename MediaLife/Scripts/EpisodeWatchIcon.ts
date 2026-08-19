@@ -40,7 +40,6 @@ export class EpisodeWatchIcon {
 
             window.episodeWatchIcons[thisId] = this;
             this.node = makeElement('div', { class: 'episode-watch-icon' });
-            // this.node.obj = this;
 
             this.watchButtonNode = this.node.appendIcon(new SolidIcon('eye'), { 
                 class: 'watched-button',
@@ -57,7 +56,7 @@ export class EpisodeWatchIcon {
             }
             buttons.push(makeIcon('eye', { label: multiUser ? 'Together' : this.watchedString, class: 'watched-together', click: () => this.toggleWatchedTogether() }))
 
-            this.iconMenu = new IconMenu(thisId, this.node, this.watchButtonNode, buttons);
+            this.iconMenu = new IconMenu(thisId, this.node, this.watchButtonNode, buttons, 'watched-menu', 'watched-together');
             this.updateClass();
         }
 
