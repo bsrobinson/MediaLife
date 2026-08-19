@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/MediaLife/bin/Debug/net7.0/MediaLife.dll",
+            "program": "${workspaceFolder}/MediaLife/bin/Debug/net8.0/MediaLife.dll",
             "args": [],
             "cwd": "${workspaceFolder}/MediaLife",
             "stopAtEntry": false,
